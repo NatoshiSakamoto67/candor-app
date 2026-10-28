@@ -9,6 +9,8 @@ import { initShell, renderStatus, openDisplaySettings, initialRoute, openRoute }
 import { initVorgang } from "./modules/vorgang.js";
 import { initConnect, connect } from "./modules/connect.js";
 import { initStart } from "./modules/start.js";
+import { initWidgets } from "./modules/widgets.js";
+import { initEinfach } from "./modules/einfach.js";
 import { initHistory } from "./modules/history.js";
 import { initGarage, vehicles } from "./modules/garage.js";
 import { initWerkstatt, setupDone } from "./modules/werkstatt.js";
@@ -56,7 +58,7 @@ function startLive() {
 
 async function start() {
   const wanted = initialRoute();
-  initShell(); initVorgang(); initWerkstatt(); initHandbuch(); initEinstellungen(); initGarage(); initConnect(); initStart(); initHistory(); initInfo(); initApproval();
+  initShell(); initVorgang(); initWerkstatt(); initHandbuch(); initEinstellungen(); initGarage(); initConnect(); initStart(); initWidgets(); initEinfach(); initHistory(); initInfo(); initApproval();
   initVehicle(); initFaults(); initLive(); initCheck(); initPfade(); initAgent(); initReport(); initSearch();
   on("open-settings", openDisplaySettings);
   on("reload", reload);

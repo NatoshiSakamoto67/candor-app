@@ -252,12 +252,13 @@ function t3Pins() {
   const nodes = topoNodes();
   const pins = ZONE_ORDER.filter((d) => GRUPPE_BAUTEILE[d] && nodes.some((e) => domainOf(e) === d)).map((d) => {
     const list = nodes.filter((e) => domainOf(e) === d), sum = groupSummary(list);
-    const id = GRUPPE_BAUTEILE[d][0];
+    const id = GRUPPE_BAUTEILE[d].find((x) => v3.bauteile.has(x));
+    if (!id) return null;
     return h("button", { class: `pin t3-pin t-${ZUSTAND[sum.worst].tone}`, type: "button", "data-bt": id, hidden: true,
       "aria-label": `${domainName(d)}: ${list.length} Steuergerät${list.length === 1 ? "" : "e"}, ${sum.text}. Bauteil zeigen`,
       onclick: (ev) => { v3.fokus(id); t3Modes(); t3Karte(v3.bauteile.get(id), { x: ev.currentTarget.offsetLeft }); } },
       mark(sum.worst === "crit" && sum.faults > 1 ? "crit" : sum.worst), h("span", { class: "pin-n" }, PIN_NAME[d]), h("span", { class: "pin-c num" }, list.length));
-  });
+  }).filter(Boolean);
   $("t3-pins").replaceChildren(...pins);
   t3PinsSetzen();
 }

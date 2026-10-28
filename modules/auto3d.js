@@ -9,7 +9,7 @@ export const webglMoeglich = () => {
 /* Welche Bauteile stehen für eine Steuergeräte-Gruppe der Topologie */
 export const GRUPPE_BAUTEILE = {
   antrieb: ["motorsteuergeraet", "motor"], fahrwerk: ["abs", "bremse_vl", "bremse_vr", "bremse_hl", "bremse_hr"], rueckhalte: ["airbag_steuergeraet", "lenkrad"],
-  assistenz: ["frontradar", "frontkamera", "parksensoren"], anzeige: ["kombiinstrument", "infotainment"], karosserie: ["bordnetz"], netzwerk: ["gateway", "obd_buchse"],
+  assistenz: ["frontradar", "frontkamera", "parksensoren"], anzeige: ["kombiinstrument", "infotainment"], karosserie: ["bordnetz", "batterie"], netzwerk: ["gateway", "obd_buchse"],
 };
 const TON = { crit: 0xef4444, silent: 0xf59e0b, warn: 0xf59e0b, ok: 0x22c55e, pending: 0x94a3b8 };
 

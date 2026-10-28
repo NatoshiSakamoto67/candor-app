@@ -123,3 +123,73 @@
 .set-result.t-ok { --tone-line: var(--ok-line); --tone-bg: var(--ok-bg); } .set-result.t-crit { --tone-line: var(--crit-line); --tone-bg: var(--crit-bg); }
 .set-grid { grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 768px) { .set-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); } }
+
+/* Mein Cockpit (widgets.js): Raster aus 2 Spalten auf dem Handy, 4 ab Tablet; M-Widgets doppelt breit */
+.widgets { display: grid; gap: var(--sp-3); }
+.widgets .sec-head { margin: 0; }
+.wg-raster { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2); }
+@media (min-width: 900px) { .wg-raster { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.wg { padding: var(--sp-3); display: grid; gap: 4px; align-content: start; min-height: 132px; position: relative; transition: box-shadow var(--dur) var(--ease-out), transform var(--dur) var(--ease-out); }
+.wg.m { grid-column: span 2; }
+.wg.warn { border-color: var(--warn); } .wg.crit { border-color: var(--crit-line, var(--crit)); }
+.wg.warn .wg-zahl { color: var(--warn); } .wg.crit .wg-zahl { color: var(--crit); }
+.wg-kopf { display: flex; align-items: center; gap: 6px; min-height: 24px; }
+.wg-kopf .eyebrow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0; }
+.wg-tap { display: block; width: 100%; text-align: left; color: inherit; }
+.wg-wert { display: grid; gap: 2px; }
+.wg-zeile { display: flex; align-items: baseline; gap: 6px; }
+.wg-zahl { font: 600 30px/34px var(--font-num); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.wg-zeile small { color: var(--text-muted); font: 500 var(--t-2)/16px var(--font-text); }
+.wg-unter { margin: 0; display: flex; align-items: center; gap: 6px; color: var(--text-muted); }
+.wg-unter .mark, .wg-unter .mark svg { width: 16px; height: 16px; }
+.wg-rund { width: 100%; max-width: 150px; justify-self: center; }
+.wg[data-typ="rund"] .wg-zeile { justify-content: center; margin-top: -26px; }
+.wg[data-typ="rund"] .wg-unter { justify-content: center; }
+.wg-bogen { fill: none; stroke: var(--line-strong); stroke-width: 2; }
+.wg-band { fill: none; stroke: color-mix(in oklab, var(--ok) 55%, transparent); stroke-width: 6; }
+.wg-striche path { stroke: var(--text-muted); stroke-width: 1; } .wg-striche path.lang { stroke: var(--text); stroke-width: 1.6; }
+.wg-nadel { stroke: var(--text); stroke-width: 2.4; stroke-linecap: round; transition: transform 280ms var(--ease-out); transform-box: view-box; }
+.wg-nabe { fill: var(--text); }
+.wg.warn .wg-nadel, .wg.warn .wg-nabe { stroke: var(--warn); fill: var(--warn); }
+.wg-verlauf { width: 100%; height: 56px; }
+.wg-linie { fill: none; stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.wg-sollband { fill: color-mix(in oklab, var(--ok) 16%, transparent); }
+.wg-auto { display: grid; justify-items: start; gap: 6px; color: var(--text-muted); font: 500 var(--t-2)/16px var(--font-text); }
+.wg-auto .i3 { width: 72px; height: 72px; }
+.wg-tools { display: flex; gap: 4px; }
+.wg-skala { font: 600 7px var(--font-num); fill: var(--text-muted); }
+.wg-griff, .wg-btn { min-width: 32px; height: 32px; border: 1px solid var(--line); border-radius: var(--r-1); background: var(--surface-2); color: var(--text); cursor: pointer; font: 600 var(--t-2)/1 var(--font-text); }
+.wg-griff { cursor: grab; touch-action: none; letter-spacing: -2px; }
+.wg-griff:focus-visible, .wg-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--accent); }
+.wg-raster.bearbeiten .wg { border-style: dashed; }
+.wg.zieht { transform: scale(1.03); box-shadow: var(--sh2); z-index: 2; opacity: .92; }
+.wg-leiste { display: grid; gap: var(--sp-2); }
+.wg-add { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.wg-add .inp { height: 36px; width: auto; max-width: 100%; }
+.wg-vorlagen { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+@media (prefers-reduced-motion: reduce) { .wg-nadel, .wg { transition: none; } }
+
+/* Einfacher Modus (einfach.js): Ampel, ein Satz, Fehler in Alltagssprache. Profi-Bereiche ausgeblendet. */
+.modus-wahl { justify-self: end; }
+html[data-modus="einfach"] #widgets, html[data-modus="einfach"] #start-tiles, html[data-modus="einfach"] .vcard .vmeta { display: none !important; }
+.einfach { display: grid; gap: var(--sp-3); }
+.einfach[hidden] { display: none; }
+.ef-held { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--sp-4); padding: var(--sp-5); align-items: start; }
+.ef-ampel { display: grid; gap: 8px; padding: 10px 8px; border-radius: 18px; background: #0d1116; border: 1px solid var(--line-strong); }
+.ef-ampel i { width: 30px; height: 30px; border-radius: 50%; background: #1b2128; }
+.ef-ampel i:nth-child(1).an { background: var(--crit); box-shadow: 0 0 18px var(--crit); }
+.ef-ampel i:nth-child(2).an { background: var(--warn); box-shadow: 0 0 18px var(--warn); }
+.ef-ampel i:nth-child(3).an { background: var(--ok); box-shadow: 0 0 18px var(--ok); }
+.ef-text { display: grid; gap: var(--sp-2); }
+.ef-titel { margin: 0; font: 700 26px/30px var(--font-display); }
+.ef-held.t-crit .ef-titel { color: var(--crit); } .ef-held.t-warn .ef-titel { color: var(--warn); } .ef-held.t-ok .ef-titel { color: var(--ok); }
+.ef-text .p { margin: 0; }
+.ef-gruende { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; font: 500 var(--t-3)/var(--t-3-lh) var(--font-text); }
+.ef-liste { display: grid; gap: var(--sp-2); }
+.ef-liste .h3 { margin: var(--sp-2) 0 0; }
+.ef-fehler { padding: var(--sp-3) var(--sp-4); display: grid; gap: 4px; justify-items: start; }
+.ef-fehler h4 { margin: 0; font: 600 var(--t-5)/var(--t-5-lh) var(--font-display); }
+.ef-fehler .sm { margin: 0; }
+.ef-aufwand { margin: 2px 0; display: flex; gap: 6px; align-items: flex-start; font: 500 var(--t-2)/16px var(--font-text); color: var(--text-muted); }
+.ef-aufwand .mark, .ef-aufwand .mark svg { width: 16px; height: 16px; flex: none; }
+@media (max-width: 599px) { .ef-held { padding: var(--sp-4); gap: var(--sp-3); } .ef-ampel i { width: 22px; height: 22px; } .ef-titel { font-size: 22px; line-height: 26px; } }

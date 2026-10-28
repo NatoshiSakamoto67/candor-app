@@ -65,6 +65,7 @@ const PATHS = {
   tick: "M5 12l4 4L19 6",
   cross: "M6 6l12 12M18 6L6 18",
   minus: "M6 12h12",
+  plus: "M12 5v14M5 12h14",
   up: "M12 19V5M6 11l6-6 6 6",
   down: "M12 5v14M6 13l6 6 6-6",
   reset: "M4 12a8 8 0 1 0 2.3-5.7M4 4v4h4",
