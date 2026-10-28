@@ -525,3 +525,23 @@ button.hstat { cursor: pointer; } button.hstat:hover { border-color: var(--tone-
 .case-box textarea.inp { height: auto; min-height: 64px; padding: 10px 12px; resize: vertical; line-height: 22px; }
 .case-box.saved { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .case-box.saved .btn { margin-left: auto; }
+
+/* 3D-Fahrzeug (auto3d.js): Bühne mit leichtem Verlauf, Ansichtsknöpfe unten, Etiketten über dem Modell */
+.topo-3d { display: none; position: relative; width: 100%; aspect-ratio: 16 / 10; min-height: 280px; max-height: min(620px, 70dvh); border-radius: var(--r-3);
+  background: radial-gradient(120% 90% at 50% 15%, color-mix(in oklab, var(--accent) 10%, var(--surface-2)), var(--surface-0) 75%); overflow: hidden; }
+.topo-stage.is-3d .topo-3d { display: block; }
+.topo-stage.is-3d .topo-canvas { display: none; }
+.t3-canvas, .t3-canvas canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.t3-load { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--text-muted); }
+.t3-pins { position: absolute; inset: 0; pointer-events: none; }
+.t3-pin { min-width: 0; padding: 4px 7px 3px; background: color-mix(in oklab, var(--surface-1) 82%, transparent); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.t3-pin .mark, .t3-pin .mark svg { width: 18px; height: 18px; }
+.t3-modes { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); background: color-mix(in oklab, var(--surface-1) 80%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.t3-card { position: absolute; top: 10px; left: clamp(10px, calc(var(--x, 50%) - 140px), calc(100% - 290px)); width: min(280px, calc(100% - 20px)); padding: var(--sp-3); display: grid; gap: 6px; z-index: 2; }
+.t3-card[hidden] { display: none; }
+.t3-card .h3 { margin: 0; font: 600 var(--t-5)/var(--t-5-lh) var(--font-display); }
+@media (max-width: 599px) {
+  .topo-3d { aspect-ratio: 1; } .t3-pin .pin-n { display: none; }
+  .t3-card { top: auto; bottom: 56px; left: 8px; width: calc(100% - 16px); padding: var(--sp-2) var(--sp-3); gap: 2px; }
+  .t3-card .row-actions { margin-top: 4px; }
+}

@@ -8,6 +8,7 @@ import { icon3d } from "./icons3d.js";
 import { go } from "./shell.js";
 import { plate, vehicleFacts } from "./garage.js";
 import { vehicleName, BAUARTEN } from "./fahrzeuge.js";
+import { erstelle3d, webglMoeglich, GRUPPE_BAUTEILE } from "./auto3d.js";
 
 /* ---------- Fahrzeugkopf: gewähltes Fahrzeug aus dem Bestand, darunter was der Adapter erkannt hat ---------- */
 export function renderVehicleCard() {
@@ -67,7 +68,8 @@ const shortName = (name, max = 11) => (name.length > max ? name.slice(0, max - 1
 const SVG_NS = "http://www.w3.org/2000/svg";
 const templates = new Map();
 let bauart = storageGet("kfzdiag-bauart", "limousine");
-let view = storageGet("kfzdiag-topo-ansicht", "fahrzeug");
+let view = storageGet("kfzdiag-topo-ansicht", webglMoeglich() ? "3d" : "fahrzeug");
+if (view === "3d" && !webglMoeglich()) view = "fahrzeug";
 
 /* Jede Vorlage wird genau einmal geladen (gleichzeitige Aufrufe teilen sich das Versprechen). */
 function loadTemplate(name) {
@@ -140,7 +142,7 @@ function markZone(d, on) { const r = $(`zone-${d}`); if (r) r.classList.toggle("
 async function renderVehicleView() {
   const svg = $("topo");
   let tpl;
-  try { tpl = await loadTemplate(bauart); } catch (err) { svg.replaceChildren(); toast("Fahrzeugvorlage nicht ladbar."); return; }
+  try { tpl = await loadTemplate(bauart === "lkw" ? "transporter" : bauart); } catch (err) { svg.replaceChildren(); toast("Fahrzeugvorlage nicht ladbar."); return; }
   if (view !== "fahrzeug") return;
   if (layerTpl !== tpl) {
     layerTpl = tpl;
@@ -215,6 +217,94 @@ function renderBusView() {
   svg.replaceChildren(gateway, ...parts, note);
 }
 
+/* ---------- 3D-Ansicht: Modell je Bauart, Etiketten je Steuergeräte-Gruppe, Antippen zeigt das Bauteil ---------- */
+/* Modelle, die schon gebaut sind; andere Bauarten zeigen vorerst das nächstliegende. */
+export const MODELLE = Object.fromEntries(["limousine", "kombi", "kleinwagen", "suv", "van", "pickup", "transporter", "lkw", "motorrad"].map((b) => [b, b]));
+const modellFuer = (b) => MODELLE[b] || "limousine";
+let v3 = null, v3Modell = null, v3Laedt = null;
+const ANSICHTEN_3D = [["aussen", "Außen"], ["technik", "Technik"], ["unten", "Unten"], ["oben", "Oben"]];
+function box3d() {
+  let box = $("topo-3d");
+  if (box) return box;
+  box = h("div", { id: "topo-3d", class: "topo-3d" },
+    h("div", { class: "t3-canvas", id: "t3-canvas" }), h("div", { class: "t3-pins", id: "t3-pins" }),
+    h("div", { class: "seg t3-modes", id: "t3-modes", role: "group", "aria-label": "3D-Ansicht" }),
+    h("div", { class: "t3-card card", id: "t3-card", hidden: true }));
+  $("topo-stage").querySelector(".topo-canvas").after(box);
+  return box;
+}
+function t3Modes() {
+  $("t3-modes").replaceChildren(...ANSICHTEN_3D.map(([id, label]) => h("button", { type: "button", "aria-pressed": String(v3 && v3.modus === id),
+    onclick: () => { v3.ansicht(id); t3Modes(); $("t3-card").hidden = true; } }, label)));
+}
+function t3Toene(nodes) {
+  const toene = {};
+  for (const d of ZONE_ORDER) {
+    const list = nodes.filter((e) => domainOf(e) === d);
+    if (!list.length || !GRUPPE_BAUTEILE[d]) continue;
+    const { worst } = groupSummary(list);
+    for (const id of GRUPPE_BAUTEILE[d]) if (worst !== "pending") toene[id] = worst;
+  }
+  return toene;
+}
+function t3Pins() {
+  if (!v3) return;
+  const nodes = topoNodes();
+  const pins = ZONE_ORDER.filter((d) => GRUPPE_BAUTEILE[d] && nodes.some((e) => domainOf(e) === d)).map((d) => {
+    const list = nodes.filter((e) => domainOf(e) === d), sum = groupSummary(list);
+    const id = GRUPPE_BAUTEILE[d][0];
+    return h("button", { class: `pin t3-pin t-${ZUSTAND[sum.worst].tone}`, type: "button", "data-bt": id, hidden: true,
+      "aria-label": `${domainName(d)}: ${list.length} Steuergerät${list.length === 1 ? "" : "e"}, ${sum.text}. Bauteil zeigen`,
+      onclick: (ev) => { v3.fokus(id); t3Modes(); t3Karte(v3.bauteile.get(id), { x: ev.currentTarget.offsetLeft }); } },
+      mark(sum.worst === "crit" && sum.faults > 1 ? "crit" : sum.worst), h("span", { class: "pin-n" }, PIN_NAME[d]), h("span", { class: "pin-c num" }, list.length));
+  });
+  $("t3-pins").replaceChildren(...pins);
+  t3PinsSetzen();
+}
+/* Nach jedem Bild: Etiketten an die Bildschirmlage ihres Bauteils schieben (nur Lage, kein Neubau) */
+function t3PinsSetzen() {
+  if (!v3) return;
+  for (const pin of $("t3-pins").children) {
+    const at = v3.lage(pin.dataset.bt);
+    pin.hidden = !at || !at.sichtbar;
+    if (at) { pin.style.left = `${at.x}px`; pin.style.top = `${at.y}px`; }
+  }
+}
+function t3Karte(bt, at) {
+  const card = $("t3-card");
+  if (!bt) { card.hidden = true; return; }
+  const d = Object.keys(GRUPPE_BAUTEILE).find((k) => GRUPPE_BAUTEILE[k].includes(bt.id)) || bt.gruppe;
+  const list = topoNodes().filter((e) => domainOf(e) === d);
+  const sum = list.length ? groupSummary(list) : null;
+  card.replaceChildren(h("p", { class: "eyebrow" }, domainName(d)), h("h3", { class: "h3" }, bt.name),
+    h("p", { class: "sm" }, sum ? `${list.length} Steuergerät${list.length === 1 ? "" : "e"} dieser Gruppe, ${sum.text}` : "Kein Steuergerät dieser Gruppe gemeldet"),
+    h("div", { class: "row-actions" }, list.length ? h("button", { class: "btn sec small", type: "button", onclick: () => jumpToGroup(d) }, "Zur Liste") : null,
+      h("button", { class: "btn qt small", type: "button", onclick: () => { card.hidden = true; } }, "Schließen")));
+  card.hidden = false;
+  card.style.setProperty("--x", `${Math.round(at.x)}px`);
+  if (v3 && v3.modus !== "technik") { v3.fokus(bt.id); t3Modes(); } else if (v3) v3.fokus(bt.id);
+}
+async function render3dView() {
+  const box = box3d();
+  $("topo-stage").classList.add("is-3d");
+  const modell = modellFuer(bauart);
+  if (!v3 || v3Modell !== modell) {
+    if (v3Laedt) return;
+    if (v3) { v3.entsorgen(); v3 = null; }
+    $("t3-card").hidden = true;
+    $("t3-canvas").replaceChildren(h("p", { class: "sm t3-load" }, "3D-Modell lädt …"));
+    v3Laedt = erstelle3d($("t3-canvas"), { bauart: modell, onPick: t3Karte }).catch((err) => { console.error(err); return null; });
+    v3 = await v3Laedt; v3Laedt = null; v3Modell = modell;
+    if (!v3) { toast("3D-Modell nicht ladbar, zeige die Draufsicht."); setView("fahrzeug"); return; }
+    $("t3-canvas").addEventListener("bild", t3PinsSetzen);
+  }
+  v3.zustand(t3Toene(topoNodes()));
+  t3Modes(); t3Pins();
+  const nodes = topoNodes();
+  $("topo-pins").replaceChildren(); $("topo-rest").replaceChildren();
+  $("topo-stage").setAttribute("aria-label", `${BAUARTEN.find(([id]) => id === bauart)[1]} in 3D, ${nodes.length} Steuergeräte`);
+}
+
 /* ---------- Topologie gesamt ---------- */
 export function renderTopo() {
   $("topo-panel").dataset.view = view;
@@ -222,10 +312,11 @@ export function renderTopo() {
   const counts = nodes.reduce((acc, e) => ({ ...acc, [e.zustand]: (acc[e.zustand] || 0) + 1 }), {});
   $("topo-legend").replaceChildren(...Object.entries(ZUSTAND).filter(([k]) => counts[k]).map(([k, z]) =>
     h("span", { class: "lg" }, mark(k), h("span", { class: "num" }, counts[k]), z.text)));
-  $("topo-view-toggle").replaceChildren(...[["fahrzeug", "Fahrzeug"], ["bus", "Bus"]].map(([id, label]) =>
+  $("topo-view-toggle").replaceChildren(...[...(webglMoeglich() ? [["3d", "3D"]] : []), ["fahrzeug", "Draufsicht"], ["bus", "Bus"]].map(([id, label]) =>
     h("button", { type: "button", "aria-pressed": String(view === id), onclick: () => setView(id) }, label, h("span", { class: "cnt" }, nodes.length))));
-  $("topo-bauart").closest(".topo-bauart").hidden = view !== "fahrzeug";
-  if (view === "bus") renderBusView(); else renderVehicleView();
+  $("topo-bauart").closest(".topo-bauart").hidden = view === "bus";
+  if (view !== "3d") $("topo-stage").classList.remove("is-3d");
+  if (view === "3d") render3dView(); else if (view === "bus") renderBusView(); else renderVehicleView();
 }
 function setView(next) { view = next; storageSet("kfzdiag-topo-ansicht", next); renderTopo(); }
 
@@ -374,7 +465,8 @@ export function initVehicle() {
   $("scan-btn").addEventListener("click", runScan);
   const panel = $("topo-panel"), toggle = $("topo-toggle");
   const setCollapsed = (c) => { panel.dataset.collapsed = String(c); toggle.setAttribute("aria-expanded", String(!c)); toggle.textContent = c ? "Grafik zeigen" : "Grafik ausblenden"; storageSet("kfzdiag-topo", c ? "zu" : "auf"); };
-  setCollapsed(storageGet("kfzdiag-topo", window.matchMedia("(max-width: 599px)").matches ? "zu" : "auf") === "zu");
+  /* Mit 3D ist die Grafik auch auf dem Handy der Einstieg, also offen; ohne WebGL wie bisher eingeklappt. */
+  setCollapsed(storageGet("kfzdiag-topo", window.matchMedia("(max-width: 599px)").matches && !webglMoeglich() ? "zu" : "auf") === "zu");
   toggle.addEventListener("click", () => { setCollapsed(panel.dataset.collapsed !== "true"); if (panel.dataset.collapsed === "false") renderTopo(); });
   const sel = $("topo-bauart");
   if (!BAUARTEN.some(([id]) => id === bauart)) bauart = "limousine";

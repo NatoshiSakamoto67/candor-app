@@ -2,7 +2,7 @@
    gespeichert wird in garage.js. Pflicht sind Marke und Modell, dazu Kennzeichen oder FIN, damit man das Auto wiederfindet. */
 
 export const KRAFTSTOFFE = [["benzin", "Benzin"], ["diesel", "Diesel"], ["hybrid", "Hybrid"], ["plugin", "Plug-in-Hybrid"], ["elektro", "Elektro"], ["gas", "Gas (LPG/CNG)"]];
-export const BAUARTEN = [["limousine", "Limousine"], ["kombi", "Kombi"], ["kleinwagen", "Kleinwagen"], ["suv", "SUV"], ["van", "Van"], ["pickup", "Pick-up"], ["transporter", "Transporter"], ["motorrad", "Motorrad"]];
+export const BAUARTEN = [["limousine", "Limousine"], ["kombi", "Kombi"], ["kleinwagen", "Kleinwagen"], ["suv", "SUV"], ["van", "Van"], ["pickup", "Pick-up"], ["transporter", "Transporter"], ["lkw", "LKW"], ["motorrad", "Motorrad"]];
 export const SORTIERUNG = [["benutzt", "Zuletzt benutzt"], ["angelegt", "Zuletzt angelegt"], ["name", "A bis Z"]];
 
 const MAX_KM = 2_000_000;
