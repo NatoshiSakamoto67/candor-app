@@ -173,7 +173,7 @@
 .gauges { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-3); }
 .gauge { padding: 8px 6px 10px; display: grid; justify-items: center; gap: 0; cursor: pointer; color: var(--text); font: inherit; }
 .gauge:hover { background: var(--surface-3); }
-.gauge canvas { width: 100%; max-width: 190px; aspect-ratio: 1 / .82; display: block; }
+.gauge canvas { width: 100%; max-width: 210px; aspect-ratio: 1; display: block; }
 .chan-pick { display: grid; gap: var(--sp-3); margin-bottom: var(--sp-3); }
 .chan-pick > * { min-width: 0; }
 .chan-pick .seg, .report-tools .seg { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
@@ -227,6 +227,15 @@
 .param .sb-l.l1, .param .sb-l.l2 { color: var(--ok); }
 .param .sb-l.l1::before, .param .sb-l.l2::before { content: ""; position: absolute; left: 50%; top: -7px; width: 1px; height: 5px; background: var(--ok); }
 .param .sollbar .mk { transition: left 280ms var(--ease-out); }
+.param .sollbar .ticks { position: absolute; left: 0; right: 0; top: 4px; height: 12px; pointer-events: none; border-right: 1px solid var(--line-strong);
+  background-image: linear-gradient(to right, var(--line-strong) 1px, transparent 1px); background-repeat: repeat-x; }
+.param .sollbar .zero { position: absolute; top: 1px; width: 2px; height: 18px; margin-left: -1px; background: var(--text); }
+.param .sollbar .fill { position: absolute; top: 8px; height: 4px; background: var(--text); border-radius: 1px; transition: left 280ms var(--ease-out), width 280ms var(--ease-out); }
+.param .sollbar .fill.bad { background: var(--warn); }
+.param .sollbar .zero[hidden], .param .sollbar .fill[hidden] { display: none; }
+.param .sollbar .mk.cut-l { width: 0; height: 0; margin-left: -6px; border-radius: 0; background: none; box-shadow: none; border: 7px solid transparent; border-right-color: var(--crit); top: 3px; }
+.param .sollbar .mk.cut { width: 0; height: 0; margin-left: -6px; border-radius: 0; background: none; box-shadow: none; border: 7px solid transparent; border-left-color: var(--crit); top: 3px; }
+.param .sollbar .band { opacity: .35; }
 @media (prefers-reduced-motion: reduce) { .param .sollbar .mk { transition: none; } }
 .param .sollbar .trk, .param .sollbar .band { top: 7px; height: 6px; }
 .param .v b { font-weight: 500; }

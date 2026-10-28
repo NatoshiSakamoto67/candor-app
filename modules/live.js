@@ -9,12 +9,15 @@ export { historyOf } from "./recorder.js";
 const isLiveVisible = () => !$("view-live").hidden;
 
 /* ---------- Rundinstrumente ---------- */
+/* Präzise ablesbar (Recherche 28.10.: FAA AC 25-11B, ISA-101, Few): 270°-Bogen, beschriftete Hauptstriche nach 1-2-5
+   mit Nebenstrichen, Normalbereich neutral hinterlegt und mit Grenzstrichen markiert, Farbe nur bei Abweichung,
+   Min/Max seit Start als kleine Dreiecke. Ziffer mit fester Stellenzahl und Totband gegen Zittern. */
 const GAUGES = [
-  { sig: "DREHZAHL", min: 0, max: 7000, ticks: 7, red: 6000, digits: 0, label: "Drehzahl", scale: 1000 },
-  { sig: "KUEHLMITTEL", min: 40, max: 130, ticks: 9, red: 112, digits: 0, label: "Kühlmittel" },
-  { sig: "SPANNUNG", min: 10, max: 16, ticks: 6, red: 15.2, low: 12, digits: 1, label: "Bordnetz" },
+  { sig: "DREHZAHL", min: 0, max: 8000, major: 1000, minor: 250, red: 6500, digits: 0, round: 10, label: "Drehzahl", factor: 1000, unit: "1/min ×1000" },
+  { sig: "KUEHLMITTEL", min: 40, max: 140, major: 20, minor: 5, red: 115, digits: 0, round: 1, label: "Kühlmittel" },
+  { sig: "SPANNUNG", min: 10, max: 16, major: 1, minor: .2, red: 15.2, low: 12, digits: 2, round: .01, label: "Bordnetz" },
 ];
-/* Nadel: kritisch gedämpfte Feder, 95 % nach etwa 150 ms (motion.md 4.6). Ziffer immer roh. */
+/* Nadel: kritisch gedämpfte Feder, 95 % nach etwa 150 ms (motion.md 4.6). */
 const needles = {};
 const OMEGA = 31.6;
 function springNeedle(sig, target, dt) {
@@ -24,51 +27,73 @@ function springNeedle(sig, target, dt) {
   n.v += a * dt; n.x += n.v * dt;
   return n.x;
 }
+/* Ziffer: auf die Anzeigestufe gerundet, springt erst, wenn der Wert sich um mehr als drei Viertel Stufe bewegt. */
+const shown = {};
+export function steadyDigit(key, raw, step) {
+  const r = Math.round(raw / step) * step;
+  if (shown[key] == null || Math.abs(raw - shown[key]) >= step * .75) shown[key] = r;
+  return shown[key];
+}
+const extremes = {};
 function buildGauges() {
   $("gauges").replaceChildren(...GAUGES.map((g) => h("button", { class: "card gauge", type: "button", "data-info": `signal:${g.sig}`, "aria-label": `${g.label}, Infoblatt` },
-    h("canvas", { id: "g-" + g.sig, width: 380, height: 312, "aria-hidden": "true" }), h("span", { class: "state-lbl" }, g.label))));
+    h("canvas", { id: "g-" + g.sig, width: 380, height: 380, "aria-hidden": "true" }), h("span", { class: "state-lbl" }, g.label))));
 }
 let gaugeDt = 0;
 function drawGauge(g) {
   const canvas = $("g-" + g.sig);
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
-  const W = canvas.width, H = canvas.height, cx = W / 2, cy = H * .55, R = Math.min(W, H * 1.3) * .4;
+  const W = canvas.width, H = canvas.height, cx = W / 2, cy = H * .43, R = Math.min(W, H) * .39;
   const entry = state.live[g.sig];
   /* Liefert das Auto den Wert nicht, steht die Nadel am Anfang und statt einer Zahl ein Strich. */
   const hasValue = Boolean(entry) && typeof entry.wert === "number";
   const target = hasValue ? entry.wert : g.min;
-  /* Nadel glättet, die Ziffer zeigt immer den Rohwert. Bei Reduced Motion springt die Nadel. */
+  if (hasValue) { const e = extremes[g.sig] || (extremes[g.sig] = { lo: target, hi: target }); e.lo = Math.min(e.lo, target); e.hi = Math.max(e.hi, target); }
   const val = springNeedle(g.sig, target, gaugeDt);
   const a0 = Math.PI * .75, a1 = Math.PI * 2.25;
   const ang = (v) => a0 + (Math.min(Math.max(v, g.min), g.max) - g.min) / (g.max - g.min) * (a1 - a0);
+  const at = (a, r) => [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
+  const line = (a, r1, r2) => { const [x1, y1] = at(a, r1), [x2, y2] = at(a, r2); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); };
+  const arcSeg = (from, to, r, w, color) => { ctx.lineWidth = w; ctx.strokeStyle = color; ctx.beginPath(); ctx.arc(cx, cy, r, ang(from), ang(to)); ctx.stroke(); };
+  const text = cssVar("--text"), muted = cssVar("--text-muted"), crit = cssVar("--crit"), warn = cssVar("--warn"), line2 = cssVar("--line-strong");
   ctx.clearRect(0, 0, W, H);
-  ctx.lineCap = "round";
-  const accent = cssVar("--accent"), surface = cssVar("--surface-1");
-  /* Tiefe: leicht gewölbte Scheibe hinter der Skala */
-  const disc = ctx.createRadialGradient(cx, cy - R * .4, R * .1, cx, cy, R * 1.05);
-  disc.addColorStop(0, mixColor(accent, surface, .82, .55)); disc.addColorStop(1, mixColor(accent, surface, .97, 0));
-  ctx.fillStyle = disc; ctx.beginPath(); ctx.arc(cx, cy, R * 1.05, 0, Math.PI * 2); ctx.fill();
-  ctx.lineWidth = 14; ctx.strokeStyle = cssVar("--surface-3"); ctx.beginPath(); ctx.arc(cx, cy, R, a0, a1); ctx.stroke();
-  ctx.strokeStyle = cssVar("--crit"); ctx.beginPath(); ctx.arc(cx, cy, R, ang(g.red), a1); ctx.stroke();
-  if (g.low) { ctx.strokeStyle = cssVar("--warn"); ctx.beginPath(); ctx.arc(cx, cy, R, a0, ang(g.low)); ctx.stroke(); }
+  ctx.lineCap = "butt";
   const soll = sollFor(g.sig);
-  if (soll) { ctx.lineWidth = 4; ctx.strokeStyle = cssVar("--ok"); ctx.beginPath(); ctx.arc(cx, cy, R + 12, ang(soll.soll_min), ang(soll.soll_max)); ctx.stroke(); ctx.lineWidth = 14; }
-  /* Wertbogen in der Akzentfarbe mit Verlauf und Leuchten */
-  const arc = ctx.createLinearGradient(cx - R, cy + R, cx + R, cy - R);
-  arc.addColorStop(0, mixColor(accent, surface, .45)); arc.addColorStop(1, accent);
-  ctx.save(); ctx.shadowColor = mixColor(accent, null, 0, .6); ctx.shadowBlur = reducedMotion() ? 0 : 18;
-  ctx.strokeStyle = arc; ctx.beginPath(); ctx.arc(cx, cy, R, a0, ang(val)); ctx.stroke(); ctx.restore();
-  ctx.fillStyle = cssVar("--text-muted"); ctx.font = `500 ${Math.round(R * .17)}px ${cssVar("--font-num")}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  for (let i = 0; i <= g.ticks; i++) {
-    const v = g.min + (g.max - g.min) * i / g.ticks, a = ang(v);
-    ctx.fillText(num(g.scale ? v / g.scale : v, 0), cx + Math.cos(a) * (R - 30), cy + Math.sin(a) * (R - 30));
+  const outside = hasValue && ((soll && (target < soll.soll_min || target > soll.soll_max)) || target >= g.red || (g.low && target < g.low));
+  const alarm = hasValue && (target >= g.red || (g.low && target < g.low));
+  /* Grundbogen, Normalbereich als helle Fläche innen, Warn- und Rotzonen dünn außen */
+  arcSeg(g.min, g.max, R, 2, line2);
+  if (soll) arcSeg(soll.soll_min, soll.soll_max, R - 9, 16, mixColor(text, null, 0, .13));
+  arcSeg(g.red, g.max, R + 5, 5, crit);
+  if (g.low) arcSeg(g.min, g.low, R + 5, 5, warn);
+  /* Teilung: Nebenstriche fein, Hauptstriche länger mit Zahl */
+  ctx.strokeStyle = muted;
+  const n = Math.round((g.max - g.min) / g.minor);
+  for (let i = 0; i <= n; i++) {
+    const v = g.min + i * g.minor, isMajor = Math.abs(((v - g.min) / g.major) - Math.round((v - g.min) / g.major)) < 1e-6;
+    ctx.lineWidth = isMajor ? 3 : 1.5; ctx.strokeStyle = isMajor ? text : muted;
+    line(ang(v), R, R - (isMajor ? 18 : 9));
   }
-  ctx.strokeStyle = cssVar("--text"); ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(ang(val)) * (R - 46), cy + Math.sin(ang(val)) * (R - 46)); ctx.stroke();
-  ctx.fillStyle = cssVar("--text"); ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = cssVar("--text"); ctx.font = `600 ${Math.round(R * .3)}px ${cssVar("--font-num")}`; ctx.fillText(hasValue ? num(target, g.digits) : "–", cx, cy + R * .6);
-  ctx.font = `500 ${Math.round(R * .15)}px ${cssVar("--font-text")}`; ctx.fillStyle = cssVar("--text-muted");
-  ctx.fillText(hasValue ? entry.einheit || "" : "nicht gemeldet", cx, cy + R * .84);
+  ctx.fillStyle = text; ctx.font = `600 ${Math.round(R * .2)}px ${cssVar("--font-num")}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  for (let v = g.min; v <= g.max + 1e-9; v += g.major) { const [x, y] = at(ang(v), R - 40); ctx.fillText(num(g.factor ? v / g.factor : v, 0), x, y); }
+  /* Sollgrenzen: kräftige Querstriche über den Bogen */
+  if (soll) { ctx.strokeStyle = cssVar("--ok"); ctx.lineWidth = 4; line(ang(soll.soll_min), R + 9, R - 20); line(ang(soll.soll_max), R + 9, R - 20); }
+  /* Min/Max seit Start: hohle Dreiecke außen */
+  const ex = extremes[g.sig];
+  if (ex) for (const v of [ex.lo, ex.hi]) {
+    const a = ang(v), [px, py] = at(a, R + 12), [lx, ly] = at(a - .045, R + 24), [rx, ry] = at(a + .045, R + 24);
+    ctx.strokeStyle = muted; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(lx, ly); ctx.lineTo(rx, ry); ctx.closePath(); ctx.stroke();
+  }
+  /* Zeiger schmal, endet vor den Zahlen; Farbe nur bei Abweichung */
+  const needle = alarm ? crit : outside ? warn : text;
+  ctx.lineCap = "round"; ctx.strokeStyle = needle; ctx.lineWidth = 4; line(ang(val), 0, R - 22);
+  ctx.fillStyle = needle; ctx.beginPath(); ctx.arc(cx, cy, 8, 0, Math.PI * 2); ctx.fill();
+  const shownVal = hasValue ? steadyDigit(g.sig, target, g.round) : null;
+  ctx.fillStyle = alarm ? crit : outside ? warn : text; ctx.font = `600 ${Math.round(R * .4)}px ${cssVar("--font-num")}`;
+  ctx.fillText(hasValue ? numFix(shownVal, g.digits) : "–", cx, cy + R * .98);
+  ctx.font = `500 ${Math.round(R * .19)}px ${cssVar("--font-text")}`; ctx.fillStyle = muted;
+  ctx.fillText(hasValue ? (g.unit || entry.einheit || "") : "nicht gemeldet", cx, cy + R * 1.3);
 }
 
 /* ---------- Kanäle und Diagramme ---------- */
@@ -289,8 +314,12 @@ function renderRecBar() {
 /* ---------- Alle Messwerte ---------- */
 /* Ruhig statt neu: Zeilen entstehen einmal je Signal und werden danach nur noch beschriftet. Neu sortiert wird nur,
    wenn ein Wert die Gruppe wechselt, und das erst nach zwei Messungen in Folge (kein Springen an der Grenze). */
-const DIGITS = { "1/min": 0, "°C": 0, kPa: 0, "km/h": 0, s: 0, km: 0, "%": 1, "g/s": 1, "°": 1, "l/h": 1, V: 2, "λ": 3 };
+/* Stellen nach Auflösung laut SAE J1979 (Recherche 28.10.): Prozent ganzzahlig, Spannung zwei, Lambda drei Stellen. */
+const DIGITS = { "1/min": 0, "°C": 0, kPa: 0, "km/h": 0, s: 0, km: 0, "%": 0, "g/s": 1, "°": 1, "l/h": 1, V: 2, "λ": 3 };
 export const digitsFor = (unit) => DIGITS[unit] ?? 2;
+/* Gemischkorrektur: Abweichung um null, feste Skala −25 bis +25 %, Teilung 5 %, Vorzeichen immer sichtbar. */
+const isTrim = (sig) => /^TRIM_/.test(sig);
+const signed = (x, dg) => (x > 0 ? "+" : x < 0 ? "−" : "±") + numFix(Math.abs(x), dg);
 const rows = new Map();
 const shownBad = new Map();
 let layoutKey = "";
@@ -304,6 +333,7 @@ function settledBad(sig, raw) {
 const scales = new Map();
 function niceStep(span) { const p = 10 ** Math.floor(Math.log10(span)), f = span / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; }
 export function scaleFor(sig, soll, wert) {
+  if (isTrim(sig)) return { a: -25, b: 25, step: 5, min: soll.soll_min, max: soll.soll_max };
   const lo = Math.min(soll.soll_min, wert), hi = Math.max(soll.soll_max, wert);
   const old = scales.get(sig);
   if (old && old.a <= lo && old.b >= hi && old.min === soll.soll_min && old.max === soll.soll_max) return old;
@@ -311,15 +341,16 @@ export function scaleFor(sig, soll, wert) {
   const step = niceStep(Math.max(hi - lo, band * 2) / 4);
   const a = Math.min(old && old.min === soll.soll_min ? old.a : Infinity, Math.floor(Math.min(lo, soll.soll_min - band * .5) / step) * step);
   const b = Math.max(old && old.max === soll.soll_max ? old.b : -Infinity, Math.ceil(Math.max(hi, soll.soll_max + band * .5) / step) * step);
-  const next = { a, b, min: soll.soll_min, max: soll.soll_max };
+  const next = { a, b, step, min: soll.soll_min, max: soll.soll_max };
   scales.set(sig, next);
   return next;
 }
 function paramRow(sig) {
   const r = { mark: h("span"), t: h("div", { class: "t" }), d: h("div", { class: "d" }), val: h("b"), unit: h("small"),
     bar: h("span", { class: "sollbar", "aria-hidden": "true" }), band: h("span", { class: "band" }), mk: h("span", { class: "mk" }),
+    ticks: h("span", { class: "ticks" }), fill: h("span", { class: "fill" }), zero: h("span", { class: "zero" }),
     labs: [0, 1, 2, 3].map((i) => h("span", { class: `sb-l l${i}` })) };
-  r.bar.append(h("span", { class: "trk" }), r.band, ...r.labs, r.mk);
+  r.bar.append(h("span", { class: "trk" }), r.band, r.ticks, r.zero, r.fill, ...r.labs, r.mk);
   r.el = h("button", { class: "tap param", type: "button", "data-info": `signal:${sig}` }, r.mark, h("span", {}, r.t, r.d), h("span", { class: "v" }, r.val, r.unit), chev(), r.bar);
   return r;
 }
@@ -329,15 +360,22 @@ function fillRow(r, sig, v, soll, bad) {
   if (r.isBad !== bad) { r.mark.replaceWith(r.mark = bad ? mark("warn") : h("span")); r.isBad = bad; }
   r.t.textContent = meta ? meta.titel : sig;
   r.d.textContent = v.warnung || (soll ? `Soll ${numFix(soll.soll_min, dg)} bis ${numFix(soll.soll_max, dg)} ${v.einheit} (${soll.art === "hersteller" ? "Herstellerwert" : "Richtwert"})` : meta ? meta.kurz : "");
-  r.val.textContent = numFix(v.wert, dg); r.unit.textContent = v.einheit || "";
+  const trim = isTrim(sig), step = 10 ** -dg;
+  const shownVal = steadyDigit(`p:${sig}`, v.wert, step);
+  r.val.textContent = trim ? signed(shownVal, dg) : numFix(shownVal, dg); r.unit.textContent = v.einheit || "";
   r.bar.hidden = !soll;
   if (!soll) return;
   const sc = scaleFor(sig, soll, v.wert), pct = (x) => ((x - sc.a) / (sc.b - sc.a)) * 100;
   r.band.style.left = `${pct(soll.soll_min)}%`; r.band.style.width = `${pct(soll.soll_max) - pct(soll.soll_min)}%`;
-  r.mk.style.left = `${pct(v.wert)}%`; r.mk.classList.toggle("ok", !bad);
+  const clamped = Math.min(Math.max(v.wert, sc.a), sc.b);
+  r.mk.style.left = `${pct(clamped)}%`; r.mk.classList.toggle("ok", !bad); r.mk.classList.toggle("cut", clamped < v.wert); r.mk.classList.toggle("cut-l", clamped > v.wert);
+  /* Teilstriche im Skalenschritt (Skala beginnt auf einem Vielfachen, die Striche sitzen also auf runden Werten) */
+  r.ticks.style.backgroundSize = `${(sc.step / (sc.b - sc.a)) * 100}% 100%`;
+  r.zero.hidden = !trim; r.fill.hidden = !trim;
+  if (trim) { r.zero.style.left = `${pct(0)}%`; r.fill.style.left = `${Math.min(pct(0), pct(clamped))}%`; r.fill.style.width = `${Math.abs(pct(clamped) - pct(0))}%`; r.fill.classList.toggle("bad", bad); }
   /* Beschriftung: Skalenenden außen, Sollgrenzen unter den Bandkanten */
   [[sc.a, 0], [soll.soll_min, pct(soll.soll_min)], [soll.soll_max, pct(soll.soll_max)], [sc.b, 100]].forEach(([x, at], i) => {
-    r.labs[i].textContent = num(x, dg); r.labs[i].style.left = `${at}%`; });
+    r.labs[i].textContent = isTrim(sig) ? signed(x, 0) : num(x, dg); r.labs[i].style.left = `${at}%`; });
 }
 export function renderParams() {
   const list = Object.entries(state.live).filter(([, v]) => v.wert != null);
