@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- KFZ-Diagnose Bus-Ansicht, Schema. Gateway in der Mitte, Segmente links und rechts.
+     Segment-Zuordnung der Simulator-Geräte ist angenommen, nicht ausgelesen.
+     Farben nur über CSS-Variablen der App (tokens.css). Gruppen: #gateway, #seg-antrieb-can, #seg-flexray,
+     #seg-diagnose-can, #seg-k-line, #seg-komfort-can, #seg-lin, #seg-ethernet-doip, #legende. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" width="1200" height="680" role="img" aria-label="Bus-Ansicht mit Gateway und Segmenten">
+<style>
+  text{font-family:'Barlow Semi Condensed','Barlow',sans-serif;fill:var(--text,#10161D)}
+  .seg-name{font-size:17px;font-weight:600}
+  .proto{font-family:'IBM Plex Mono',monospace;font-size:12px;fill:var(--muted,#4B5765)}
+  .proto.bekannt{fill:var(--text,#10161D)}
+  .wire{stroke:var(--line-strong,#77828F);stroke-width:3;fill:none;stroke-linecap:round}
+  .wire.fehler{stroke:var(--warn,#7F5100);stroke-width:6;stroke-dasharray:6 4}
+  .wire.fehlt{stroke-dasharray:2 6}
+  .stub{stroke:var(--line-strong,#77828F);stroke-width:2}
+  .stub.stumm{stroke-dasharray:4 3;stroke:var(--warn,#7F5100)}
+  .node rect{fill:var(--s1,#FFFFFF);stroke:var(--line,#D3D9E0);stroke-width:1}
+  .node.stumm rect{stroke:var(--warn,#7F5100);stroke-dasharray:4 3}
+  .node.leer rect{fill:none;stroke-dasharray:4 3}
+  .node .nm{font-size:15px;font-weight:600}
+  .node .ad{font-family:'IBM Plex Mono',monospace;font-size:12px;fill:var(--muted,#4B5765)}
+  .port{fill:var(--s1,#FFFFFF);stroke:var(--line-strong,#77828F);stroke-width:2}
+  .gw rect{fill:var(--s1,#FFFFFF);stroke:var(--text,#10161D);stroke-width:2}
+  .z-ok{fill:none;stroke:var(--ok,#0E6B3F);stroke-width:1.75}
+  .z-crit{fill:none;stroke:var(--crit,#AE2424);stroke-width:1.75}
+  .z-warn{fill:none;stroke:var(--warn,#7F5100);stroke-width:1.75}
+  .z-aus{fill:none;stroke:var(--neutral,#5A6673);stroke-width:2;stroke-dasharray:.1 4.25;stroke-linecap:round}
+  .z-mark{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .uc{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;fill:var(--warn,#7F5100)}
+</style>
+<g id="gateway" class="gw">
+  <rect x="510" y="60" width="180" height="520" rx="18"/>
+  <circle class="z-crit" cx="600" cy="250" r="16"/><path class="z-mark" style="stroke:var(--crit,#AE2424)" d="M592 242l16 16M608 242l-16 16"/>
+  <text x="600" y="300" text-anchor="middle" style="font-size:26px;font-weight:600">Gateway</text>
+  <text x="600" y="322" text-anchor="middle" class="proto">0x710 · 1 Fehler</text>
+  <text x="600" y="342" text-anchor="middle" class="proto">B1A42, keine Quelle</text>
+</g>
+<g id="seg-antrieb-can">
+  <text x="490" y="74" text-anchor="end" class="seg-name">Antriebs-CAN</text>
+  <text x="300" y="74" text-anchor="end" class="uc">U0100</text>
+  <text x="490" y="92" text-anchor="end" class="proto">nicht bekannt</text>
+  <path class="wire fehler" d="M40 110H504"/><circle class="port" cx="510" cy="110" r="6"/>
+  <path class="stub" d="M140 110v24 M260 110v24"/><path class="stub stumm" d="M380 110v24"/>
+  <g class="node"><rect x="80" y="134" width="120" height="52" rx="12"/><text class="nm" x="96" y="157">Motor</text><text class="ad" x="96" y="174">0x7E0 · 3 Fehler</text></g>
+  <g class="node"><rect x="210" y="134" width="110" height="52" rx="12"/><text class="nm" x="226" y="157">Getriebe</text><text class="ad" x="226" y="174">0x7E1 · ok</text></g>
+  <g class="node stumm"><rect x="330" y="134" width="110" height="52" rx="12"/><text class="nm" x="346" y="157">Airbag</text><text class="ad" x="346" y="174">0x7D2 · stumm</text></g>
+</g>
+<g id="seg-flexray">
+  <text x="490" y="224" text-anchor="end" class="seg-name">FlexRay</text>
+  <text x="380" y="224" text-anchor="end" class="uc">U0121</text>
+  <text x="490" y="242" text-anchor="end" class="proto">nicht bekannt</text>
+  <path class="wire fehler" d="M40 260H504"/><circle class="port" cx="510" cy="260" r="6"/>
+  <path class="stub" d="M200 260v24 M340 260v24"/>
+  <g class="node"><rect x="130" y="284" width="140" height="52" rx="12"/><text class="nm" x="146" y="307">Servolenkung</text><text class="ad" x="146" y="324">0x730 · 1 Fehler</text></g>
+  <g class="node"><rect x="290" y="284" width="110" height="52" rx="12"/><text class="nm" x="306" y="307">ABS</text><text class="ad" x="306" y="324">0x7B0 · 1 Fehler</text></g>
+</g>
+<g id="seg-diagnose-can">
+  <text x="490" y="374" text-anchor="end" class="seg-name">Diagnose-CAN</text>
+  <text x="490" y="392" text-anchor="end" class="proto bekannt">CAN 11 Bit · 500 kbit/s</text>
+  <path class="wire" d="M40 410H504"/><circle class="port" cx="510" cy="410" r="6"/>
+  <path class="stub" d="M380 410v24"/>
+  <g class="node"><rect x="300" y="434" width="170" height="52" rx="12"/><text class="nm" x="316" y="457">Diagnosebuchse</text><text class="ad" x="316" y="474">OBD · ELM327/STN</text></g>
+</g>
+<g id="seg-k-line">
+  <text x="490" y="524" text-anchor="end" class="seg-name">K-Line</text>
+  <text x="490" y="542" text-anchor="end" class="proto">nur ältere Autos · nicht gefunden</text>
+  <path class="wire fehlt" d="M40 560H504"/><circle class="port" cx="510" cy="560" r="6"/>
+</g>
+<g id="seg-komfort-can">
+  <text x="710" y="74" class="seg-name">Komfort-CAN</text>
+  <text x="710" y="92" class="proto">nicht bekannt</text>
+  <path class="wire" d="M696 110H1160"/><circle class="port" cx="690" cy="110" r="6"/>
+  <path class="stub" d="M770 110v24 M890 110v24 M1010 110v24 M1120 110v24"/>
+  <g class="node"><rect x="715" y="134" width="110" height="52" rx="12"/><text class="nm" x="731" y="157">Kombi</text><text class="ad" x="731" y="174">0x720 · ok</text></g>
+  <g class="node"><rect x="835" y="134" width="110" height="52" rx="12"/><text class="nm" x="851" y="157">Karosserie</text><text class="ad" x="851" y="174">0x740 · ok</text></g>
+  <g class="node"><rect x="955" y="134" width="110" height="52" rx="12"/><text class="nm" x="971" y="157">Klima</text><text class="ad" x="971" y="174">0x746 · ok</text></g>
+  <g class="node"><rect x="1075" y="134" width="110" height="52" rx="12"/><text class="nm" x="1091" y="157">Parkhilfe</text><text class="ad" x="1091" y="174">0x76E · ok</text></g>
+</g>
+<g id="seg-lin">
+  <text x="900" y="224" class="seg-name">LIN unter Klimaanlage</text>
+  <text x="900" y="242" class="proto">nicht bekannt · Teilnehmer nicht auslesbar</text>
+  <path class="stub" d="M1010 186V260"/><path class="wire" style="stroke-width:2" d="M900 260H1160"/>
+  <g class="node leer"><rect x="960" y="284" width="170" height="52" rx="12"/><text class="nm" x="976" y="307">[LIN-Teilnehmer]</text><text class="ad" x="976" y="324">über 0x746</text></g>
+</g>
+<g id="seg-ethernet-doip">
+  <text x="710" y="374" class="seg-name">Ethernet/DoIP</text>
+  <text x="710" y="392" class="proto">nicht bekannt</text>
+  <path class="wire" d="M696 410H1160"/><circle class="port" cx="690" cy="410" r="6"/>
+  <path class="stub" d="M790 410v24"/>
+  <g class="node"><rect x="715" y="434" width="140" height="52" rx="12"/><text class="nm" x="731" y="457">Infotainment</text><text class="ad" x="731" y="474">0x772 · ok</text></g>
+</g>
+<g id="legende">
+  <text x="710" y="530" class="proto">Segment-Zuordnung angenommen, nicht ausgelesen.</text>
+  <path class="wire" d="M710 560h60"/><text x="780" y="564" class="proto">Bus</text>
+  <path class="wire fehler" d="M830 560h60"/><text x="900" y="564" class="proto">U-Code</text>
+  <path class="stub stumm" d="M980 548v24"/><text x="992" y="564" class="proto">stumm</text>
+  <path class="wire fehlt" d="M1060 560h60"/><text x="1128" y="564" class="proto">fehlt</text>
+</g>
+</svg>

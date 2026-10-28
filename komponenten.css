@@ -1,0 +1,257 @@
+/* KFZ-Diagnose Designsystem 1.0, komponenten.css
+   Setzt tokens.css voraus. Nutzt ausschließlich Tokens, keine freien Farbwerte
+   (Ausnahme: Scrim mit Schwarz-Deckung).
+   Schalter am <html>: data-accent, data-theme, data-contrast, data-touch.
+   Zustände zum Vorführen (Board-Mock-ups) über Klassen is-hover, is-focus, is-press, is-open, is-busy;
+   im Produkt kommen sie aus :hover, :focus-visible, :active, aria-expanded, aria-busy. */
+
+/* Grundlage: Seite und Thema */
+body{margin:0;background:var(--surface-0);color:var(--text);font-family:var(--font-text);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+
+/* Typografie: Eyebrow, Titel, Text, Zahlen */
+.eyebrow{font:600 var(--t-2)/var(--t-2-lh) var(--font-display);letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin:0}
+.h1{font:600 var(--t-7)/var(--t-7-lh) var(--font-display);margin:0;letter-spacing:-.005em}
+.h2{font:600 var(--t-6)/var(--t-6-lh) var(--font-display);margin:0}
+.h3{font:600 var(--t-5)/var(--t-5-lh) var(--font-display);margin:0}
+.p{font:400 var(--t-4)/var(--t-4-lh) var(--font-text);margin:0}
+.ui{font:500 var(--t-3)/var(--t-3-lh) var(--font-text)}
+.sm{font:500 var(--t-2)/var(--t-2-lh) var(--font-text);color:var(--text-muted)}
+.mono{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+.num{font-family:var(--font-num);font-variant-numeric:tabular-nums;font-weight:500}
+.unit{color:var(--text-muted);font-size:.6em;margin-left:.2em}
+.state-lbl{font:600 var(--t-1)/var(--t-1-lh) var(--font-display);letter-spacing:var(--tracking-caps);text-transform:uppercase;color:var(--text-muted)}
+.ph{color:var(--text-muted);font-style:normal;background:var(--surface-3);border-radius:4px;padding:0 4px}
+
+/* Flächen: Karte, eingelassene Fläche, Trennlinie */
+.card{background:var(--surface-1);border:1px solid var(--line);border-radius:var(--r-2);box-shadow:var(--sh1),var(--edge)}
+.well{background:var(--surface-2);border-radius:var(--r-2)}
+.hr{height:1px;background:var(--line);border:0;margin:0}
+
+/* Icon aus icons.svg */
+.ic{fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* Zustandszeichen: Form, Zeichen, Varianten (siehe icons.svg z-*) */
+.g-shape{fill:currentColor;fill-opacity:.15;stroke:currentColor;stroke-width:1.75;stroke-linejoin:round}
+[data-contrast="hoch"] .g-shape{fill-opacity:0}
+.g-mark{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.g-dash{fill:none;stroke:currentColor;stroke-width:2;stroke-dasharray:.1 4.25;stroke-linecap:round}
+.g-solid{fill:currentColor;stroke:none}
+.g-faint{fill:none;stroke:currentColor;stroke-width:1.5;opacity:.45}
+.g-none{display:none}
+.g-num{font:700 11px/1 var(--font-num);fill:currentColor;text-anchor:middle}
+.gl{display:inline-flex;flex:none}
+
+/* Statuschip: eckig, Fläche, Großschrift, nicht klickbar */
+.cs{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:var(--r-1);font:600 var(--t-1)/var(--t-1-lh) var(--font-display);letter-spacing:var(--tracking-caps);text-transform:uppercase;white-space:nowrap;box-sizing:border-box}
+[data-contrast="hoch"] .cs{box-shadow:inset 0 0 0 1px currentColor}
+
+/* Sprungchip: Pille mit Rahmen und Pfeil, öffnet ein Infoblatt */
+.cj{position:relative;display:inline-flex;align-items:center;gap:6px;height:var(--chip);padding:0 10px 0 12px;border-radius:var(--r-pill);border:1px solid var(--line-strong);background:var(--surface-1);color:var(--text);font:500 var(--t-3)/20px var(--font-text);cursor:pointer;white-space:nowrap;box-sizing:border-box;transition:background-color var(--dur-fast) var(--ease-out),transform var(--dur-fast) var(--ease-out)}
+.cj::after{content:'';position:absolute;left:-4px;right:-4px;top:calc((var(--chip) - var(--tgt))/2);bottom:calc((var(--chip) - var(--tgt))/2)}
+.cj .go{color:var(--accent)}
+.cj:hover,.cj.is-hover{background:var(--surface-3)}
+.cj:active,.cj.is-press{transform:translateY(1px)}
+.cj:disabled{border-style:dashed;color:var(--text-muted);cursor:not-allowed;background:transparent}
+.cj:disabled .go{color:var(--text-muted)}
+
+/* Aktionschip: Pille in Akzent mit Verb-Icon, löst etwas aus (nie Schreiben ins Auto) */
+.ca{position:relative;display:inline-flex;align-items:center;gap:6px;height:var(--chip);padding:0 14px 0 10px;border-radius:var(--r-pill);border:0;background:var(--accent);color:var(--on-accent);font:600 var(--t-3)/20px var(--font-text);cursor:pointer;white-space:nowrap;transition:filter var(--dur-fast) var(--ease-out),transform var(--dur-fast) var(--ease-out)}
+.ca:hover,.ca.is-hover{filter:brightness(1.12)}
+.ca:active,.ca.is-press{transform:translateY(1px)}
+.ca:disabled{background:var(--surface-3);color:var(--text-muted);cursor:not-allowed}
+.ca.is-busy,.ca[aria-busy="true"]{background:var(--running-bg);color:var(--running);box-shadow:inset 0 0 0 1px var(--running)}
+
+/* InfoButton: genau ein Info-Zeichen, Größe je Dichte, immer klickbar */
+.ib{position:relative;display:inline-grid;place-items:center;width:var(--tgt);height:var(--tgt);margin:0;padding:0;border:0;background:transparent;color:var(--text-muted);cursor:pointer;border-radius:var(--r-pill);flex:none}
+.ib .dot{width:var(--info-size);height:var(--info-size);border-radius:var(--r-pill);border:1.5px solid currentColor;display:grid;place-items:center;box-sizing:border-box;transition:background-color var(--dur-fast) var(--ease-out),transform var(--dur-fast) var(--ease-out)}
+.ib .dot svg{width:70%;height:70%}
+.ib:hover,.ib.is-hover{color:var(--text)}
+.ib:hover .dot,.ib.is-hover .dot{background:var(--surface-3)}
+.ib:focus-visible{outline:none}
+.ib:focus-visible .dot,.ib.is-focus .dot{box-shadow:0 0 0 2px var(--surface-1),0 0 0 4px var(--accent)}
+.ib:active .dot,.ib.is-press .dot{transform:scale(.92)}
+.ib.is-open,.ib[aria-expanded="true"]{color:var(--accent)}
+.ib.is-open .dot,.ib[aria-expanded="true"] .dot{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.i-mark{fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
+
+/* Erklärlink: Text in Akzent, gepunktet unterstrichen, eigene Form neben InfoButton */
+.xl{display:inline-flex;align-items:center;gap:6px;padding:0;border:0;background:none;color:var(--accent);font:500 var(--t-3)/20px var(--font-text);cursor:pointer;min-height:var(--tgt)}
+.xl span{text-decoration:underline dotted;text-underline-offset:4px;text-decoration-thickness:1.5px}
+
+/* Knopf: Primär, Sekundär, Ruhig, Gefahr; Fortschritt im Knopf statt Spinner */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:var(--ctl);padding:0 16px;border-radius:var(--r-1);border:1px solid transparent;font:600 var(--fs-ctl)/20px var(--font-text);cursor:pointer;white-space:nowrap;box-sizing:border-box;overflow:hidden;text-decoration:none;transition:background-color var(--dur-fast) var(--ease-out),transform var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out)}
+[data-touch="glove"] .btn{border-radius:var(--r-2);padding:0 22px}
+.btn::after{content:'';position:absolute;left:0;right:0;top:calc((var(--ctl) - var(--tgt))/2);bottom:calc((var(--ctl) - var(--tgt))/2)}
+.pri{background:var(--accent);color:var(--on-accent)}
+.sec{background:var(--surface-1);color:var(--text);border-color:var(--line-strong)}
+.sec:hover,.sec.is-hover{background:var(--surface-3)}
+.qt{background:transparent;color:var(--accent)}
+.qt:hover,.qt.is-hover{background:var(--surface-3)}
+.dng{background:var(--surface-1);color:var(--crit);border-color:var(--crit)}
+.dng:hover,.dng.is-hover{background:var(--crit-bg)}
+.btn:active,.btn.is-press{transform:translateY(1px)}
+.btn:disabled{background:var(--surface-3);color:var(--text-muted);border-color:transparent;cursor:not-allowed}
+.btn .fill{position:absolute;left:0;top:0;bottom:0;background:currentColor;opacity:.16;pointer-events:none}
+.btn .lbl{position:relative;display:inline-flex;align-items:center;gap:8px}
+.big-btn{height:60px;font-size:var(--t-5);border-radius:var(--r-2);flex:1 1 0}
+
+/* Fokusring: 2 px Abstand plus 2 px Akzent, in jedem Thema sichtbar */
+.is-focus,.btn:focus-visible,.cj:focus-visible,.ca:focus-visible{outline:none;box-shadow:0 0 0 2px var(--surface-1),0 0 0 4px var(--accent)}
+
+/* Icon-Knopf: quadratisch, Zielfläche = Dichte */
+.icb{position:relative;display:inline-grid;place-items:center;width:var(--ctl);height:var(--ctl);border-radius:var(--r-1);border:0;background:transparent;color:var(--text);cursor:pointer;flex:none}
+
+/* Formularfeld: Beschriftung oben, Hinweis unten, Werte in Mono */
+.fld{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fld .lab{font:500 var(--t-2)/var(--t-2-lh) var(--font-text);color:var(--text-muted)}
+.inp{height:var(--ctl);border:1px solid var(--line-strong);border-radius:var(--r-1);background:var(--surface-2);color:var(--text);padding:0 12px;font:500 var(--fs-ctl)/20px var(--font-num);box-sizing:border-box;width:100%;min-width:0}
+.inp::placeholder{color:var(--text-muted)}
+.inp:focus,.inp.is-focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--surface-1),0 0 0 5px var(--accent)}
+.inp.is-err,.inp[aria-invalid="true"]{border-color:var(--crit);border-width:2px}
+.inp:disabled{border-style:dashed;color:var(--text-muted);background:transparent}
+
+/* Segment-Umschalter: gleiche Daten, andere Sicht */
+.seg{display:inline-flex;padding:3px;border-radius:9px;background:var(--surface-3);gap:2px}
+.seg button{height:calc(var(--ctl) - 6px);padding:0 14px;border:0;border-radius:var(--r-1);background:transparent;color:var(--text-muted);font:600 var(--t-3)/20px var(--font-text);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.seg button[aria-pressed="true"]{background:var(--surface-1);color:var(--text);box-shadow:var(--sh1),var(--edge)}
+.cnt{font:600 var(--t-1)/1 var(--font-num);padding:3px 6px;border-radius:var(--r-pill);background:var(--surface-2);color:var(--text-muted)}
+.seg button[aria-pressed="true"] .cnt{background:var(--accent);color:var(--on-accent)}
+
+/* Statusleiste: priorisierte Segmente, aria-live polite */
+.sb{display:flex;align-items:center;gap:20px;height:52px;padding:0 16px;background:var(--surface-1);border-bottom:1px solid var(--line);box-sizing:border-box;overflow:hidden}
+.seg-s{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font:500 var(--t-3)/20px var(--font-text)}
+.seg-s .v{font:600 var(--t-4)/20px var(--font-num);font-variant-numeric:tabular-nums}
+.seg-s .l{font:500 var(--t-2)/var(--t-2-lh) var(--font-text);color:var(--text-muted)}
+
+/* Zustandskachel: Zustand aus zwei Metern, InfoButton rechts oben als Geschwister */
+.tile{position:relative;border-radius:var(--r-2);padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;min-height:150px;box-sizing:border-box;border:1px solid var(--line);background:var(--surface-1);box-shadow:var(--sh1),var(--edge)}
+.tile .big{font:500 44px/48px var(--font-num);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+
+/* Zeile: Zeichen, Name, Chip, InfoButton, Chevron */
+.erow{display:flex;align-items:center;gap:12px;min-height:var(--row);padding:4px 8px 4px 16px;border-bottom:1px solid var(--line);box-sizing:border-box}
+.erow:hover,.erow.is-hover{background:var(--surface-3)}
+
+/* Skeleton: Form des kommenden Inhalts, Schimmern 1,2 s, unter Reduced Motion statisch */
+.sk{display:block;border-radius:var(--r-1);background:var(--surface-3)}
+@media (prefers-reduced-motion:no-preference){.sk{animation:sk-shimmer 1.2s ease-in-out infinite}}
+@keyframes sk-shimmer{50%{opacity:.55}}
+
+/* Navigation: Tab-Leiste (unter 600), Rail (600 bis 1199), Seitenleiste (ab 1200) */
+.nav-t{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));background:var(--surface-1);border-top:1px solid var(--line);height:64px}
+.nav-t button,.rail button,.side button{position:relative;border:0;background:transparent;color:var(--text-muted);cursor:pointer;font:600 var(--t-1)/var(--t-1-lh) var(--font-text);display:flex;align-items:center;gap:4px}
+.nav-t button{flex-direction:column;justify-content:center}
+.nav-t button[aria-current="page"],.rail button[aria-current="page"],.side button[aria-current="page"]{color:var(--text)}
+.nav-t button[aria-current="page"] .pill,.rail button[aria-current="page"] .pill{background:var(--surface-3);color:var(--accent)}
+.pill{display:grid;place-items:center;width:56px;height:30px;border-radius:var(--r-pill)}
+.rail{display:flex;flex-direction:column;gap:6px;width:88px;padding:12px 0;background:var(--surface-1);border-right:1px solid var(--line);align-items:center;box-sizing:border-box;flex:none}
+.rail button{flex-direction:column;width:80px;padding:4px 0;min-height:56px;justify-content:center}
+.side{display:flex;flex-direction:column;gap:2px;width:240px;padding:12px;background:var(--surface-1);border-right:1px solid var(--line);box-sizing:border-box;flex:none}
+.side button{height:44px;padding:0 12px;border-radius:var(--r-1);font:500 var(--t-4)/20px var(--font-text);gap:12px;justify-content:flex-start}
+.side button[aria-current="page"]{background:var(--surface-3);font-weight:600}
+.side button[aria-current="page"] .ic{color:var(--accent)}
+
+/* Infoblatt: Blatt von unten (unter 840) oder Panel rechts 380 px (ab 840); Andockpunkte pane, pane-body */
+.sheet{background:var(--surface-1);border:1px solid var(--line);box-shadow:var(--sh2),var(--edge);display:flex;flex-direction:column;box-sizing:border-box}
+.sheet.bottom{position:fixed;left:0;right:0;bottom:0;max-height:88vh;border-radius:var(--r-3) var(--r-3) 0 0;border-bottom:0;padding:0 20px 20px;gap:14px;overflow:auto}
+.grab{width:40px;height:5px;border-radius:var(--r-pill);background:var(--line-strong);margin:8px auto 4px}
+.scrim{background:rgba(0,0,0,.45)}
+[data-contrast="hoch"] .scrim{background:rgba(0,0,0,.7)}
+.pane-s{width:380px;flex:none;border-left:1px solid var(--line);background:var(--surface-1);display:flex;flex-direction:column;gap:14px;padding:16px 20px 24px;box-sizing:border-box;box-shadow:var(--sh2),var(--edge)}
+[data-touch="compact"] .pane-s{width:340px}
+.fact{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.blk{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:var(--r-2);background:var(--surface-2)}
+.blk .eyebrow{font-size:var(--t-1);line-height:var(--t-1-lh)}
+
+/* Sollbalken: Band ok, Marke in Zustandsfarbe; im Druck schraffiert */
+.sollbar{position:relative;height:30px}
+.sollbar .trk{position:absolute;left:0;right:0;top:11px;height:8px;border-radius:var(--r-pill);background:var(--surface-3)}
+.sollbar .band{position:absolute;top:11px;height:8px;background:var(--ok);opacity:.55;border-radius:2px}
+.sollbar .mk{position:absolute;top:4px;width:4px;height:22px;margin-left:-2px;border-radius:2px;background:var(--warn);box-shadow:0 0 0 2px var(--surface-1)}
+@media print{.sollbar .band{opacity:1;background:repeating-linear-gradient(135deg,var(--text) 0 1px,transparent 1px 4px)}}
+
+/* Fortschrittsbalken */
+.bar-t{height:8px;border-radius:var(--r-pill);background:var(--surface-3);position:relative;overflow:hidden}
+.bar-f{position:absolute;left:0;top:0;bottom:0;border-radius:var(--r-pill);background:var(--accent)}
+
+/* Freigabedialog: Frage, Fakten, Abbrechen links, Halte-Knopf rechts; Andockpunkte approval, approval-body */
+.dlg{width:100%;max-width:600px;border-radius:var(--r-3);background:var(--surface-1);border:1px solid var(--line);box-shadow:var(--sh2),var(--edge);display:flex;flex-direction:column;box-sizing:border-box;overflow:hidden}
+.dlg-body{padding:24px 28px;display:flex;flex-direction:column;gap:16px}
+.dlg-foot{display:flex;justify-content:space-between;align-items:center;gap:48px;padding:16px 20px;background:var(--surface-2);border-top:1px solid var(--line)}
+.kv{display:grid;grid-template-columns:132px minmax(0,1fr);gap:0 16px;margin:0}
+.kv dt{font:500 var(--t-2)/var(--t-2-lh) var(--font-text);color:var(--text-muted);padding:9px 0;border-bottom:1px solid var(--line)}
+.kv dd{margin:0;font:500 var(--t-3)/20px var(--font-text);padding:7px 0;border-bottom:1px solid var(--line)}
+
+/* Halte-Knopf: Ring füllt sich linear in 2 s, Rückweg 220 ms */
+.hold{min-width:260px;justify-content:flex-start;padding-left:10px}
+[data-touch="glove"] .hold{min-width:320px}
+.ring-t{fill:none;stroke:currentColor;stroke-width:2.5;opacity:.25}
+.ring-p{fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-dasharray:0 62.83;transition:stroke-dasharray var(--dur-sheet) var(--ease-out)}
+.hold[data-holding="true"] .ring-p{stroke-dasharray:62.83 62.83;transition:stroke-dasharray var(--dur-hold) linear}
+
+/* Diagrammkarte: Sollband, Linie, gemeinsamer Cursor; Druck schraffiert */
+.chart-grid{fill:none;stroke:var(--line);stroke-width:1}
+.chart-band{fill:var(--ok);fill-opacity:.12;stroke:none}
+@media print{.chart-band{fill:url(#hatch-k);fill-opacity:1}}
+.chart-line{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.chart-cursor{fill:none;stroke:var(--text);stroke-width:1;stroke-dasharray:3 3}
+.chart-dot{fill:var(--surface-1);stroke:var(--accent);stroke-width:2}
+.chart-lbl{font:500 10px/1 var(--font-num);fill:var(--text-muted)}
+.dev{display:inline-flex;align-items:center;gap:4px;font:600 13px/16px var(--font-num)}
+.spark{fill:none;stroke:var(--accent);stroke-width:1.75;stroke-linejoin:round;stroke-linecap:round}
+.spark-band{fill:var(--ok);fill-opacity:.14}
+
+/* Kanalwähler: gewählte Kanäle als Reihe, Gruppen als Segment, Kanäle als Liste; Andockpunkt chan-pick */
+.selc{display:inline-flex;align-items:center;gap:4px;height:36px;padding:0 2px 0 12px;border-radius:var(--r-pill);background:var(--surface-3);color:var(--text);font:500 var(--t-3)/20px var(--font-text);white-space:nowrap}
+.selc .x{position:relative;width:32px;height:32px;border-radius:var(--r-pill);border:0;background:transparent;color:var(--text-muted);display:grid;place-items:center;cursor:pointer;padding:0}
+.selc .x::after{content:'';position:absolute;inset:-6px}
+.chan-row{display:flex;align-items:center;gap:12px;width:100%;min-height:var(--row);padding:0 12px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--text);font:500 var(--t-3)/20px var(--font-text);cursor:pointer;text-align:left;box-sizing:border-box}
+.chan-row:hover,.chan-row.is-hover{background:var(--surface-3)}
+.chan-row:disabled{color:var(--text-muted);cursor:not-allowed}
+.chk{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--line-strong);display:grid;place-items:center;flex:none;box-sizing:border-box}
+[data-touch="glove"] .chk{width:28px;height:28px}
+.chan-row[aria-pressed="true"] .chk{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.chan-row[aria-pressed="false"] .chk svg{visibility:hidden}
+.chan-row:disabled .chk{border-style:dashed}
+
+/* Aufnahmeleiste: schwebend unten, Pille; Andockpunkt rec-box */
+.recbar{display:flex;align-items:center;gap:12px;min-height:64px;padding:8px 8px 8px 18px;border-radius:var(--r-pill);background:var(--surface-1);border:1px solid var(--line);box-shadow:var(--sh2),var(--edge);box-sizing:border-box}
+.recbar .btn{border-radius:var(--r-pill)}
+.recbar.run{box-shadow:var(--sh2),var(--edge),inset 0 0 0 1px var(--running)}
+
+/* Zeitleiste (Scrubber): Vorlauf schraffiert, Kopf, Markierungen; Andockpunkt scrub */
+.scrub{position:relative;height:40px}
+.scrub .trk{position:absolute;left:0;right:0;top:16px;height:8px;border-radius:var(--r-pill);background:var(--surface-3)}
+.scrub .pre{position:absolute;left:0;top:16px;height:8px;border-radius:var(--r-pill) 0 0 var(--r-pill);background:repeating-linear-gradient(135deg,var(--line-strong) 0 1px,transparent 1px 5px)}
+.scrub .done{position:absolute;left:0;top:16px;height:8px;border-radius:var(--r-pill);background:var(--accent)}
+.scrub .head{position:absolute;top:8px;width:24px;height:24px;margin-left:-12px;border-radius:var(--r-pill);background:var(--surface-1);border:2px solid var(--accent);box-sizing:border-box;box-shadow:var(--sh1)}
+.scrub .mk{position:absolute;top:2px;width:2px;height:36px;margin-left:-1px;background:var(--text)}
+.scrub .mk span{position:absolute;top:-14px;left:-10px;font:600 10px/12px var(--font-num);color:var(--text)}
+
+/* Schritt-Karte im Fokusmodus: Spur, große Messung, Urteil, große Knöpfe; Andockpunkt pfade */
+.step{display:flex;flex-direction:column;gap:18px;padding:28px;border-radius:var(--r-3);background:var(--surface-1);border:1px solid var(--line);box-shadow:var(--sh2),var(--edge)}
+.trail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px}
+.trail span{height:6px;border-radius:var(--r-pill);background:var(--surface-3)}
+.trail .ok{background:var(--ok)}
+.trail .crit{background:var(--crit)}
+.trail .now{background:transparent;box-shadow:inset 0 0 0 2px var(--accent)}
+.measure{display:flex;flex-direction:column;gap:10px;padding:20px;border-radius:var(--r-2);background:var(--surface-2)}
+.verdict{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r-2);font:600 var(--t-5)/var(--t-5-lh) var(--font-display)}
+
+/* Suchpalette (Strg K): Eingabe, Gruppen, aktive Zeile, Tastaturhinweise; Andockpunkte palette, palette-body */
+.pal{width:100%;max-width:640px;border-radius:var(--r-3);background:var(--surface-1);border:1px solid var(--line);box-shadow:var(--sh2),var(--edge);overflow:hidden;display:flex;flex-direction:column}
+.pal-in{display:flex;align-items:center;gap:10px;height:60px;padding:0 16px;border-bottom:1px solid var(--line)}
+.pal-in input{flex:1 1 auto;border:0;background:transparent;color:var(--text);font:500 var(--t-5)/24px var(--font-text);outline:none;min-width:0}
+.pal-g{padding:8px 8px 4px}
+.pal-g .eyebrow{padding:6px 10px;font-size:var(--t-1)}
+.pal-r{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:0 10px;border:0;border-radius:var(--r-1);background:transparent;color:var(--text);font:500 var(--t-3)/20px var(--font-text);cursor:pointer;text-align:left;box-sizing:border-box}
+.pal-r.act,.pal-r[aria-selected="true"]{background:var(--surface-3);box-shadow:inset 0 0 0 1px var(--line-strong)}
+.pal-r b{font-weight:700;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--accent)}
+.pal-f{display:flex;gap:16px;align-items:center;padding:10px 16px;border-top:1px solid var(--line);background:var(--surface-2)}
+.kbd{font:500 12px/1 var(--font-num);padding:3px 6px;border-radius:4px;background:var(--surface-3);color:var(--text-muted)}
+
+/* Toast: unten, 4 s, aria-live polite; Andockpunkt toast */
+.toast{display:flex;align-items:center;gap:12px;padding:12px 12px 12px 16px;border-radius:var(--r-2);background:var(--surface-3);box-shadow:var(--sh2),var(--edge)}
+
+/* Leerzustand: Zeichen, Titel, ein Satz, genau eine nächste Aktion */
+.empty{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:24px 16px}

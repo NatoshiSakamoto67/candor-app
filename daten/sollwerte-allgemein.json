@@ -1,0 +1,19 @@
+{
+  "beschreibung": "Allgemeine Werkstatt-Richtwerte ohne Herstellerbezug. Grobe Bereiche für betriebswarme Pkw-Ottomotoren mit Saugrohr- oder Direkteinspritzung. Herstellerwerte aus RMI-Daten haben immer Vorrang.",
+  "quelle": "Allgemeiner Richtwert, kein Herstellerwert",
+  "werte": [
+    {"signal": "DREHZAHL", "zustand": "leerlauf_warm", "min": 600, "max": 950, "art": "richtwert", "hinweis": "Leerlaufdrehzahl. Mit Klimaanlage oder Verbrauchern bis etwa 1000 1/min möglich."},
+    {"signal": "KUEHLMITTEL", "zustand": "leerlauf_warm", "min": 80, "max": 105, "art": "richtwert", "hinweis": "Kennfeldthermostat kann im Teillastbereich über 100 °C regeln."},
+    {"signal": "SPANNUNG", "zustand": "leerlauf_warm", "min": 13.2, "max": 14.8, "art": "richtwert", "hinweis": "Ladespannung. Intelligente Lichtmaschinen regeln zeitweise auf 12,5 V herunter."},
+    {"signal": "SPANNUNG", "zustand": "zuendung_an", "min": 12.2, "max": 12.9, "art": "richtwert", "hinweis": "Ruhespannung einer geladenen Batterie unter 12,2 V spricht für Entladung oder Defekt."},
+    {"signal": "TRIM_KURZ_B1", "zustand": "leerlauf_warm", "min": -10, "max": 10, "art": "richtwert", "hinweis": "Pendelt im Regelbetrieb um 0 %."},
+    {"signal": "TRIM_LANG_B1", "zustand": "leerlauf_warm", "min": -10, "max": 10, "art": "richtwert", "hinweis": "Dauerhaft positiv: zu mager (Falschluft, Einspritzung, Kraftstoffdruck). Negativ: zu fett."},
+    {"signal": "TRIM_KURZ_B2", "zustand": "leerlauf_warm", "min": -10, "max": 10, "art": "richtwert"},
+    {"signal": "TRIM_LANG_B2", "zustand": "leerlauf_warm", "min": -10, "max": 10, "art": "richtwert"},
+    {"signal": "LAMBDA_SOLL", "zustand": "leerlauf_warm", "min": 0.98, "max": 1.02, "art": "richtwert", "hinweis": "Im Regelbetrieb λ = 1."},
+    {"signal": "LAST", "zustand": "leerlauf_warm", "min": 15, "max": 35, "art": "richtwert"},
+    {"signal": "KAT_TEMP_B1", "zustand": "leerlauf_warm", "min": 300, "max": 750, "art": "richtwert", "hinweis": "Modellwert des Steuergeräts, kein gemessener Wert."},
+    {"signal": "OELTEMPERATUR", "zustand": "leerlauf_warm", "min": 80, "max": 120, "art": "richtwert"},
+    {"signal": "ZUENDWINKEL", "zustand": "leerlauf_warm", "min": 0, "max": 20, "art": "richtwert"}
+  ]
+}

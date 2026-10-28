@@ -1,0 +1,86 @@
+/* KFZ-Diagnose, motion.css
+   Keyframes und Übergänge für Abläufe (Board 1.8 „Was gerade passiert“).
+   Regeln: nur transform und opacity, einzige Ausnahme stroke-dashoffset am Halte-Ring und Warte-Ring.
+   Alle Dauern kommen aus tokens.css; unter prefers-reduced-motion werden sie dort auf 1 ms gesetzt,
+   die Dauerschleifen (Aufnahme-Punkt, Skeleton) werden hier abgeschaltet. */
+
+:root{
+  --dur-stage:260ms;   /* eine Station füllt sich (Verbinden) */
+  --dur-pulse:600ms;   /* einmaliger Puls (neuer Fehler, aktive Station) */
+  --dur-roll:200ms;    /* Zahlenwechsel in Kacheln */
+  --dur-tick:420ms;    /* Takt-Punkt je neuem Wert */
+  --dur-sweep:30ms;    /* ein Scan-Takt (4 Adressen), Abtastlinie folgt linear */
+  --dur-try:800ms;     /* ein Versuch beim Warten auf ein Steuergerät */
+}
+
+/* 1 Verbinden: Linie zwischen Stationen füllt sich, Station pulsiert einmal */
+.conn i{transform:scaleX(0);transform-origin:left center;transition:transform var(--dur-stage) linear}
+.conn i.on{transform:scaleX(1)}
+.st.active .dot{animation:kfz-pulse-ring var(--dur-pulse) var(--ease-out) 1}
+@keyframes kfz-pulse-ring{0%{box-shadow:0 0 0 0 var(--running-bg)}60%{box-shadow:0 0 0 10px transparent}100%{box-shadow:0 0 0 0 transparent}}
+
+/* 2 Vollscan: Abtastlinie folgt dem Zähler, Knoten blenden ein, neue Fehler pulsieren einmal */
+.sweep{opacity:0;transition:top var(--dur-sweep) linear,opacity var(--dur-fast)}
+.sweep.on{opacity:1}
+.node{opacity:0;transform:translate(-50%,-50%) scale(.6);transition:opacity 180ms var(--ease-out),transform 180ms var(--ease-out)}
+.node.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.node.pulse{animation:kfz-pulse-node var(--dur-pulse) var(--ease-out) 1}
+@keyframes kfz-pulse-node{0%{transform:translate(-50%,-50%) scale(1)}40%{transform:translate(-50%,-50%) scale(1.35)}100%{transform:translate(-50%,-50%) scale(1)}}
+.scanbtn .fill{transform:scaleX(0);transform-origin:left center;transition:transform var(--dur-sweep) linear}
+
+/* 3 Schreiben: Halte-Ring (Ausnahme stroke-dashoffset), Bus-Puls hin und zurück, Ergebnis blendet ein */
+.ring .p{stroke-dasharray:119.4;stroke-dashoffset:119.4;transition:stroke-dashoffset var(--dur-hold) linear}
+.ring .p.on{stroke-dashoffset:0}
+.bus .pkt{opacity:0}
+.bus .pkt.go{animation:kfz-pkt-go var(--dur-pulse) var(--ease-out) 1 forwards}
+.bus .pkt.back{animation:kfz-pkt-back var(--dur-pulse) var(--ease-out) 1 forwards}
+@keyframes kfz-pkt-go{0%{opacity:0;transform:translate(-6px,-50%)}10%{opacity:1}90%{opacity:1}100%{opacity:0;transform:translate(calc(100% - 6px),-50%)}}
+@keyframes kfz-pkt-back{0%{opacity:0;transform:translate(calc(100% - 6px),-50%)}10%{opacity:1}90%{opacity:1}100%{opacity:0;transform:translate(-6px,-50%)}}
+.result{opacity:0;transform:translateY(6px);transition:opacity var(--dur) var(--ease-out),transform var(--dur) var(--ease-out)}
+.result.on{opacity:1;transform:none}
+
+/* 4 Aufnahme: Punkt blinkt im Sekundentakt (erlaubte Dauerschleife), Fortschritt auf der Zeitleiste */
+.recbar .dotr.on{animation:kfz-blink 1s linear infinite}
+@keyframes kfz-blink{0%,100%{opacity:1}50%{opacity:.35}}
+.strip .prog{transform:scaleX(0);transform-origin:left center;transition:transform 1s linear}
+
+/* 5 KI-Bewertung: Skeleton schimmert (erlaubte Dauerschleife), Ursachen blenden gestaffelt ein, Balken wachsen */
+.skel .sk::after{transform:translateX(-100%);animation:kfz-shimmer 1.2s linear infinite}
+@keyframes kfz-shimmer{to{transform:translateX(100%)}}
+.cause{opacity:0;transform:translateY(6px);transition:opacity var(--dur) var(--ease-out),transform var(--dur) var(--ease-out)}
+.cause.on{opacity:1;transform:none}
+.cause .bar i{transform:scaleX(0);transform-origin:left center;transition:transform var(--dur-slow) var(--ease-out)}
+.cause.on .bar i{transform:scaleX(1)}
+/* Staffelung je Zeile: transition-delay = Index × 80 ms, im Markup gesetzt */
+
+/* 6 Daten strömen: Takt-Punkt je Wert (zwei gleiche Keyframes, damit die Animation bei jedem Wert neu startet) */
+.ticker .td.ta{animation:kfz-tick-a var(--dur-tick) var(--ease-out) 1}
+.ticker .td.tb{animation:kfz-tick-b var(--dur-tick) var(--ease-out) 1}
+@keyframes kfz-tick-a{0%{transform:scale(1)}30%{transform:scale(1.6);opacity:.7}100%{transform:scale(1);opacity:1}}
+@keyframes kfz-tick-b{0%{transform:scale(1)}30%{transform:scale(1.6);opacity:.7}100%{transform:scale(1);opacity:1}}
+/* Zahlenwechsel: alte Zahl nach oben hinaus, neue von unten herein, 40 ms versetzt */
+.roll{position:relative;overflow:hidden}
+.roll span{position:absolute;left:0;top:0}
+.roll .old.fa{animation:kfz-roll-out-a var(--dur-roll) var(--ease-out) 1 forwards}
+.roll .old.fb{animation:kfz-roll-out-b var(--dur-roll) var(--ease-out) 1 forwards}
+.roll .new.fa{animation:kfz-roll-in-a var(--dur-roll) var(--ease-out) 1 both;animation-delay:40ms}
+.roll .new.fb{animation:kfz-roll-in-b var(--dur-roll) var(--ease-out) 1 both;animation-delay:40ms}
+@keyframes kfz-roll-out-a{to{transform:translateY(-100%);opacity:0}}
+@keyframes kfz-roll-out-b{to{transform:translateY(-100%);opacity:0}}
+@keyframes kfz-roll-in-a{from{transform:translateY(100%);opacity:0}to{transform:none;opacity:1}}
+@keyframes kfz-roll-in-b{from{transform:translateY(100%);opacity:0}to{transform:none;opacity:1}}
+
+/* 7 Warten: Ring je Versuch (Ausnahme stroke-dashoffset), Striche zählen die Versuche */
+.wring .p{stroke-dasharray:106.8;stroke-dashoffset:106.8;transition:stroke-dashoffset var(--dur-try) linear}
+.wring .p.on{stroke-dashoffset:0}
+
+/* Reduced Motion: Sprung statt Weg, Dauerschleifen aus, Staffelung aus */
+@media (prefers-reduced-motion: reduce){
+  :root{--dur-stage:1ms;--dur-pulse:1ms;--dur-roll:1ms;--dur-tick:1ms;--dur-sweep:1ms;--dur-try:1ms}
+  .sweep,.sweep.on{opacity:0}
+  .recbar .dotr.on{animation:none}
+  .skel .sk::after{animation:none}
+  .ticker .td.ta,.ticker .td.tb{animation:none}
+  .node,.cause,.result,.conn i,.cause .bar i,.strip .prog,.scanbtn .fill,.ring .p,.wring .p{transition-duration:1ms}
+  .cause{transition-delay:0ms!important}
+}

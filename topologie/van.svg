@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- KFZ-Diagnose Topologie-Vorlage: Van. Fahrtrichtung oben, Einheiten 240 x 520 (Fahrzeug) plus 120 Randspalte "unzugeordnet".
+     Farben nur über currentColor und CSS-Variablen der App (tokens.css). Antrieb über data-antrieb-aktiv am svg wählen:
+     verbrenner | hybrid | plugin | elektro. Domänen-Zonen (#zone-antrieb ... #zone-unzugeordnet) sind die Platzierungsflächen für Knoten. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 520" width="360" height="520" data-bauart="van" data-antrieb-aktiv="verbrenner" role="img" aria-label="Van von oben">
+<style>
+  .karosserie path.body{fill:var(--s1,#fff);stroke:currentColor;stroke-width:1.5}
+  .karosserie path.detail{fill:none;stroke:var(--line-strong,#77828F);stroke-width:1;stroke-linecap:round}
+  .karosserie path.spiegel{fill:var(--s2,#F5F7F9);stroke:currentColor;stroke-width:1.25}
+  #glas path{fill:var(--s3,#E3E8ED);stroke:var(--line-strong,#77828F);stroke-width:1;stroke-linejoin:round}
+  #dach{fill:none;stroke:var(--line,#D3D9E0);stroke-width:1}
+  #raeder path{fill:currentColor;opacity:.85}
+  .zone path, .zone rect{fill:none;stroke:var(--line-strong,#77828F);stroke-width:1;stroke-dasharray:3 3}
+  #zone-hv-batterie path{fill:var(--accent,#0369A1);fill-opacity:.08;stroke:var(--accent,#0369A1)}
+  #zone-abgas path{stroke:var(--muted,#4B5765);stroke-width:2;stroke-dasharray:4 3;fill:none}
+  #zone-ladeanschluss path{fill:var(--accent,#0369A1);stroke:none}
+  .domaene rect{fill:var(--accent,#0369A1);fill-opacity:.04;stroke:var(--accent,#0369A1);stroke-opacity:.5;stroke-width:1;stroke-dasharray:2 3}
+  [data-antrieb]{display:none}
+  svg[data-antrieb-aktiv~="verbrenner"] [data-antrieb~="verbrenner"],svg[data-antrieb-aktiv~="hybrid"] [data-antrieb~="hybrid"],svg[data-antrieb-aktiv~="plugin"] [data-antrieb~="plugin"],svg[data-antrieb-aktiv~="elektro"] [data-antrieb~="elektro"]{display:inline}
+</style>
+  <g id="raeder">
+    <path d="M21 71H25Q30 71 30 76V116Q30 121 25 121H21Q16 121 16 116V76Q16 71 21 71ZM215 71H219Q224 71 224 76V116Q224 121 219 121H215Q210 121 210 116V76Q210 71 215 71ZM21 379H25Q30 379 30 384V424Q30 429 25 429H21Q16 429 16 424V384Q16 379 21 379ZM215 379H219Q224 379 224 384V424Q224 429 219 429H215Q210 429 210 424V384Q210 379 215 379Z"/>
+  </g>
+  <g id="karosserie" class="karosserie">
+    <path class="body" d="M151 28C197 28 219 51 219 92.4L219 461.2C219 481 211 492 189 492L51 492C29 492 21 481 21 461.2L21 92.4C21 51 43 28 89 28Z"/>
+    <path class="spiegel" d="M21 72L9 76Q7 84 13 86L21 84Z M219 72L231 76Q233 84 227 86L219 84Z"/>
+    <path class="detail" d="M75.2 37Q120 31 164.8 37 M46.6 484Q120 489 193.4 484 M31 78.6Q47 36 97 34 M209 78.6Q193 36 143 34 M27 465.6Q33 486 57 487 M213 465.6Q207 486 183 487"/>
+  </g>
+  <g id="glas">
+    <path id="dach" d="M35 140Q120 132 205 140L203 470Q120 476 37 470Z"/>
+    <path d="M43 72Q120 58 197 72L205 140Q120 132 35 140Z M37 470Q120 476 203 470L195 484Q120 488 45 484Z M27 144L33 142L35 468L28 464Z M213 144L207 142L205 468L212 464Z"/>
+  </g>
+  <g id="zone-motorraum" class="zone">
+    <path data-antrieb="verbrenner hybrid plugin" d="M43 40H197Q203 40 203 46V56Q203 62 197 62H43Q37 62 37 56V46Q37 40 43 40Z"/>
+    <path data-antrieb="elektro" d="M43 40H197Q203 40 203 46V56Q203 62 197 62H43Q37 62 37 56V46Q37 40 43 40Z"/>
+  </g>
+  <g id="zone-fahrgastraum" class="zone">
+    <path d="M47 144H193Q199 144 199 150V374Q199 380 193 380H47Q41 380 41 374V150Q41 144 47 144Z"/>
+  </g>
+  <g id="zone-laderaum" class="zone">
+    <path d="M45 384H195Q201 384 201 390V472Q201 478 195 478H45Q39 478 39 472V390Q39 384 45 384Z"/>
+  </g>
+  <g id="zone-hv-batterie" class="zone">
+    <path data-antrieb="hybrid" d="M57 308H183Q189 308 189 314V336Q189 342 183 342H57Q51 342 51 336V314Q51 308 57 308Z"/>
+    <path data-antrieb="plugin" d="M53 136H187Q193 136 193 142V332Q193 338 187 338H53Q47 338 47 332V142Q47 136 53 136Z"/>
+    <path data-antrieb="elektro" d="M53 130H187Q193 130 193 136V364Q193 370 187 370H53Q47 370 47 364V136Q47 130 53 130Z"/>
+  </g>
+  <g id="zone-tank" class="zone">
+    <path data-antrieb="verbrenner" d="M49 346H93Q99 346 99 352V376Q99 382 93 382H49Q43 382 43 376V352Q43 346 49 346Z"/>
+    <path data-antrieb="hybrid" d="M49 346H93Q99 346 99 352V376Q99 382 93 382H49Q43 382 43 376V352Q43 346 49 346Z"/>
+    <path data-antrieb="plugin" d="M49 346H93Q99 346 99 352V376Q99 382 93 382H49Q43 382 43 376V352Q43 346 49 346Z"/>
+  </g>
+  <g id="zone-abgas" class="zone">
+    <path data-antrieb="verbrenner" d="M132 58L132 330C132 358 150 364 150 394L150 486 M140 440h22v32h-22Z"/>
+    <path data-antrieb="hybrid" d="M132 58L132 330C132 358 150 364 150 394L150 486 M140 440h22v32h-22Z"/>
+    <path data-antrieb="plugin" d="M132 58L132 330C132 358 150 364 150 394L150 486 M140 440h22v32h-22Z"/>
+  </g>
+  <g id="zone-ladeanschluss" class="zone">
+    <path data-antrieb="plugin" d="M17 134a6 6 0 1 0 12 0a6 6 0 1 0-12 0Z"/>
+    <path data-antrieb="elektro" d="M211 360a6 6 0 1 0 12 0a6 6 0 1 0-12 0Z"/>
+  </g>
+  <g id="domaenen" class="domaene">
+    <rect id="zone-assistenz" x="33" y="34" width="174" height="36" rx="6" data-domaene="assistenz"/>
+    <rect id="zone-antrieb" x="33" y="74" width="93.9" height="72" rx="6" data-domaene="antrieb"/>
+    <rect id="zone-fahrwerk" x="132.9" y="74" width="74.1" height="72" rx="6" data-domaene="fahrwerk"/>
+    <rect id="zone-anzeige" x="33" y="150" width="174" height="56" rx="6" data-domaene="anzeige"/>
+    <rect id="zone-netzwerk" x="33" y="210" width="85" height="54" rx="6" data-domaene="netzwerk"/>
+    <rect id="zone-rueckhalte" x="122" y="210" width="85" height="54" rx="6" data-domaene="rueckhalte"/>
+    <rect id="zone-karosserie" x="33" y="268" width="174" height="214" rx="6" data-domaene="karosserie"/>
+    <rect id="zone-unzugeordnet" x="250" y="28" width="100" height="464" rx="6" data-domaene="unzugeordnet"/>
+  </g>
+</svg>

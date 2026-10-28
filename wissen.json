@@ -1,0 +1,837 @@
+{
+ "hinweis": "Formeln nach SAE J1979 / ISO 15031-5, Modus 01. A, B = erstes und zweites Datenbyte der Antwort. Typische Bereiche sind allgemeine Richtwerte für betriebswarme Pkw-Ottomotoren, keine Herstellerwerte.",
+ "signale": {
+  "DREHZAHL": {
+   "titel": "Motordrehzahl",
+   "pid": "0x0C",
+   "formel": "(256·A + B) / 4",
+   "einheit": "1/min",
+   "kurz": "Umdrehungen der Kurbelwelle pro Minute.",
+   "erklaerung": "Das Motorsteuergerät berechnet sie aus dem Kurbelwellensensor. Grundlage fast aller anderen Bewertungen.",
+   "typisch": "Leerlauf warm 650 bis 900 1/min, kalt bis etwa 1200 1/min.",
+   "zu_hoch": "Leerlauf zu hoch: Falschluft, Drosselklappe verschmutzt oder nicht angelernt, Kaltstartanhebung aktiv, Verbraucher an.",
+   "zu_niedrig": "Leerlauf zu niedrig oder unruhig: Zündaussetzer, verschmutzte Drosselklappe, Einspritzventile, Kompression."
+  },
+  "KUEHLMITTEL": {
+   "titel": "Kühlmitteltemperatur",
+   "pid": "0x05",
+   "formel": "A − 40",
+   "einheit": "°C",
+   "kurz": "Temperatur am Kühlmittelfühler.",
+   "erklaerung": "Steuert Gemischanreicherung, Leerlaufdrehzahl, Lüfter und die Freigabe vieler Diagnosen.",
+   "typisch": "Betriebswarm 85 bis 105 °C. Kennfeldthermostate erlauben in Teillast bis etwa 110 °C.",
+   "zu_hoch": "Überhitzung: Kühlmittelmangel, Lüfter, Thermostat klemmt zu, Wasserpumpe, Zylinderkopfdichtung. −40 °C oder 215 °C bedeuten meist Fühler oder Leitung defekt.",
+   "zu_niedrig": "Wird nicht warm: Thermostat klemmt offen. Folgen: hoher Verbrauch, Readiness wird nicht fertig."
+  },
+  "SPANNUNG": {
+   "titel": "Steuergerätespannung",
+   "pid": "0x42",
+   "formel": "(256·A + B) / 1000",
+   "einheit": "V",
+   "kurz": "Versorgungsspannung am Motorsteuergerät.",
+   "erklaerung": "Entspricht weitgehend der Bordnetzspannung. Bei laufendem Motor die Ladespannung der Lichtmaschine.",
+   "typisch": "Motor läuft 13,5 bis 14,8 V. Intelligente Lichtmaschinen regeln zeitweise 12,5 bis 15 V. Zündung an, Motor aus: 12,2 bis 12,9 V.",
+   "zu_hoch": "Über 15,2 V: Laderegler defekt. Gefahr für Batterie und Steuergeräte.",
+   "zu_niedrig": "Unter 13 V bei laufendem Motor: Lichtmaschine, Riemen, Masseverbindung. Unter 12,2 V im Stand: Batterie entladen oder alt."
+  },
+  "LAST": {
+   "titel": "Motorlast berechnet",
+   "pid": "0x04",
+   "formel": "A · 100 / 255",
+   "einheit": "%",
+   "kurz": "Aktuelle Luftfüllung im Verhältnis zur maximal möglichen bei dieser Drehzahl.",
+   "erklaerung": "Herstellerunabhängig definierter Lastwert. Im Leerlauf gering, bei Vollgas nahe 100 %.",
+   "typisch": "Leerlauf warm 15 bis 35 %.",
+   "zu_hoch": "Im Leerlauf hoch: Verbraucher, Reibung, Luftmassenmesser zeigt zu viel.",
+   "zu_niedrig": "Sehr niedrig unter Last: Luftmassenmesser zeigt zu wenig, Ansaugweg."
+  },
+  "LAST_ABSOLUT": {
+   "titel": "Motorlast absolut",
+   "pid": "0x43",
+   "formel": "(256·A + B) · 100 / 255",
+   "einheit": "%",
+   "kurz": "Luftmasse pro Arbeitsspiel, normiert. Kann bei Aufladung über 100 % gehen.",
+   "erklaerung": "Hilft bei Turbo- und Kompressormotoren, die Füllung unabhängig von der Drehzahl zu vergleichen.",
+   "typisch": "Leerlauf warm 15 bis 30 %.",
+   "zu_hoch": "Im Leerlauf hoch: siehe Motorlast.",
+   "zu_niedrig": "Unter Last zu niedrig: Ladedruck, Luftmassenmesser, Ansaugweg."
+  },
+  "SAUGROHRDRUCK": {
+   "titel": "Saugrohrdruck absolut",
+   "pid": "0x0B",
+   "formel": "A",
+   "einheit": "kPa",
+   "kurz": "Absolutdruck im Saugrohr hinter der Drosselklappe.",
+   "erklaerung": "Bei Saugmotoren im Leerlauf deutlich unter Umgebungsdruck. Bei Turbos unter Last darüber.",
+   "typisch": "Leerlauf Saugmotor 25 bis 45 kPa. Umgebungsdruck etwa 100 kPa.",
+   "zu_hoch": "Im Leerlauf über 50 kPa: Falschluft hinter der Drosselklappe, Kompression schwach, Sensor.",
+   "zu_niedrig": "Unter Last zu niedrig: Ladedruckverlust, Schlauch, Wastegate."
+  },
+  "LUFTMASSE": {
+   "titel": "Luftmasse",
+   "pid": "0x10",
+   "formel": "(256·A + B) / 100",
+   "einheit": "g/s",
+   "kurz": "Vom Luftmassenmesser gemessene angesaugte Luft.",
+   "erklaerung": "Grundlage für die Einspritzmenge. Falsche Werte führen zu Gemischfehlern.",
+   "typisch": "Leerlauf etwa 2 bis 4 g/s bei 1,0 bis 2,0 l Hubraum. Faustregel unter Last: etwa Leistung in kW geteilt durch 0,8.",
+   "zu_hoch": "Höher als erwartet: Sensor misst falsch, selten Last durch Verbraucher.",
+   "zu_niedrig": "Zu niedrig: verschmutzter Luftmassenmesser, Falschluft hinter dem Sensor, Luftfilter."
+  },
+  "ANSAUGLUFT": {
+   "titel": "Ansauglufttemperatur",
+   "pid": "0x0F",
+   "formel": "A − 40",
+   "einheit": "°C",
+   "kurz": "Temperatur der angesaugten Luft.",
+   "erklaerung": "Korrigiert Luftdichte und Zündwinkel.",
+   "typisch": "Umgebung plus 5 bis 30 °C, im Stand wärmer.",
+   "zu_hoch": "Sehr hoch: Hitzestau, Ladeluftkühler. 215 °C: Fühler oder Leitung.",
+   "zu_niedrig": "−40 °C: Fühler oder Leitung unterbrochen."
+  },
+  "DROSSELKLAPPE": {
+   "titel": "Drosselklappenstellung absolut",
+   "pid": "0x11",
+   "formel": "A · 100 / 255",
+   "einheit": "%",
+   "kurz": "Öffnung der Drosselklappe, roh, mit Ruheoffset.",
+   "erklaerung": "Auch bei geschlossener Klappe meist nicht 0 %, weil der Sensor einen Grundwert hat.",
+   "typisch": "Leerlauf 10 bis 20 %.",
+   "zu_hoch": "Im Leerlauf höher als gewohnt: Klappe verschmutzt, muss weiter öffnen. Anlernen kann nötig sein.",
+   "zu_niedrig": "Unter Last zu niedrig: Notlauf, Gaspedal oder Klappe."
+  },
+  "DROSSEL_RELATIV": {
+   "titel": "Drosselklappe relativ",
+   "pid": "0x45",
+   "formel": "A · 100 / 255",
+   "einheit": "%",
+   "kurz": "Öffnung bezogen auf die angelernte Ruhestellung.",
+   "erklaerung": "Zeigt die tatsächliche Öffnung ohne Ruheoffset.",
+   "typisch": "Leerlauf 0 bis 8 %.",
+   "zu_hoch": "Im Leerlauf über 8 %: Verschmutzung oder Falschluftausgleich.",
+   "zu_niedrig": "—"
+  },
+  "ZUENDWINKEL": {
+   "titel": "Zündzeitpunkt",
+   "pid": "0x0E",
+   "formel": "A / 2 − 64",
+   "einheit": "° vor OT",
+   "kurz": "Zündzeitpunkt für Zylinder 1 relativ zum oberen Totpunkt.",
+   "erklaerung": "Positive Werte: Zündung vor OT. Das Steuergerät nimmt Zündung zurück, wenn es Klopfen erkennt.",
+   "typisch": "Leerlauf 5 bis 15° vor OT, stark pendelnd ist normal (Leerlaufregelung).",
+   "zu_hoch": "—",
+   "zu_niedrig": "Dauerhaft spät oder negativ: Klopfregelung (Kraftstoffqualität, Ablagerungen), Kat-Heizen nach Kaltstart."
+  },
+  "TRIM_KURZ_B1": {
+   "titel": "Gemischkorrektur kurzfristig, Bank 1",
+   "pid": "0x06",
+   "formel": "(A − 128) · 100 / 128",
+   "einheit": "%",
+   "kurz": "Schnelle Korrektur der Einspritzmenge anhand der Lambdasonde.",
+   "erklaerung": "Positiv: Steuergerät spritzt mehr, weil das Gemisch zu mager ist. Negativ: weniger, weil zu fett. Pendelt im Regelbetrieb um 0 %.",
+   "typisch": "Leerlauf warm ±10 %, schwankend.",
+   "zu_hoch": "Dauerhaft positiv: mager (Falschluft, Kraftstoffdruck, Einspritzventile, Luftmassenmesser).",
+   "zu_niedrig": "Dauerhaft negativ: fett (Einspritzventil undicht, Kraftstoffdruck zu hoch, Tankentlüftung)."
+  },
+  "TRIM_LANG_B1": {
+   "titel": "Gemischkorrektur langfristig, Bank 1",
+   "pid": "0x07",
+   "formel": "(A − 128) · 100 / 128",
+   "einheit": "%",
+   "kurz": "Gelernte, dauerhafte Korrektur der Einspritzmenge.",
+   "erklaerung": "Zeigt, wie weit der Motor im Mittel vom Sollgemisch abweicht. Der aussagekräftigste Wert für Gemischfehler.",
+   "typisch": "±10 %. Über ±15 % setzen viele Steuergeräte P0171/P0172.",
+   "zu_hoch": "Positiv über 10 %: mager. Falschluft (Saugrohr, Kurbelgehäuseentlüftung, Bremskraftverstärker), schwache Kraftstoffpumpe, verschmutzte Einspritzventile, Luftmassenmesser.",
+   "zu_niedrig": "Negativ unter −10 %: fett. Undichtes Einspritzventil, Kraftstoffdruck zu hoch, Tankentlüftungsventil klemmt offen, Lambdasonde."
+  },
+  "TRIM_KURZ_B2": {
+   "titel": "Gemischkorrektur kurzfristig, Bank 2",
+   "pid": "0x08",
+   "formel": "(A − 128) · 100 / 128",
+   "einheit": "%",
+   "kurz": "Wie Bank 1, für die zweite Zylinderreihe (V-Motoren).",
+   "erklaerung": "Bei Reihenmotoren meist nicht unterstützt.",
+   "typisch": "±10 %.",
+   "zu_hoch": "Siehe Bank 1. Nur eine Bank betroffen: Fehler auf dieser Seite (Dichtung, Ventil, Sonde).",
+   "zu_niedrig": "Siehe Bank 1."
+  },
+  "TRIM_LANG_B2": {
+   "titel": "Gemischkorrektur langfristig, Bank 2",
+   "pid": "0x09",
+   "formel": "(A − 128) · 100 / 128",
+   "einheit": "%",
+   "kurz": "Wie Bank 1, zweite Zylinderreihe.",
+   "erklaerung": "Beide Bänke gleich daneben: gemeinsame Ursache (Kraftstoffdruck, Luftmassenmesser). Nur eine Bank: Ursache auf dieser Seite.",
+   "typisch": "±10 %.",
+   "zu_hoch": "Siehe Bank 1.",
+   "zu_niedrig": "Siehe Bank 1."
+  },
+  "LAMBDA_SOLL": {
+   "titel": "Lambda Sollwert",
+   "pid": "0x44",
+   "formel": "2 / 65536 · (256·A + B)",
+   "einheit": "λ",
+   "kurz": "Vom Steuergerät angefordertes Luftverhältnis.",
+   "erklaerung": "λ = 1 ist das stöchiometrische Gemisch (14,7 kg Luft pro kg Benzin). Unter 1 fett, über 1 mager.",
+   "typisch": "Leerlauf und Teillast 1,00. Volllast und Bauteilschutz 0,8 bis 0,9.",
+   "zu_hoch": "—",
+   "zu_niedrig": "Dauerhaft unter 1 im Leerlauf: Bauteilschutz, Kat-Heizen, Fehlerreaktion."
+  },
+  "KAT_TEMP_B1": {
+   "titel": "Katalysatortemperatur, Bank 1",
+   "pid": "0x3C",
+   "formel": "(256·A + B) / 10 − 40",
+   "einheit": "°C",
+   "kurz": "Vom Steuergerät berechnete oder gemessene Katalysatortemperatur.",
+   "erklaerung": "Meist ein Modellwert. Wichtig für Kat-Schutz bei Zündaussetzern.",
+   "typisch": "Leerlauf 300 bis 750 °C, unter Last bis etwa 900 °C.",
+   "zu_hoch": "Über 900 °C: Kat-Überhitzung, typisch durch Zündaussetzer. Kat-Schaden möglich.",
+   "zu_niedrig": "Unter 300 °C betriebswarm: Kat arbeitet schlecht, Readiness Katalysator wird nicht fertig."
+  },
+  "OELTEMPERATUR": {
+   "titel": "Motoröltemperatur",
+   "pid": "0x5C",
+   "formel": "A − 40",
+   "einheit": "°C",
+   "kurz": "Temperatur des Motoröls.",
+   "erklaerung": "Steigt langsamer als das Kühlmittel. Volle Last erst bei warmem Öl.",
+   "typisch": "Betriebswarm 90 bis 120 °C.",
+   "zu_hoch": "Über 130 °C: Ölkühler, Ölstand, hohe Dauerlast.",
+   "zu_niedrig": "Bleibt kalt: Kurzstrecke, Thermostat."
+  },
+  "GESCHWINDIGKEIT": {
+   "titel": "Fahrzeuggeschwindigkeit",
+   "pid": "0x0D",
+   "formel": "A",
+   "einheit": "km/h",
+   "kurz": "Geschwindigkeit laut Motorsteuergerät.",
+   "erklaerung": "Kommt meist vom ABS über den CAN-Bus.",
+   "typisch": "Im Stand 0 km/h.",
+   "zu_hoch": "—",
+   "zu_niedrig": "0 km/h während der Fahrt: Raddrehzahlsignal, ABS, Kommunikation."
+  },
+  "TANK": {
+   "titel": "Tankfüllstand",
+   "pid": "0x2F",
+   "formel": "A · 100 / 255",
+   "einheit": "%",
+   "kurz": "Füllstand des Kraftstofftanks.",
+   "erklaerung": "Manche Diagnosen (Tankentlüftung) laufen nur zwischen 15 und 85 %.",
+   "typisch": "—",
+   "zu_hoch": "—",
+   "zu_niedrig": "Unter 15 %: Tankentlüftungsdiagnose wird nicht ausgeführt."
+  },
+  "LUFTDRUCK": {
+   "titel": "Umgebungsluftdruck",
+   "pid": "0x33",
+   "formel": "A",
+   "einheit": "kPa",
+   "kurz": "Luftdruck der Umgebung.",
+   "erklaerung": "Korrigiert die Gemischbildung je nach Höhe.",
+   "typisch": "Meereshöhe etwa 100 kPa, 1000 m Höhe etwa 90 kPa.",
+   "zu_hoch": "Deutlich über 105 kPa: Sensor.",
+   "zu_niedrig": "Deutlich unter Erwartung: Sensor."
+  },
+  "UMGEBUNG": {
+   "titel": "Umgebungstemperatur",
+   "pid": "0x46",
+   "formel": "A − 40",
+   "einheit": "°C",
+   "kurz": "Außentemperatur laut Fahrzeug.",
+   "erklaerung": "Plausibilitätswert für andere Temperaturfühler beim Kaltstart.",
+   "typisch": "Wie das Wetter. Im Stand durch Motorwärme höher.",
+   "zu_hoch": "—",
+   "zu_niedrig": "—"
+  },
+  "LAUFZEIT": {
+   "titel": "Laufzeit seit Motorstart",
+   "pid": "0x1F",
+   "formel": "256·A + B",
+   "einheit": "s",
+   "kurz": "Sekunden seit dem letzten Motorstart.",
+   "erklaerung": "Hilft, Kaltstartwerte von Warmwerten zu unterscheiden.",
+   "typisch": "—",
+   "zu_hoch": "—",
+   "zu_niedrig": "—"
+  },
+  "KM_MIT_MIL": {
+   "titel": "Strecke mit Motorkontrollleuchte",
+   "pid": "0x21",
+   "formel": "256·A + B",
+   "einheit": "km",
+   "kurz": "Gefahrene Strecke, seit die Motorkontrollleuchte an ist.",
+   "erklaerung": "Zeigt, wie lange ein Abgasfehler schon besteht.",
+   "typisch": "0 km.",
+   "zu_hoch": "Über 0: Fehler wurde mit leuchtender Lampe weitergefahren.",
+   "zu_niedrig": "—"
+  },
+  "KM_SEIT_LOESCHEN": {
+   "titel": "Strecke seit dem letzten Löschen",
+   "pid": "0x31",
+   "formel": "256·A + B",
+   "einheit": "km",
+   "kurz": "Gefahrene Strecke, seit der Fehlerspeicher gelöscht wurde.",
+   "erklaerung": "Sehr kleine Werte vor einer AU deuten auf kürzlich gelöschte Fehler hin.",
+   "typisch": "—",
+   "zu_hoch": "—",
+   "zu_niedrig": "Wenige Kilometer: kürzlich gelöscht, Readiness vermutlich unvollständig."
+  },
+  "VERBRAUCH": {
+   "titel": "Kraftstoffverbrauch",
+   "pid": "0x5E",
+   "formel": "(256·A + B) / 20",
+   "einheit": "l/h",
+   "kurz": "Momentaner Kraftstoffverbrauch pro Stunde.",
+   "erklaerung": "Wird aus der Einspritzmenge berechnet.",
+   "typisch": "Leerlauf kleiner Benziner 0,5 bis 1,0 l/h.",
+   "zu_hoch": "Im Leerlauf über 1,5 l/h: Verbraucher, fettes Gemisch, Kaltlauf.",
+   "zu_niedrig": "—"
+  },
+  "DREHMOMENT": {
+   "titel": "Motordrehmoment Ist",
+   "pid": "0x62",
+   "formel": "A − 125",
+   "einheit": "%",
+   "kurz": "Abgegebenes Drehmoment in Prozent des Referenzmoments.",
+   "erklaerung": "Im Leerlauf deckt es nur die Eigenreibung und Nebenaggregate.",
+   "typisch": "Leerlauf 10 bis 20 %.",
+   "zu_hoch": "Im Leerlauf hoch: zusätzliche Last (Klima, Lichtmaschine, Reibung).",
+   "zu_niedrig": "—"
+  },
+  "RAILDRUCK": {
+   "titel": "Kraftstoff-Raildruck",
+   "pid": "0x23",
+   "formel": "(256·A + B) · 10",
+   "einheit": "kPa",
+   "kurz": "Kraftstoffdruck im Rail (Direkteinspritzer und Diesel).",
+   "erklaerung": "100 kPa entsprechen 1 bar.",
+   "typisch": "Benzin-Direkteinspritzer Leerlauf etwa 40 bis 100 bar, Diesel-Common-Rail Leerlauf etwa 250 bis 400 bar.",
+   "zu_hoch": "Druckregelventil, Sensor.",
+   "zu_niedrig": "Hochdruckpumpe, Vordruck, Kraftstofffilter, undichter Injektor."
+  },
+  "AGR_SOLL": {
+   "titel": "Abgasrückführung Soll",
+   "pid": "0x2C",
+   "formel": "A · 100 / 255",
+   "einheit": "%",
+   "kurz": "Vom Steuergerät angeforderte AGR-Öffnung.",
+   "erklaerung": "Senkt Stickoxide. Bei Benzinern oft gering oder nicht vorhanden.",
+   "typisch": "Diesel Teillast 0 bis 60 %.",
+   "zu_hoch": "—",
+   "zu_niedrig": "—"
+  }
+ },
+ "readiness": {
+  "Zündaussetzer": "Prüft laufend, ob Zylinder aussetzen (Kurbelwellen-Laufunruhe). Wird schnell fertig.",
+  "Kraftstoffsystem": "Prüft die Gemischregelung über die Gemischkorrektur. Wird fertig, sobald die Lambdaregelung läuft.",
+  "Bauteile": "Prüft Sensoren und Aktoren auf Plausibilität und Leitungsfehler.",
+  "Katalysator": "Vergleicht die Signale der Lambdasonden vor und hinter dem Kat. Braucht betriebswarmen Motor und gleichmäßige Fahrt, meist 10 bis 20 Minuten gemischte Strecke.",
+  "Kat-Heizung": "Prüft die Heizung eines beheizten Katalysators. Selten verbaut.",
+  "Tankentlüftung": "Prüft das Kraftstoffdampf-System auf Dichtheit. Läuft oft nur bei Tank 15 bis 85 % und kaltem Motor nach mehreren Stunden Standzeit. Wird häufig als letzter Test fertig.",
+  "Sekundärluft": "Prüft die Sekundärluftpumpe nach Kaltstart. Nur bei Fahrzeugen mit Sekundärluftsystem.",
+  "Lambdasonde": "Prüft Ansprechzeit und Signal der Lambdasonden.",
+  "Lambdasonden-Heizung": "Prüft den Heizkreis der Lambdasonden. Wird nach wenigen Minuten fertig.",
+  "Abgasrückführung": "Prüft den AGR-Durchfluss, meist im Schiebebetrieb.",
+  "NMHC-Katalysator": "Diesel: prüft den Oxidationskatalysator.",
+  "NOx/SCR": "Diesel: prüft Stickoxid-Nachbehandlung (SCR/AdBlue oder NOx-Speicherkat).",
+  "Ladedruck": "Diesel: prüft die Ladedruckregelung.",
+  "Abgassensor": "Diesel: prüft Lambda- und NOx-Sensoren.",
+  "Partikelfilter": "Diesel: prüft Differenzdruck und Beladung des Partikelfilters.",
+  "AGR/VVT": "Diesel: prüft Abgasrückführung und variable Ventilsteuerung."
+ },
+ "begriffe": {
+  "mil": {
+   "titel": "Motorkontrollleuchte (MIL)",
+   "text": "Gelbe Motorlampe im Kombiinstrument. Sie leuchtet, wenn ein abgasrelevanter Fehler bestätigt ist. Blinkt sie, liegen Zündaussetzer vor, die den Katalysator schädigen können: Last vermeiden."
+  },
+  "readiness": {
+   "titel": "Readiness (Bereitschaftstests)",
+   "text": "Selbsttests des Motorsteuergeräts für die Abgasüberwachung. Nach dem Löschen des Fehlerspeichers oder Abklemmen der Batterie stehen alle auf 'nicht fertig' und laufen erst während normaler Fahrten wieder durch. Für die AU (Abgasuntersuchung) sollten sie abgeschlossen sein. Wie viele offene Tests der Prüfer akzeptiert, regelt die jeweilige Prüfvorschrift, im Zweifel alle abschließen."
+  },
+  "freeze": {
+   "titel": "Freeze-Frame",
+   "text": "Momentaufnahme der Messwerte in dem Augenblick, als der Fehler gespeichert wurde (SAE J1979, Modus 02). Zeigt die Bedingungen beim Auftreten: Drehzahl, Last, Temperatur, Gemischkorrektur."
+  },
+  "gespeichert": {
+   "titel": "Gespeichert (bestätigt)",
+   "text": "Der Fehler wurde in mehreren Fahrzyklen erkannt und fest gespeichert (Modus 03, Statusbit 3). Bei Abgasfehlern leuchtet dann die Motorkontrollleuchte."
+  },
+  "vorlaeufig": {
+   "titel": "Vorläufig (pending)",
+   "text": "Im aktuellen oder letzten Fahrzyklus erkannt, aber noch nicht bestätigt (Modus 07, Statusbit 2). Tritt er erneut auf, wird er gespeichert."
+  },
+  "permanent": {
+   "titel": "Permanent",
+   "text": "Lässt sich nicht löschen (Modus 0A). Verschwindet erst, wenn das Steuergerät den Fehler selbst als behoben erkennt. Verhindert Manipulation vor der AU."
+  },
+  "aktiv": {
+   "titel": "Aktiv",
+   "text": "Statusbit 0: Der letzte Test ist fehlgeschlagen, der Fehler liegt also gerade jetzt vor."
+  },
+  "unbekannt": {
+   "titel": "Herstellerspezifischer Code",
+   "text": "Codes wie P1xxx, P3xxx oder B/C/U mit 1 bis 3 an zweiter Stelle definiert jeder Hersteller selbst. Ohne Herstellerdaten (RMI) oder eigenes Profil mit Quelle bleibt die Bedeutung unbekannt. Wir raten nicht."
+  },
+  "dtc_aufbau": {
+   "titel": "Aufbau eines Fehlercodes",
+   "text": "1. Stelle: System (P Antrieb, C Fahrwerk, B Karosserie, U Netzwerk). 2. Stelle: 0 oder 2 genormt, 1 oder 3 Hersteller. 3. Stelle (bei P): Baugruppe (1 und 2 Gemisch, 3 Zündung, 4 Abgas, 5 Leerlauf und Geschwindigkeit, 6 Steuergerät, 7 und 8 Getriebe). 4. und 5. Stelle: genauer Fehler."
+  },
+  "uds": {
+   "titel": "UDS (ISO 14229)",
+   "text": "Diagnoseprotokoll moderner Steuergeräte. Darüber lesen wir Fehlerspeicher (Dienst 0x19) und Kennungen (Dienst 0x22) aus allen Steuergeräten, nicht nur aus dem Motor."
+  },
+  "obd": {
+   "titel": "OBD (On-Board-Diagnose)",
+   "text": "Gesetzlich vorgeschriebene Abgasdiagnose, in der EU bei Benzinern ab 2001 und Dieseln ab 2004. Bei jeder Marke gleich, aber nur für Motor und Getriebe."
+  },
+  "did": {
+   "titel": "DID (Data Identifier)",
+   "text": "Zwei Byte lange Kennung eines Datenwerts im Steuergerät. 0xF180 bis 0xF19F sind genormt (z. B. 0xF190 VIN, 0xF187 Teilenummer). Alle anderen definiert der Hersteller."
+  },
+  "adresse": {
+   "titel": "Steuergeräte-Adresse",
+   "text": "CAN-Kennung, unter der ein Steuergerät Diagnoseanfragen annimmt. Antwort kommt auf Adresse plus 8. Nur 0x7E0 (Motor) und 0x7E1 (Getriebe) sind markenübergreifend genormt."
+  },
+  "richtwert": {
+   "titel": "Richtwert",
+   "text": "Allgemeiner Erfahrungsbereich ohne Herstellerbezug. Gut zur Orientierung, ersetzt aber keinen Herstellerwert."
+  },
+  "herstellerwert": {
+   "titel": "Herstellerwert",
+   "text": "Sollwert aus Herstellerdaten (RMI-Portal oder lizenzierter Datenanbieter), immer mit Quelle. Hat Vorrang vor Richtwerten."
+  },
+  "halten": {
+   "titel": "Halte-Freigabe",
+   "text": "Schreibende Aktionen laufen nur, wenn du den Knopf 2 Sekunden gedrückt hältst (Ring füllt sich, Loslassen bricht ab). Ohne Halten geht es zweistufig: Kästchen bestätigen, dann Knopf. Die Freigabe gilt 5 Minuten, nur einmal und nur für genau diese Aktion. Ändert sich der Fehlerspeicher in der Zwischenzeit, wird abgebrochen."
+  },
+  "simulator": {
+   "titel": "Simulator",
+   "text": "Ein nachgebautes Auto mit zehn Steuergeräten, das echte Diagnose-Bytes spricht. Alle Werte sind synthetisch. Dient zum Entwickeln und Vorführen ohne Fahrzeug."
+  },
+  "version": {
+   "titel": "Markt- und interne Version",
+   "text": "Marktversion: lesen, KI, Fehler löschen. Interne Version (nur eigene Autos): zusätzlich Stellgliedtests, Grundeinstellungen, Resets und DPF-Regeneration, jeweils mit exakt hinterlegten Befehlen, Quelle und Halte-Freigabe. In beiden gesperrt: Abgasmanipulation, Wegfahrsperre, Security Access."
+  },
+  "vollscan": {
+   "titel": "Vollscan",
+   "text": "Fragt jede Diagnoseadresse von 0x700 bis 0x7F7 ab. Jedes Steuergerät, das antwortet, meldet Systemname, Teilenummer, Softwarestand und Fehlerspeicher. Funktioniert markenübergreifend bei CAN-Autos mit UDS, meist ab etwa 2008."
+  },
+  "rmi": {
+   "titel": "RMI (Reparatur- und Wartungsinformationen)",
+   "text": "Herstellerdaten, die freie Werkstätten nach EU-Recht (VO 2018/858, Anhang X) kaufen können. Eingelesene Dokumente werden mit Datei und Seite zitiert. Sollwerte daraus haben Vorrang vor Richtwerten."
+  },
+  "ki": {
+   "titel": "KI-Bewertung",
+   "text": "Verknüpft Fehlercodes, Freeze-Frame, Live-Werte, Readiness und Sollwert-Vergleich zu einem Gesamtbild mit Ursachen und Prüfschritten. Die VIN wird nicht übertragen. Mit lokalem Modell verlassen keine Daten den Rechner."
+  },
+  "topologie": {
+   "titel": "Topologie",
+   "text": "Zeigt jedes Steuergerät als Knoten am Bus. Haken: geantwortet, ohne Fehler. Zahl in Rot: Fehler, mit Anzahl. Gestrichelt mit Strich: im Profil erwartet, aber stumm (nicht verbaut, anderer Bus oder ohne Zündung nicht erreichbar). Gepunktet: noch nicht gescannt. Farbe, Form und Zahl zusammen, damit es auch ohne Farbsehen lesbar ist."
+  },
+  "sollband": {
+   "titel": "Diagramm mit Sollband",
+   "text": "Jeder Kanal hat sein eigenes Diagramm mit gemeinsamer Zeitachse und synchronem Cursor. Das grüne Band ist der Sollbereich (Richtwert oder Herstellerwert mit Quelle, siehe Infoblatt des Messwerts). Darunter min, max und Mittelwert des sichtbaren Fensters. Liegt der aktuelle Wert außerhalb, steht es mit Pfeil daneben. Ziehen im Diagramm zoomt, Doppelklick setzt zurück."
+  },
+  "aufnahme": {
+   "titel": "Aufnahme und Trigger",
+   "text": "Der Ringpuffer hält immer die letzten 10 Minuten aller Messwerte. Eine Aufnahme beginnt deshalb mit Vorlauf: Das, was vor dem Start passiert ist, ist schon drin. Ein Trigger startet die Aufnahme von selbst, wenn ein Messwert eine Schwelle über- oder unterschreitet oder ein neuer Fehlercode auftaucht. Aufnahmen lassen sich abspielen, mit einer zweiten Aufnahme übereinanderlegen und als CSV exportieren. Sie liegen nur in diesem Browser."
+  },
+  "pruefpfad": {
+   "titel": "Geführter Prüfpfad",
+   "text": "Ein Prüfpfad führt Schritt für Schritt zu Pass oder Fail. Jeder Schritt nennt Ziel, Messung, Sollbereich mit Quelle und bewertet automatisch, wo ein Messwert reicht. Schritte, die nur von Hand gehen (Sichtprüfung, Teiletausch), bestätigst du selbst. Je nach Ergebnis geht es anders weiter. Der Fortschritt bleibt je Fahrzeug gespeichert. Alle Grenzwerte hier sind allgemeine Richtwerte, keine Herstellerwerte."
+  },
+  "bericht": {
+   "titel": "Diagnosebericht",
+   "text": "Vorher/Nachher des Fehlerspeichers (gelöscht, neu, weiter bestehend), Readiness, Ist-Soll, KI-Bewertung mit Belegen, Prüfpfade, Aufnahmen und das Schreibprotokoll der Sitzung. Druck über den Browser (dort als PDF speichern), Teilen als Datei nur auf deinen Wunsch. Die FIN steht nur maskiert drin und kann ganz geschwärzt werden. Nichts geht an eine Hersteller-Cloud."
+  },
+  "belege": {
+   "titel": "Belege und Sicherheitsstufe der KI",
+   "text": "Jede Ursache zeigt, worauf sie sich stützt: Messwert, Freeze-Frame, Bereitschaftstest, Fehlercode oder ein Dokument aus dem RMI-Ordner. Antippen öffnet den Beleg. Stufe belegt: mehrere Daten stützen die Ursache unabhängig. Plausibel: ein Beleg. Vermutung: nur Erfahrung, kein Beleg in den Daten. Unbekannte Herstellercodes bleiben unbekannt, die KI erfindet keine Bedeutung."
+  },
+  "suche": {
+   "titel": "Suche",
+   "text": "Strg+K oder Schrägstrich öffnet die Suche über Fehlercodes, Messwerte, Steuergeräte, Begriffe, Bereitschaftstests, Funktionen, Prüfpfade, den Verlauf und (wenn eingelesen) Herstellerdokumente. Enter öffnet direkt das Infoblatt."
+  },
+  "werkstattmodus": {
+   "titel": "Werkstatt-Modus",
+   "text": "Vergrößert alle Bedienziele auf mindestens 60 Pixel, etwa 15 Millimeter, mit mehr Abstand. Das ist das Maß, mit dem Handschuhbedienung ohne Fehlgriffe funktioniert. Auf Tablets ist er automatisch an, sonst über Anzeige einschaltbar."
+  }
+ },
+ "funktionsarten": {
+  "stellglied": "Steuert ein Bauteil direkt an (Lüfter, Ventil, Pumpe), um es zu prüfen. Läuft bis Stopp oder bis das Steuergerät die Kontrolle zurücknimmt.",
+  "routine": "Startet einen festen Ablauf im Steuergerät (Selbsttest, Regeneration).",
+  "grundeinstellung": "Lernt Endanschläge oder Nullpunkte neu an, z. B. nach Reinigung oder Tausch eines Bauteils.",
+  "reset": "Setzt Lern- oder Zählerwerte zurück, z. B. nach Teiletausch.",
+  "codierung": "Ändert Konfigurationswerte im Steuergerät. Höchstes Risiko, nur mit Sicherung des alten Werts."
+ },
+ "pruefpfade": [
+  {
+   "id": "gemisch_mager",
+   "titel": "Gemisch zu mager (P0171, P0174)",
+   "kurz": "Falschluft, Kraftstoffversorgung oder Luftmassenmesser eingrenzen",
+   "schritte": [
+    {
+     "id": "s1",
+     "titel": "Motor betriebswarm?",
+     "ziel": "Die Gemischregelung arbeitet erst warm im geschlossenen Regelkreis. Vorher sind die Korrekturwerte nicht aussagekräftig.",
+     "art": "auto",
+     "pruefung": {
+      "typ": "signal",
+      "signal": "KUEHLMITTEL",
+      "min": 80,
+      "max": 105,
+      "quelle": "Allgemeiner Richtwert, kein Herstellerwert"
+     },
+     "hinweis": "Motor im Leerlauf warmlaufen lassen, bis die Kühlmitteltemperatur im Bereich liegt. Dann weiter.",
+     "bei_ok": "s2",
+     "bei_fehler": "s1"
+    },
+    {
+     "id": "s2",
+     "titel": "Langzeitkorrektur im Leerlauf",
+     "ziel": "Die gelernte Korrektur zeigt, wie weit der Motor dauerhaft vom Sollgemisch weg ist.",
+     "art": "auto",
+     "pruefung": {
+      "typ": "signal",
+      "signal": "TRIM_LANG_B1",
+      "min": -10,
+      "max": 10,
+      "quelle": "Allgemeiner Richtwert, kein Herstellerwert"
+     },
+     "hinweis": "Leerlauf, keine Verbraucher, Motor steht still. Über +10 % heißt mager, das Steuergerät spritzt nach.",
+     "bei_ok": "ende_sporadisch",
+     "bei_fehler": "s3"
+    },
+    {
+     "id": "s3",
+     "titel": "Kurzzeitkorrektur im Leerlauf",
+     "ziel": "Zeigt, ob die Regelung gerade noch zusätzlich nachregeln muss.",
+     "art": "auto",
+     "pruefung": {
+      "typ": "signal",
+      "signal": "TRIM_KURZ_B1",
+      "min": -10,
+      "max": 10,
+      "quelle": "Allgemeiner Richtwert, kein Herstellerwert"
+     },
+     "hinweis": "Stark positiv zusätzlich zur Langzeitkorrektur: die Regelung ist am Anschlag. Unauffällig: die Magerkeit ist bereits eingelernt. Beides führt zum nächsten Schritt.",
+     "bei_ok": "s4",
+     "bei_fehler": "s4"
+    },
+    {
+     "id": "s4",
+     "titel": "Drehzahl auf etwa 2500 1/min halten: geht die Korrektur deutlich zurück?",
+     "ziel": "Falschluft wirkt im Leerlauf am stärksten, weil die Leckluft im Verhältnis zur angesaugten Luft dort am größten ist. Bei höherer Drehzahl sinkt der Anteil.",
+     "art": "manuell",
+     "hinweis": "Im Bereich Live die Kanäle Trim lang B1 und Trim kurz B1 beobachten. Drehzahl 20 Sekunden halten.",
+     "ja": "Ja, Korrektur geht zurück",
+     "nein": "Nein, bleibt hoch",
+     "bei_ok": "s5",
+     "bei_fehler": "s6"
+    },
+    {
+     "id": "s5",
+     "titel": "Rauchtest Ansaugtrakt",
+     "ziel": "Falschluft ist wahrscheinlich. Der Rauchtest zeigt die Leckstelle.",
+     "art": "manuell",
+     "hinweis": "Rauch in den Ansaugtrakt hinter dem Luftmassenmesser geben. Typische Stellen: Unterdruckschläuche, Kurbelgehäuseentlüftung, Saugrohrdichtung, Bremskraftverstärker, Tankentlüftungsventil.",
+     "ja": "Leck gefunden",
+     "nein": "Kein Leck",
+     "bei_ok": "ende_falschluft",
+     "bei_fehler": "s6"
+    },
+    {
+     "id": "s6",
+     "titel": "Kraftstoffdruck und Luftmassenmesser",
+     "ziel": "Bleibt das Gemisch bei allen Drehzahlen mager, fehlt Kraftstoff oder die Luftmasse wird zu niedrig gemessen.",
+     "art": "manuell",
+     "hinweis": "Kraftstoffdruck mit Manometer gegen den Sollwert aus den Herstellerdaten prüfen (dieses Tool hat dafür keinen Richtwert). Luftmasse im Leerlauf und unter Last mit dem Infoblatt Luftmasse vergleichen, Luftfilter und Ansaugweg vor dem Luftmassenmesser auf Undichtigkeit prüfen.",
+     "ja": "Ursache gefunden",
+     "nein": "Nichts gefunden",
+     "bei_ok": "ende_kraftstoff",
+     "bei_fehler": "ende_offen"
+    }
+   ],
+   "ergebnisse": {
+    "ende_sporadisch": {
+     "titel": "Gemisch im Leerlauf in Ordnung",
+     "text": "Der Fehler trat unter anderen Bedingungen auf. Freeze-Frame ansehen und die Bedingungen nachstellen (Last, Drehzahl, Temperatur), dabei mit Trigger aufnehmen."
+    },
+    "ende_falschluft": {
+     "titel": "Falschluft gefunden",
+     "text": "Leck beheben, Fehler löschen, 20 Minuten gemischte Fahrt. Danach Langzeitkorrektur und Readiness kontrollieren."
+    },
+    "ende_kraftstoff": {
+     "titel": "Ursache in Kraftstoffversorgung oder Luftmessung",
+     "text": "Teil nach Herstellerdaten prüfen oder tauschen, Fehler löschen, Nachtest wie oben."
+    },
+    "ende_offen": {
+     "titel": "Nicht eingegrenzt",
+     "text": "Lambdasonde (träge oder falsch anzeigend) und Einspritzventile (Mengenvergleich) als nächste Kandidaten. Herstellerdaten nötig."
+    }
+   }
+  },
+  {
+   "id": "aussetzer",
+   "titel": "Zündaussetzer (P0300 bis P0312)",
+   "kurz": "Spule, Kerze, Einspritzventil oder Mechanik durch Tausch eingrenzen",
+   "schritte": [
+    {
+     "id": "s1",
+     "titel": "Freeze-Frame ansehen",
+     "ziel": "Die Umgebungsdaten beim Auftreten zeigen, ob der Aussetzer unter Last, kalt oder im Leerlauf kam.",
+     "art": "auto",
+     "pruefung": {
+      "typ": "freeze"
+     },
+     "hinweis": "Hohe Last und mittlere Drehzahl sprechen für Zündung (Spule, Kerze). Leerlauf und kalt eher für Gemisch oder Einspritzventil.",
+     "bei_ok": "s2",
+     "bei_fehler": "s2"
+    },
+    {
+     "id": "s2",
+     "titel": "Zündspule des betroffenen Zylinders mit einem Nachbarzylinder tauschen",
+     "ziel": "Wandert der Fehler mit, ist die Spule die Ursache. Billigster Test zuerst.",
+     "art": "manuell",
+     "hinweis": "Zündung aus. Spulen tauschen, Stecker sauber einrasten. Bei Einzelfunkenspulen mit Kerzenstecker auf Risse achten.",
+     "ja": "Getauscht",
+     "nein": "Nicht möglich",
+     "bei_ok": "s3",
+     "bei_fehler": "s5"
+    },
+    {
+     "id": "s3",
+     "titel": "Fehler löschen und Probefahrt",
+     "ziel": "Der Fehler muss neu entstehen, damit der Tausch eine Aussage liefert.",
+     "art": "manuell",
+     "aktion": {
+      "typ": "obd_fehler_loeschen",
+      "text": "OBD-Fehler löschen vorbereiten …"
+     },
+     "hinweis": "Nach dem Löschen die Bedingungen aus dem Freeze-Frame nachfahren. Im Bereich Live mit Trigger auf neuen Fehlercode aufnehmen.",
+     "ja": "Fehler ist wieder da",
+     "nein": "Fehler kommt nicht wieder",
+     "bei_ok": "s4",
+     "bei_fehler": "ende_weg"
+    },
+    {
+     "id": "s4",
+     "titel": "Ist der Fehler zum Nachbarzylinder gewandert?",
+     "ziel": "Neuer Code am Tauschzylinder bedeutet: die Spule ist defekt.",
+     "art": "manuell",
+     "hinweis": "Fehlerspeicher neu lesen (Bereich Fehler). P0301 wird zu P0302, wenn die Spule von Zylinder 1 nach 2 gewandert ist.",
+     "ja": "Ja, gewandert",
+     "nein": "Nein, gleicher Zylinder",
+     "bei_ok": "ende_spule",
+     "bei_fehler": "s5"
+    },
+    {
+     "id": "s5",
+     "titel": "Zündkerze, Einspritzventil, Kompression",
+     "ziel": "Bleibt der Fehler am Zylinder, liegt es an Kerze, Einspritzventil oder Mechanik.",
+     "art": "manuell",
+     "hinweis": "Kerzenbild prüfen und Kerze tauschen. Dann Einspritzventil mit Nachbarzylinder tauschen und erneut testen. Zuletzt Kompression oder Druckverlust messen.",
+     "ja": "Ursache gefunden",
+     "nein": "Nichts gefunden",
+     "bei_ok": "ende_zylinder",
+     "bei_fehler": "ende_offen"
+    }
+   ],
+   "ergebnisse": {
+    "ende_weg": {
+     "titel": "Fehler kommt nicht wieder",
+     "text": "Vermutlich Kontaktproblem am Spulenstecker oder sporadisch. Beobachten, Readiness abwarten."
+    },
+    "ende_spule": {
+     "titel": "Zündspule defekt",
+     "text": "Spule des ursprünglichen Zylinders ersetzen, Fehler löschen, Probefahrt, Readiness kontrollieren."
+    },
+    "ende_zylinder": {
+     "titel": "Ursache am Zylinder gefunden",
+     "text": "Teil ersetzen bzw. mechanisch instand setzen, Fehler löschen, Nachtest."
+    },
+    "ende_offen": {
+     "titel": "Nicht eingegrenzt",
+     "text": "Kraftstoffdruck, Ventiltrieb und Steuerzeiten nach Herstellerdaten prüfen."
+    }
+   }
+  },
+  {
+   "id": "au_vorbereitung",
+   "titel": "AU-Vorbereitung",
+   "kurz": "Motorkontrollleuchte, Fehlerspeicher und Readiness vor der Abgasuntersuchung",
+   "schritte": [
+    {
+     "id": "s1",
+     "titel": "Motorkontrollleuchte aus?",
+     "ziel": "Mit leuchtender Motorkontrollleuchte fällt das Fahrzeug bei der AU durch.",
+     "art": "auto",
+     "pruefung": {
+      "typ": "mil_aus",
+      "quelle": "Prüfkriterium der Abgasuntersuchung (OBD-Teil)"
+     },
+     "bei_ok": "s2",
+     "bei_fehler": "ende_fehler"
+    },
+    {
+     "id": "s2",
+     "titel": "Keine gespeicherten Abgasfehler",
+     "ziel": "Gespeicherte abgasrelevante Codes bedeuten eine Beanstandung.",
+     "art": "auto",
+     "pruefung": {
+      "typ": "fehler_keine",
+      "quelle": "Prüfkriterium der Abgasuntersuchung (OBD-Teil)"
+     },
+     "bei_ok": "s3",
+     "bei_fehler": "ende_fehler"
+    },
+    {
+     "id": "s3",
+     "titel": "Alle Bereitschaftstests fertig",
+     "ziel": "Nach dem Löschen müssen die Selbsttests erst wieder durchlaufen. Offene Tests fallen bei der Prüfung auf.",
+     "art": "auto",
+     "pruefung": {
+      "typ": "readiness_alle",
+      "quelle": "Prüfkriterium der Abgasuntersuchung (OBD-Teil)"
+     },
+     "hinweis": "Fahrzyklus mit Kaltstart, Leerlauf, Stadt und Überland. Tankentlüftung läuft oft nur bei 15 bis 85 % Tankinhalt nach Standzeit.",
+     "bei_ok": "ende_bereit",
+     "bei_fehler": "ende_readiness"
+    }
+   ],
+   "ergebnisse": {
+    "ende_fehler": {
+     "titel": "Noch nicht AU-bereit",
+     "text": "Erst die Ursache der gespeicherten Fehler beheben, dann löschen und die Readiness neu erfahren."
+    },
+    "ende_readiness": {
+     "titel": "Readiness unvollständig",
+     "text": "Fahrzyklus fahren und erneut prüfen. Nicht vorher zur AU."
+    },
+    "ende_bereit": {
+     "titel": "Aus Sicht der OBD AU-bereit",
+     "text": "Motorkontrollleuchte aus, kein Fehler gespeichert, alle Tests fertig. Die Abgasmessung selbst macht die Prüfstelle."
+    }
+   }
+  },
+  {
+   "id": "ladesystem",
+   "titel": "Bordnetz und Ladesystem",
+   "kurz": "Batterie-Ruhespannung, Ladespannung und Verhalten unter Last",
+   "schritte": [
+    {
+     "id": "s1",
+     "titel": "Ruhespannung: Zündung an, Motor aus",
+     "ziel": "Zeigt den Ladezustand der Batterie.",
+     "art": "auto",
+     "pruefung": {
+      "typ": "signal",
+      "signal": "SPANNUNG",
+      "min": 12.2,
+      "max": 12.9,
+      "zustand": "motor_aus",
+      "quelle": "Allgemeiner Richtwert, kein Herstellerwert"
+     },
+     "hinweis": "Motor abstellen, Zündung an, wenige Minuten warten. Unter 12,2 V: entladen oder defekt. Der Wert kommt vom Steuergerät und kann leicht unter der Klemmenspannung liegen.",
+     "bei_ok": "s2",
+     "bei_fehler": "ende_batterie"
+    },
+    {
+     "id": "s2",
+     "titel": "Ladespannung im Leerlauf",
+     "ziel": "Zeigt, ob die Lichtmaschine lädt.",
+     "art": "auto",
+     "pruefung": {
+      "typ": "signal",
+      "signal": "SPANNUNG",
+      "min": 13.2,
+      "max": 14.8,
+      "zustand": "motor_laeuft",
+      "quelle": "Allgemeiner Richtwert, kein Herstellerwert"
+     },
+     "hinweis": "Motor starten, Leerlauf. Intelligente Lichtmaschinen regeln zeitweise auf etwa 12,5 V herunter, dann Verbraucher einschalten und erneut messen.",
+     "bei_ok": "s3",
+     "bei_fehler": "ende_lima"
+    },
+    {
+     "id": "s3",
+     "titel": "Verbraucher an: bleibt die Spannung über 13 V?",
+     "ziel": "Unter Last zeigt sich eine schwache Lichtmaschine oder ein schlechter Masseanschluss.",
+     "art": "manuell",
+     "hinweis": "Abblendlicht, Heckscheibenheizung, Gebläse volle Stufe. Spannung im Bereich Live beobachten, Drehzahl kurz auf 2000 1/min.",
+     "ja": "Ja, bleibt über 13 V",
+     "nein": "Nein, bricht ein",
+     "bei_ok": "ende_ok",
+     "bei_fehler": "ende_lima"
+    }
+   ],
+   "ergebnisse": {
+    "ende_batterie": {
+     "titel": "Batterie entladen oder schwach",
+     "text": "Batterie laden und mit Batterietester prüfen. Danach Pfad wiederholen."
+    },
+    "ende_lima": {
+     "titel": "Ladesystem auffällig",
+     "text": "Lichtmaschine, Keilrippenriemen, Masseband und Ladeleitung prüfen. Spannungsabfall unter Last messen."
+    },
+    "ende_ok": {
+     "titel": "Bordnetz in Ordnung",
+     "text": "Ruhe- und Ladespannung im Richtwertbereich, Last wird gehalten."
+    }
+   }
+  },
+  {
+   "id": "kuehlsystem",
+   "titel": "Kühlsystem",
+   "kurz": "Betriebstemperatur, Thermostat und Lüfteransteuerung",
+   "schritte": [
+    {
+     "id": "s1",
+     "titel": "Betriebstemperatur erreicht und stabil",
+     "ziel": "Der Motor muss warm werden und die Temperatur im Bereich halten.",
+     "art": "auto",
+     "pruefung": {
+      "typ": "signal",
+      "signal": "KUEHLMITTEL",
+      "min": 80,
+      "max": 105,
+      "quelle": "Allgemeiner Richtwert, kein Herstellerwert"
+     },
+     "hinweis": "Nach etwa 10 Minuten Leerlauf oder kurzer Fahrt. Bleibt sie deutlich darunter: Thermostat klemmt offen. Steigt sie darüber: weiter mit dem Lüfter.",
+     "bei_ok": "s2",
+     "bei_fehler": "ende_thermostat"
+    },
+    {
+     "id": "s2",
+     "titel": "Kühlerlüfter ansteuern",
+     "ziel": "Der Lüfter muss auf Befehl des Steuergeräts anlaufen.",
+     "art": "manuell",
+     "aktion": {
+      "typ": "funktion",
+      "funktion": "kuehlerluefter_test",
+      "text": "Stellgliedtest Kühlerlüfter vorbereiten …"
+     },
+     "hinweis": "Nur in der internen Version mit freigegebenem Stellgliedtest. Sonst: Klimaanlage einschalten, der Lüfter muss anlaufen. Finger weg vom Lüfter.",
+     "ja": "Lüfter läuft",
+     "nein": "Lüfter läuft nicht",
+     "bei_ok": "ende_ok",
+     "bei_fehler": "ende_luefter"
+    }
+   ],
+   "ergebnisse": {
+    "ende_thermostat": {
+     "titel": "Temperatur außerhalb des Bereichs",
+     "text": "Zu kalt: Thermostat. Zu heiß: Kühlmittelstand, Lüfter, Kühler, Wasserpumpe. Thermostat-Öffnungstemperatur aus den Herstellerdaten."
+    },
+    "ende_luefter": {
+     "titel": "Lüfter läuft nicht an",
+     "text": "Sicherung, Relais, Lüftermotor und Ansteuerung prüfen. Nicht mit heißem Motor weiterfahren."
+    },
+    "ende_ok": {
+     "titel": "Kühlsystem in Ordnung",
+     "text": "Betriebstemperatur im Richtwertbereich, Lüfter läuft auf Befehl."
+    }
+   }
+  }
+ ]
+}

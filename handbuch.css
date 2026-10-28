@@ -1,0 +1,76 @@
+/* Handbuch (handbuch.js): Kapitelübersicht, Inhaltsverzeichnis, Systembilder. Farben nur aus tokens.css. */
+.hb-link { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--sp-3); align-items: center; width: 100%; padding: var(--sp-3) var(--sp-5); text-align: left; color: var(--text); cursor: pointer; transition: border-color var(--dur) var(--ease-out), transform var(--dur) var(--ease-out); }
+.hb-link:hover { border-color: var(--accent); transform: translateY(-1px); }
+.hb-link:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface-1), 0 0 0 4px var(--accent); }
+.hb-link .i3 { width: 44px; height: 44px; }
+.hb-link .t { display: block; font: 600 var(--t-5)/var(--t-5-lh) var(--font-display); }
+.hb-link .d { display: block; font: 400 var(--t-3)/20px var(--font-text); color: var(--text-muted); }
+
+#handbuch { display: grid; gap: var(--sp-4); }
+.hb-hero { display: grid; gap: var(--sp-4); align-items: center; padding: var(--sp-5); background: radial-gradient(120% 140% at 0% 0%, var(--accent-soft), transparent 60%), var(--surface-1); }
+.hb-hero .i3 { width: 88px; height: 88px; }
+@media (min-width: 768px) { .hb-hero { grid-template-columns: auto 1fr; } }
+.hb-grid { display: grid; gap: var(--sp-3); grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.hb-card { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "ic n" "ic t" "ic d"; gap: 2px var(--sp-3); align-items: start; padding: var(--sp-4); border: 1px solid var(--line); border-radius: var(--r-3); background: linear-gradient(160deg, var(--surface-2), var(--surface-1) 60%); color: var(--text); text-align: left; cursor: pointer; box-shadow: var(--sh1), var(--edge); transition: transform var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out); }
+.hb-card:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: var(--sh2), var(--edge); }
+.hb-card:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface-1), 0 0 0 4px var(--accent); }
+.hb-card-ic { grid-area: ic; } .hb-card .i3 { width: 52px; height: 52px; }
+.hb-card .n { grid-area: n; font: 600 var(--t-1)/var(--t-1-lh) var(--font-display); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--text-muted); }
+.hb-card .t { grid-area: t; font: 600 var(--t-5)/var(--t-5-lh) var(--font-display); }
+.hb-card .d { grid-area: d; font: 400 var(--t-3)/20px var(--font-text); color: var(--text-muted); }
+
+.hb-layout { display: grid; gap: var(--sp-4); align-items: start; }
+@media (min-width: 1024px) { .hb-layout { grid-template-columns: 240px minmax(0, 1fr); } .hb-toc { position: sticky; top: calc(var(--status-h, 64px) + var(--sp-4)); } }
+.hb-toc ol { list-style: none; margin: var(--sp-2) 0 0; padding: 0; display: grid; gap: 2px; }
+.hb-toc a { display: flex; gap: var(--sp-2); align-items: baseline; padding: 8px 10px; border-radius: var(--r-1); color: var(--text-muted); text-decoration: none; font: 500 var(--t-3)/20px var(--font-text); }
+.hb-toc a:hover { background: var(--surface-2); color: var(--text); }
+.hb-toc a[aria-current="page"] { background: var(--accent-soft); color: var(--text); box-shadow: inset 3px 0 0 var(--accent); font-weight: 600; }
+.hb-toc .n { font: 500 var(--t-2)/1 var(--font-num); color: var(--text-muted); }
+@media (max-width: 1023px) { .hb-toc ol { display: flex; overflow-x: auto; gap: var(--sp-1); padding-bottom: 4px; scrollbar-width: thin; } .hb-toc a { white-space: nowrap; border: 1px solid var(--line); } }
+
+.hb-article { display: grid; gap: var(--sp-4); padding: var(--sp-5); max-width: 860px; min-width: 0; }
+.hb-article .h2 { margin: 0; }
+.hb-p { margin: 0; font: 400 var(--t-4)/26px var(--font-text); max-width: 72ch; }
+.hb-list, .hb-steps { margin: 0; padding-left: 1.4em; display: grid; gap: 6px; font: 400 var(--t-4)/24px var(--font-text); max-width: 72ch; }
+.hb-steps { counter-reset: s; list-style: none; padding: 0; }
+.hb-steps li { counter-increment: s; position: relative; padding-left: 40px; min-height: 28px; }
+.hb-steps li::before { content: counter(s); position: absolute; left: 0; top: -1px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); font: 600 var(--t-3)/1 var(--font-num); }
+.hb-table { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-2); }
+.hb-table table { width: 100%; border-collapse: collapse; font: 400 var(--t-3)/20px var(--font-text); }
+.hb-table th { text-align: left; padding: 8px 12px; background: var(--surface-2); font: 600 var(--t-1)/var(--t-1-lh) var(--font-display); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--text-muted); }
+.hb-table td { padding: 9px 12px; border-top: 1px solid var(--line); vertical-align: top; min-width: 120px; }
+.hb-table td.k { font-weight: 600; }
+.hb-code { margin: 0; padding: var(--sp-3) var(--sp-4); border-radius: var(--r-2); background: var(--surface-0); border: 1px solid var(--line); overflow-x: auto; font: 500 var(--t-3)/21px var(--font-num); color: var(--text); }
+.hb-note { padding: var(--sp-3) var(--sp-4); border-radius: var(--r-2); border: 1px solid var(--tone-line, var(--line)); background: var(--tone-bg, var(--surface-2)); font: 400 var(--t-3)/21px var(--font-text); }
+.hb-note.t-info { --tone-line: var(--info-line); --tone-bg: var(--info-bg); } .hb-note.t-warn { --tone-line: var(--warn-line); --tone-bg: var(--warn-bg); }
+.hb-note.t-crit { --tone-line: var(--crit-line); --tone-bg: var(--crit-bg); } .hb-note.t-ok { --tone-line: var(--ok-line); --tone-bg: var(--ok-bg); }
+.hb-fn { padding: var(--sp-4); border: 1px solid var(--line); border-radius: var(--r-2); background: var(--surface-2); display: grid; gap: var(--sp-2); }
+.hb-fn-head { display: flex; gap: var(--sp-3); align-items: center; } .hb-fn-head h3 { margin: 0; font: 600 var(--t-5)/var(--t-5-lh) var(--font-display); }
+.hb-fn .i3 { width: 40px; height: 40px; }
+.hb-fn dl { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px var(--sp-4); font: 400 var(--t-3)/21px var(--font-text); }
+.hb-fn dt { color: var(--text-muted); font-weight: 600; } .hb-fn dd { margin: 0; } .hb-fn dd.mono { font-family: var(--font-num); font-size: var(--t-2); overflow-wrap: anywhere; }
+@media (max-width: 599px) { .hb-fn dl { grid-template-columns: 1fr; } .hb-fn dd { margin-bottom: 6px; } .hb-article { padding: var(--sp-4); } }
+.hb-pager { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--sp-2); padding-top: var(--sp-4); border-top: 1px solid var(--line); }
+
+/* Systembilder */
+.hb-fig { margin: 0; padding: var(--sp-4); border-radius: var(--r-2); background: var(--surface-0); border: 1px solid var(--line); display: grid; gap: var(--sp-2); justify-items: center; }
+.hb-fig figcaption { font: 500 var(--t-2)/var(--t-2-lh) var(--font-text); color: var(--text-muted); }
+.dg { width: 100%; max-width: 520px; height: auto; overflow: visible; }
+.dg-node rect { fill: var(--surface-2); stroke: var(--tone, var(--line-strong)); stroke-width: 1.5; }
+.dg-node.t-info { --tone: var(--accent); } .dg-node.t-warn { --tone: var(--warn); } .dg-node.t-crit { --tone: var(--crit); } .dg-node.t-ok { --tone: var(--ok); }
+.dg-node.t-info rect { fill: color-mix(in oklab, var(--accent) 12%, var(--surface-2)); }
+.dg-node.t-ok rect { fill: color-mix(in oklab, var(--ok) 12%, var(--surface-2)); }
+.dg-t { font: 600 12.5px var(--font-display); fill: var(--text); }
+.dg-s { font: 500 10.5px var(--font-text); fill: var(--text-muted); }
+.dg-group rect { fill: none; stroke: var(--line-strong); stroke-dasharray: 5 4; }
+.dg-gt, .dg-el { paint-order: stroke; stroke: var(--surface-0); stroke-width: 5px; stroke-linejoin: round; }
+.dg-gt { font: 600 10px var(--font-display); letter-spacing: .06em; text-transform: uppercase; fill: var(--text-muted); }
+.dg-edge line { stroke: var(--accent); stroke-width: 1.6; }
+.dg-arrow { fill: var(--accent); }
+.dg-el { font: 500 10px var(--font-text); fill: var(--text-muted); }
+@media (prefers-reduced-motion: no-preference) { .dg-edge line { stroke-dasharray: 4 3; animation: dg-flow 1.4s linear infinite; } }
+@keyframes dg-flow { to { stroke-dashoffset: -14; } }
+@media print { .hb-toc, .hb-pager { display: none; } }
+.hb-layout { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1024px) { .hb-layout { grid-template-columns: 240px minmax(0, 1fr); } }
+.hb-layout > * { min-width: 0; }

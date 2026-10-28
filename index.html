@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="de" data-accent="signal" data-theme="dunkel" data-touch="comfort">
+<head>
+<meta name="candor-quelle" content="vorschau">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b1118">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CANdor">
+<meta charset="utf-8">
+<title>CANdor</title>
+<link rel="icon" href="marke/candor-zeichen.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="marke/candor-app-icon-180.png">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="komponenten.css">
+<link rel="stylesheet" href="vendor/uPlot.min.css">
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="views.css">
+<link rel="stylesheet" href="garage.css">
+<link rel="stylesheet" href="handbuch.css">
+<link rel="stylesheet" href="chat.css">
+<link rel="stylesheet" href="motion.css">
+
+<div class="app" id="app">
+  <header class="statusbar sb gutter" id="statusbar" aria-label="Kopfzeile">
+    <div class="bar-nav">
+      <button class="btn qt nav-btn" id="nav-back" type="button" hidden><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-zurueck"/></svg><span class="lbl">Zurück</span></button>
+      <button class="btn qt nav-btn brand-btn" id="nav-home" type="button" aria-label="CANdor, zur Startseite"><img class="brand-mark" src="marke/candor-zeichen.svg" alt="" width="30" height="30"><span class="wordmark lbl" aria-hidden="true"><b>CAN</b><span>dor</span></span></button>
+    </div>
+    <div class="who">
+      <p class="eyebrow veh"><span id="v-brand"></span><span id="v-name">Kein Fahrzeug verbunden</span></p>
+      <h1 id="page-title">Start</h1>
+    </div>
+    <button class="seg-s schip t-running task-chip" id="task-chip" type="button" hidden></button>
+    <div class="status-chips" id="status-chips" aria-live="polite" aria-atomic="false"></div>
+    <div class="status-tools" id="status-tools"></div>
+  </header>
+
+<main class="main" id="main">
+    <div class="gutter">
+      <button class="sim-band cs t-info" id="sim-band" type="button" data-info="begriff:simulator" hidden>Simulator · synthetische Werte, kein echtes Auto · antippen für Erklärung</button>
+      <div class="conn-band" id="conn-band" role="alert" hidden></div>
+
+      <!-- Start -->
+      <section class="view view-start" id="view-start" aria-labelledby="page-title">
+        <div class="card vcard" id="vehicle-card" hidden></div>
+        <form class="card km-card" id="start-km" novalidate hidden></form>
+        <div class="card start-empty" id="start-empty"></div>
+        <div class="tiles" id="start-tiles"></div>
+        <section class="card start-recent" id="start-recent" aria-label="Zuletzt benutzte Fahrzeuge" hidden></section>
+        <button class="card hb-link" id="start-handbuch" type="button"></button>
+      </section>
+
+      <!-- Verbinden -->
+      <section class="view view-connect" id="view-connect" aria-labelledby="page-title" hidden>
+        <div class="card connect">
+          <div class="sec-head">
+            <div class="veh-title"><span class="hero-ic" id="connect-ic" aria-hidden="true"></span><div><p class="eyebrow">Fahrzeug erkennen</p><h2>Verbinden in drei Schritten</h2></div></div>
+            <span class="sm" id="connect-state" aria-live="polite">bereit</span>
+          </div>
+          <ol class="csteps" id="connect-steps"></ol>
+          <div class="connect-help" id="connect-help" tabindex="-1" hidden></div>
+          <div class="connect-actions" id="connect-actions"></div>
+        </div>
+      </section>
+
+      <!-- Fahrzeugbestand: Liste und Formular -->
+      <section class="view view-fahrzeuge" id="view-fahrzeuge" aria-labelledby="page-title" hidden>
+        <div class="sec-head"><div><p class="eyebrow">Fahrzeuge auf diesem Gerät</p><h2>Fahrzeuge</h2></div><span class="sm" id="garage-count"></span></div>
+        <div class="garage-tools">
+          <label class="search-fld"><span class="sr">Fahrzeug suchen</span><input class="inp" id="garage-q" type="search" placeholder="Kennzeichen, Marke, Modell oder FIN" autocomplete="off"></label>
+          <div class="seg" id="garage-sort" role="group" aria-label="Sortierung"></div>
+          <button class="btn pri" id="garage-new" type="button">Neues Fahrzeug</button>
+        </div>
+        <div id="garage"></div>
+      </section>
+      <section class="view view-einstellungen" id="view-einstellungen" aria-labelledby="page-title" hidden>
+        <div class="form-page" id="einstellungen"></div>
+      </section>
+      <section class="view view-handbuch" id="view-handbuch" aria-labelledby="page-title" hidden>
+        <div id="handbuch"></div>
+      </section>
+      <section class="view view-werkstatt" id="view-werkstatt" aria-labelledby="page-title" hidden>
+        <div class="form-page" id="werkstatt-form"></div>
+      </section>
+      <section class="view view-fahrzeug" id="view-fahrzeug" aria-labelledby="page-title" hidden>
+        <div id="garage-form"></div>
+      </section>
+
+      <!-- Fahrzeug -->
+      <section class="view view-car" id="view-car" aria-labelledby="page-title">
+        <div class="card topo" id="topo-panel" data-collapsed="false" data-view="fahrzeug">
+          <div class="sec-head">
+            <div><p class="eyebrow">Topologie</p><h2>Steuergeräte im Fahrzeug</h2></div>
+            <div class="topo-tools">
+              <div class="seg" id="topo-view-toggle" role="group" aria-label="Ansicht"></div>
+              <button class="btn qt topo-toggle" id="topo-toggle" type="button" aria-expanded="true">Grafik</button>
+              <button class="ib" type="button" data-info="begriff:topologie" aria-label="Was zeigt die Topologie?"><span class="dot"><svg class="ic i-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#z-info-i"/></svg></span></button>
+            </div>
+          </div>
+          <div class="topo-stage" id="topo-stage">
+            <div class="topo-corner">
+              <label class="topo-bauart"><span class="sr">Bauart</span><select class="inp" id="topo-bauart"></select></label>
+            </div>
+            <div class="topo-canvas">
+              <svg class="car" id="topo" viewBox="0 0 240 520" role="group" aria-label="Fahrzeug von oben mit Steuergeräten"></svg>
+              <div class="topo-pins" id="topo-pins"></div>
+            </div>
+            <div class="topo-rest" id="topo-rest"></div>
+          </div>
+          <div class="legend" id="topo-legend" aria-live="polite"></div>
+          <div class="scan-row">
+            <button class="btn pri scan-btn" id="scan-btn" type="button"><span class="fill" id="scan-bar" aria-hidden="true"></span><span class="lbl" id="scan-label">Vollscan starten</span></button>
+            <span class="scan-ticker mono" id="scan-ticker" aria-live="polite">bereit</span>
+            <div class="bar-t scan-rm" aria-hidden="true"><i class="bar-f" id="scan-rm-bar"></i></div>
+          </div>
+        </div>
+        <div class="stats" id="stats"></div>
+        <section class="ecus">
+          <div class="sec-head"><h2>Steuergeräte</h2><span class="sm" id="ecu-count"></span></div>
+          <div class="list" id="ecu-list"></div>
+        </section>
+        <section class="timeline">
+          <div class="sec-head"><div><p class="eyebrow">Fahrzeugakte</p><h2>Verlauf dieser Sitzung</h2></div></div>
+          <div class="list" id="timeline" role="list"></div>
+        </section>
+      </section>
+
+      <!-- Fehler -->
+      <section class="view view-faults" id="view-faults" aria-labelledby="page-title" hidden>
+        <div class="card hero fault-hero" id="fault-hero"></div>
+        <div class="fault-main">
+          <section class="fault-groups" aria-label="Fehler nach Dringlichkeit">
+            <div class="list-head"><h2>Was im Speicher steht</h2><button class="btn qt small" id="obd-clear" type="button">OBD-Fehler löschen …</button></div>
+            <div id="fault-list"></div>
+          </section>
+          <aside class="card ki" id="ki-panel" aria-label="Ursachen finden"></aside>
+        </div>
+      </section>
+
+      <!-- Live -->
+      <section class="view view-live" id="view-live" aria-labelledby="page-title" hidden>
+        <div class="card hero live-hero" id="live-hero"></div>
+        <div class="gauges" id="gauges"></div>
+        <div class="deep-tabs seg" id="live-tabs" role="tablist" aria-label="Tiefer graben"></div>
+        <section class="params" data-live="werte" role="tabpanel">
+          <div class="list-head"><h2>Alle Messwerte</h2><span class="sm" id="live-state"></span></div>
+          <div id="params"></div>
+        </section>
+        <section class="chartsec" data-live="diagramm" role="tabpanel" hidden>
+          <div class="sec-head">
+            <div><p class="eyebrow">Verlauf, letzte 10 Minuten</p><h2 id="chart-title">Messkanäle</h2></div>
+            <button class="ib" type="button" data-info="begriff:sollband" aria-label="Was zeigt das Diagramm?"><span class="dot"><svg class="ic i-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#z-info-i"/></svg></span></button>
+          </div>
+          <div class="chan-pick" id="chan-pick"></div>
+          <div class="charts" id="charts"></div>
+          <div class="scrub-box" id="scrub" hidden></div>
+        </section>
+        <section class="recsec" data-live="aufnahme" role="tabpanel" hidden>
+          <div class="sec-head">
+            <div><p class="eyebrow">Sporadische Fehler einfangen</p><h2>Aufnahme</h2></div>
+            <button class="ib" type="button" data-info="begriff:aufnahme" aria-label="Wie funktioniert die Aufnahme?"><span class="dot"><svg class="ic i-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#z-info-i"/></svg></span></button>
+          </div>
+          <div class="card rec-box" id="rec-box"></div>
+          <div class="list recs" id="recordings"></div>
+        </section>
+      </section>
+
+      <!-- Prüfen -->
+      <section class="view view-check" id="view-check" aria-labelledby="page-title" hidden>
+        <div class="tiles" id="check-tiles"></div>
+        <section class="sub" data-sub="pfade" hidden>
+          <div class="sec-head">
+            <div><p class="eyebrow">Schritt für Schritt bis Pass oder Fail</p><h2>Geführte Prüfpfade</h2></div>
+            <button class="ib" type="button" data-info="begriff:pruefpfad" aria-label="Was ist ein Prüfpfad?"><span class="dot"><svg class="ic i-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#z-info-i"/></svg></span></button>
+          </div>
+          <div id="pfade"></div>
+        </section>
+        <section class="sub" data-sub="soll" hidden>
+          <div class="sec-head">
+            <div><p class="eyebrow">Vollanalyse</p><h2>Ist gegen Soll</h2></div>
+            <button class="ib" type="button" data-info="begriff:richtwert" aria-label="Richtwert"><span class="dot"><svg class="ic i-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#z-info-i"/></svg></span></button>
+          </div>
+          <p class="sm" id="soll-state"></p>
+          <div class="list" id="soll"></div>
+        </section>
+        <section class="sub" data-sub="bereitschaft" hidden>
+          <div class="sec-head">
+            <div><p class="eyebrow">AU-Vorbereitung</p><h2>Bereitschaftstests</h2></div>
+            <button class="ib" type="button" data-info="begriff:readiness" aria-label="Readiness"><span class="dot"><svg class="ic i-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#z-info-i"/></svg></span></button>
+          </div>
+          <div class="list" id="readiness"></div>
+        </section>
+        <section class="sub" data-sub="freeze" hidden>
+          <div class="sec-head">
+            <div><p class="eyebrow">Momentaufnahme beim Fehler</p><h2 id="freeze-title">Freeze-Frame</h2></div>
+            <button class="ib" type="button" data-info="begriff:freeze" aria-label="Freeze-Frame"><span class="dot"><svg class="ic i-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#z-info-i"/></svg></span></button>
+          </div>
+          <div class="list" id="freeze"></div>
+        </section>
+        <section class="sub" data-sub="service" hidden>
+          <div class="sec-head">
+            <div><p class="eyebrow">Stellglieder, Grundeinstellungen, Resets</p><h2>Service-Funktionen</h2></div>
+            <button class="ib" type="button" data-info="begriff:version" aria-label="Versionen"><span class="dot"><svg class="ic i-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#z-info-i"/></svg></span></button>
+          </div>
+          <div class="list" id="functions"></div>
+        </section>
+        <section class="sub" data-sub="did" hidden>
+          <div class="sec-head">
+            <div><p class="eyebrow">Eigene Werte entdecken</p><h2>DID lesen</h2></div>
+            <button class="ib" type="button" data-info="begriff:did" aria-label="DID"><span class="dot"><svg class="ic i-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#z-info-i"/></svg></span></button>
+          </div>
+          <form class="form" id="did-form">
+            <label class="fld" for="did-addr"><span class="lab">Adresse</span><input class="inp hex" id="did-addr" value="7E0" maxlength="3" autocomplete="off"></label>
+            <label class="fld" for="did-id"><span class="lab">DID</span><input class="inp hex" id="did-id" value="F190" maxlength="4" autocomplete="off"></label>
+            <button class="btn sec" type="submit">Lesen</button>
+          </form>
+          <div class="card did-result" id="did-result" hidden></div>
+        </section>
+        <section class="sub" data-sub="rmi" hidden>
+          <div class="sec-head">
+            <div><p class="eyebrow">Herstellerdokumente</p><h2>RMI-Suche</h2></div>
+            <button class="ib" type="button" data-info="begriff:rmi" aria-label="RMI"><span class="dot"><svg class="ic i-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#z-info-i"/></svg></span></button>
+          </div>
+          <form class="form" id="rmi-form">
+            <label class="fld" for="rmi-q"><span class="lab">Suchbegriff</span><input class="inp" id="rmi-q" value="P0301" autocomplete="off"></label>
+            <span></span>
+            <button class="btn sec" type="submit">Suchen</button>
+          </form>
+          <div class="list" id="rmi-result"></div>
+        </section>
+      </section>
+
+      <!-- KI-Chat (chat.js) -->
+      <section class="view view-agent" id="view-agent" aria-labelledby="page-title" hidden>
+        <div class="cx-ambient" aria-hidden="true"></div>
+        <div class="cx-top"><span class="cs t-info">Nur Vorschläge</span><span class="sm">Die KI sieht den Fahrzeugstand ohne FIN und führt nichts aus.</span><button class="btn qt small" id="cx-clear" type="button" hidden>Neuer Chat</button></div>
+        <div class="cx-log" id="cx-log" aria-live="polite"></div>
+        <form class="cx-composer glass" id="cx-composer" novalidate>
+          <div class="cx-chips" id="cx-chips" hidden></div>
+          <label class="sr" for="cx-input">Nachricht an die KI</label>
+          <textarea class="cx-input" id="cx-input" rows="1" placeholder="Frag etwas zum Auto, häng ein Foto oder PDF an …" autocomplete="off"></textarea>
+          <div class="cx-bar">
+            <button class="cx-ib" id="cx-plus" type="button" aria-label="Anhängen und mehr" aria-haspopup="menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+            <button class="cx-pill" id="cx-web" type="button" title="Websuche ausschalten"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg>Websuche</button>
+            <span class="cx-grow"></span>
+            <button class="cx-ib" id="cx-mic" type="button" aria-label="Diktieren" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></button>
+            <button class="cx-send" id="cx-send" type="submit" aria-label="Senden" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg></button>
+            <button class="cx-send stop" id="cx-stop" type="button" aria-label="Antwort stoppen" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/></svg></button>
+          </div>
+          <input type="file" id="cx-file" accept=".pdf,.txt,.csv,.log,.json,.md,.xml,application/pdf,text/plain" multiple hidden>
+          <input type="file" id="cx-image" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
+          <input type="file" id="cx-camera" accept="image/*" capture="environment" hidden>
+        </form>
+      </section>
+
+      <!-- Bericht -->
+      <section class="view view-report" id="view-report" aria-labelledby="page-title" hidden>
+        <div class="sec-head no-print">
+          <div><p class="eyebrow">Vorher und nachher, lokal, ohne Hersteller-Cloud</p><h2>Diagnosebericht</h2></div>
+          <button class="ib" type="button" data-info="begriff:bericht" aria-label="Was steht im Bericht?"><span class="dot"><svg class="ic i-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#z-info-i"/></svg></span></button>
+        </div>
+        <div class="report-tools no-print" id="report-tools"></div>
+        <article class="card paper" id="report"></article>
+      </section>
+
+      <!-- Verlauf -->
+      <section class="view view-history" id="view-history" aria-labelledby="page-title" hidden>
+        <div class="sec-head"><div><p class="eyebrow">Frühere Diagnosen auf diesem Gerät</p><h2>Diagnoseverlauf</h2></div><span class="sm" id="history-count"></span></div>
+        <div id="history"></div>
+      </section>
+
+      <!-- Detailseite: Infos und Erklärungen als eigene Seite -->
+      <section class="view view-detail" id="view-detail" aria-labelledby="page-title" hidden>
+        <article class="card detail" id="pane-body" tabindex="-1"></article>
+      </section>
+    </div>
+  </main>
+
+  <dialog class="approval" id="approval" aria-label="Freigabe"><div class="dlg" id="approval-body"></div></dialog>
+  <dialog class="vorgang" id="vorgang" aria-label="Vorgang"><div class="dlg" id="vorgang-body"></div></dialog>
+  <dialog class="palette" id="palette" aria-label="Suche"><div class="pal" id="palette-body"></div></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</div>
+
+<script src="vendor/uPlot.iife.min.js"></script>
+<script type="module" src="app.js"></script>
+<script>
+if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+</script>
+</body>
+</html>

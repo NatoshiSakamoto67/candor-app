@@ -1,0 +1,1665 @@
+{
+ "status": {
+  "ok": true,
+  "profil": "demo",
+  "fahrzeug": "Simulator-Demofahrzeug (synthetische Werte)",
+  "simuliert": true,
+  "schreiben_an": true,
+  "version": "intern",
+  "ki": "beispiel",
+  "module": [
+   {
+    "name": "Motor",
+    "beschreibung": "Motorsteuergerät",
+    "adresse": "0x7E0",
+    "verifiziert": true,
+    "quelle": "ISO 15765-4 (genormte OBD-Adresse)",
+    "sicherheitskritisch": false
+   },
+   {
+    "name": "Getriebe",
+    "beschreibung": "Getriebesteuergerät",
+    "adresse": "0x7E1",
+    "verifiziert": true,
+    "quelle": "ISO 15765-4 (genormte OBD-Adresse)",
+    "sicherheitskritisch": false
+   },
+   {
+    "name": "ABS",
+    "beschreibung": "ABS/ESP (nur im Simulator)",
+    "adresse": "0x7B0",
+    "verifiziert": false,
+    "quelle": null,
+    "sicherheitskritisch": true
+   },
+   {
+    "name": "Airbag",
+    "beschreibung": "Airbag (im Simulator absichtlich nicht vorhanden)",
+    "adresse": "0x7D2",
+    "verifiziert": false,
+    "quelle": null,
+    "sicherheitskritisch": true
+   }
+  ],
+  "hinweise": [
+   "Alle Werte sind synthetisch und stammen nicht aus einem echten Auto."
+  ],
+  "protokoll": "CAN 11 Bit, 500 kbit/s (simuliert)"
+ },
+ "fahrzeug": {
+  "ok": true,
+  "vin_maskiert": "SML**************",
+  "gueltig": true,
+  "marke": "unbekannt",
+  "passende_profile": []
+ },
+ "obd_fehler": {
+  "ok": true,
+  "simuliert": true,
+  "gespeichert": {
+   "0x7E8": [
+    {
+     "code": "P0301",
+     "fehlerart": "00",
+     "status": "0x08",
+     "bestaetigt": true,
+     "aktiv": false,
+     "beschreibung": "Zündaussetzer Zylinder 1",
+     "bekannt": true,
+     "quelle": "SAE J2012 (generisch)",
+     "statusbits": [
+      "Bestätigt und gespeichert"
+     ]
+    },
+    {
+     "code": "P0171",
+     "fehlerart": "00",
+     "status": "0x08",
+     "bestaetigt": true,
+     "aktiv": false,
+     "beschreibung": "Gemisch zu mager (Bank 1)",
+     "bekannt": true,
+     "quelle": "SAE J2012 (generisch)",
+     "statusbits": [
+      "Bestätigt und gespeichert"
+     ]
+    }
+   ],
+   "0x7E9": []
+  },
+  "vorlaeufig": {
+   "0x7E8": [
+    {
+     "code": "P0301",
+     "fehlerart": "00",
+     "status": "0x04",
+     "bestaetigt": false,
+     "aktiv": false,
+     "beschreibung": "Zündaussetzer Zylinder 1",
+     "bekannt": true,
+     "quelle": "SAE J2012 (generisch)",
+     "statusbits": [
+      "Vorläufig (noch nicht bestätigt)"
+     ]
+    },
+    {
+     "code": "P0420",
+     "fehlerart": "00",
+     "status": "0x04",
+     "bestaetigt": false,
+     "aktiv": false,
+     "beschreibung": "Katalysator Wirkungsgrad zu niedrig (Bank 1)",
+     "bekannt": true,
+     "quelle": "SAE J2012 (generisch)",
+     "statusbits": [
+      "Vorläufig (noch nicht bestätigt)"
+     ]
+    }
+   ],
+   "0x7E9": []
+  },
+  "permanent": {
+   "0x7E8": [],
+   "0x7E9": []
+  },
+  "anzahl_gespeichert": 2
+ },
+ "steuergeraete_profil": {
+  "ok": true,
+  "gesamt": 4,
+  "module": [
+   {
+    "ok": true,
+    "modul": "Motor",
+    "anzahl": 3,
+    "fehler": [
+     {
+      "code": "P0301",
+      "fehlerart": "00",
+      "status": "0x2F",
+      "bestaetigt": true,
+      "aktiv": true,
+      "beschreibung": "Zündaussetzer Zylinder 1",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Beim letzten Test fehlgeschlagen",
+       "In diesem Fahrzyklus fehlgeschlagen",
+       "Vorläufig (noch nicht bestätigt)",
+       "Bestätigt und gespeichert",
+       "Seit dem Löschen mindestens einmal fehlgeschlagen"
+      ]
+     },
+     {
+      "code": "P0171",
+      "fehlerart": "00",
+      "status": "0x08",
+      "bestaetigt": true,
+      "aktiv": false,
+      "beschreibung": "Gemisch zu mager (Bank 1)",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Bestätigt und gespeichert"
+      ]
+     },
+     {
+      "code": "P0420",
+      "fehlerart": "00",
+      "status": "0x04",
+      "bestaetigt": false,
+      "aktiv": false,
+      "beschreibung": "Katalysator Wirkungsgrad zu niedrig (Bank 1)",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Vorläufig (noch nicht bestätigt)"
+      ]
+     }
+    ],
+    "zusammenfassung": "Motor: 3 Fehler gespeichert"
+   },
+   {
+    "ok": true,
+    "modul": "Getriebe",
+    "anzahl": 0,
+    "fehler": [],
+    "zusammenfassung": "Getriebe: 0 Fehler gespeichert"
+   },
+   {
+    "ok": true,
+    "modul": "ABS",
+    "anzahl": 1,
+    "fehler": [
+     {
+      "code": "U0100",
+      "fehlerart": "00",
+      "status": "0x08",
+      "bestaetigt": true,
+      "aktiv": false,
+      "beschreibung": "Keine Kommunikation mit Motorsteuergerät",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Bestätigt und gespeichert"
+      ]
+     }
+    ],
+    "zusammenfassung": "ABS: 1 Fehler gespeichert"
+   },
+   {
+    "ok": false,
+    "fehler": "zeitueberschreitung",
+    "meldung": "Airbag antwortet nicht auf Dienst 0x19 (3 Versuche). Zündung aus, Steuergerät schläft, falsche Adresse oder anderer Bus.",
+    "modul": "Airbag",
+    "dienst": "0x19",
+    "hinweis": "Adresse unverifiziert. Stille kann auch heißen: Adresse falsch."
+   }
+  ],
+  "ohne_antwort": [
+   "Airbag"
+  ]
+ },
+ "live": {
+  "ok": true,
+  "werte": [
+   {
+    "signal": "LAST",
+    "wert": 21.57,
+    "einheit": "%",
+    "beschreibung": "Motorlast berechnet"
+   },
+   {
+    "signal": "KUEHLMITTEL",
+    "wert": 89,
+    "einheit": "°C",
+    "beschreibung": "Kühlmitteltemperatur"
+   },
+   {
+    "signal": "SAUGROHRDRUCK",
+    "wert": 34,
+    "einheit": "kPa",
+    "beschreibung": "Saugrohrdruck absolut"
+   },
+   {
+    "signal": "DREHZAHL",
+    "wert": 780.0,
+    "einheit": "1/min",
+    "beschreibung": "Motordrehzahl"
+   },
+   {
+    "signal": "GESCHWINDIGKEIT",
+    "wert": 0,
+    "einheit": "km/h",
+    "beschreibung": "Fahrzeuggeschwindigkeit"
+   },
+   {
+    "signal": "ANSAUGLUFT",
+    "wert": 24,
+    "einheit": "°C",
+    "beschreibung": "Ansauglufttemperatur"
+   },
+   {
+    "signal": "LUFTMASSE",
+    "wert": 2.9,
+    "einheit": "g/s",
+    "beschreibung": "Luftmasse"
+   },
+   {
+    "signal": "DROSSELKLAPPE",
+    "wert": 12.55,
+    "einheit": "%",
+    "beschreibung": "Drosselklappenstellung"
+   },
+   {
+    "signal": "TANK",
+    "wert": 48.24,
+    "einheit": "%",
+    "beschreibung": "Tankfüllstand"
+   },
+   {
+    "signal": "LUFTDRUCK",
+    "wert": 100,
+    "einheit": "kPa",
+    "beschreibung": "Umgebungsluftdruck"
+   },
+   {
+    "signal": "SPANNUNG",
+    "wert": 14.2,
+    "einheit": "V",
+    "beschreibung": "Steuergerätespannung"
+   },
+   {
+    "signal": "UMGEBUNG",
+    "wert": 16,
+    "einheit": "°C",
+    "beschreibung": "Umgebungstemperatur"
+   },
+   {
+    "signal": "OELTEMPERATUR",
+    "wert": 92,
+    "einheit": "°C",
+    "beschreibung": "Motoröltemperatur"
+   },
+   {
+    "signal": "TRIM_KURZ_B1",
+    "wert": 3.12,
+    "einheit": "%",
+    "beschreibung": "Gemischkorrektur kurzfristig Bank 1"
+   },
+   {
+    "signal": "TRIM_LANG_B1",
+    "wert": 17.19,
+    "einheit": "%",
+    "beschreibung": "Gemischkorrektur langfristig Bank 1",
+    "warnung": "Gemischkorrektur über ±15 %. Falschluft, Einspritzung oder Lambdasonde prüfen."
+   },
+   {
+    "signal": "TRIM_KURZ_B2",
+    "wert": null,
+    "einheit": "%",
+    "fehler": "nicht unterstützt"
+   },
+   {
+    "signal": "TRIM_LANG_B2",
+    "wert": null,
+    "einheit": "%",
+    "fehler": "nicht unterstützt"
+   },
+   {
+    "signal": "LAMBDA_SOLL",
+    "wert": 1.0,
+    "einheit": "λ",
+    "beschreibung": "Lambda Sollwert"
+   },
+   {
+    "signal": "ZUENDWINKEL",
+    "wert": 8.5,
+    "einheit": "°",
+    "beschreibung": "Zündzeitpunkt (vor OT)"
+   },
+   {
+    "signal": "LAST_ABSOLUT",
+    "wert": 23.92,
+    "einheit": "%",
+    "beschreibung": "Motorlast absolut"
+   },
+   {
+    "signal": "DROSSEL_RELATIV",
+    "wert": 5.1,
+    "einheit": "%",
+    "beschreibung": "Drosselklappe relativ"
+   },
+   {
+    "signal": "DREHMOMENT",
+    "wert": 14,
+    "einheit": "%",
+    "beschreibung": "Motordrehmoment Ist"
+   },
+   {
+    "signal": "LAUFZEIT",
+    "wert": 942,
+    "einheit": "s",
+    "beschreibung": "Laufzeit seit Motorstart"
+   },
+   {
+    "signal": "RAILDRUCK",
+    "wert": null,
+    "einheit": "kPa",
+    "fehler": "nicht unterstützt"
+   },
+   {
+    "signal": "VERBRAUCH",
+    "wert": 0.9,
+    "einheit": "l/h",
+    "beschreibung": "Kraftstoffverbrauch"
+   },
+   {
+    "signal": "AGR_SOLL",
+    "wert": null,
+    "einheit": "%",
+    "fehler": "nicht unterstützt"
+   },
+   {
+    "signal": "KAT_TEMP_B1",
+    "wert": 612.0,
+    "einheit": "°C",
+    "beschreibung": "Katalysatortemperatur Bank 1"
+   },
+   {
+    "signal": "KM_MIT_MIL",
+    "wert": 137,
+    "einheit": "km",
+    "beschreibung": "Strecke mit leuchtender Motorkontrollleuchte"
+   },
+   {
+    "signal": "KM_SEIT_LOESCHEN",
+    "wert": 1483,
+    "einheit": "km",
+    "beschreibung": "Strecke seit dem letzten Löschen"
+   }
+  ],
+  "simuliert": true
+ },
+ "bereitschaft": {
+  "ok": true,
+  "steuergeraete": {
+   "0x7E8": {
+    "mil": true,
+    "anzahl_fehler": 2,
+    "motor": "Benzin",
+    "tests": [
+     {
+      "name": "Zündaussetzer",
+      "fertig": true
+     },
+     {
+      "name": "Kraftstoffsystem",
+      "fertig": true
+     },
+     {
+      "name": "Bauteile",
+      "fertig": true
+     },
+     {
+      "name": "Katalysator",
+      "fertig": true
+     },
+     {
+      "name": "Tankentlüftung",
+      "fertig": false
+     },
+     {
+      "name": "Lambdasonde",
+      "fertig": true
+     },
+     {
+      "name": "Lambdasonden-Heizung",
+      "fertig": true
+     }
+    ],
+    "au_bereit": false
+   },
+   "0x7E9": {
+    "mil": false,
+    "anzahl_fehler": 0,
+    "motor": "Benzin",
+    "tests": [
+     {
+      "name": "Zündaussetzer",
+      "fertig": true
+     },
+     {
+      "name": "Kraftstoffsystem",
+      "fertig": true
+     },
+     {
+      "name": "Bauteile",
+      "fertig": true
+     }
+    ],
+    "au_bereit": true
+   }
+  },
+  "simuliert": true
+ },
+ "freeze": {
+  "ok": true,
+  "steuergeraete": {
+   "0x7E8": {
+    "ausloeser": "P0301",
+    "beschreibung": "Zündaussetzer Zylinder 1",
+    "werte": [
+     {
+      "signal": "LAST",
+      "beschreibung": "Motorlast berechnet",
+      "wert": 64.3,
+      "einheit": "%"
+     },
+     {
+      "signal": "KUEHLMITTEL",
+      "beschreibung": "Kühlmitteltemperatur",
+      "wert": 82,
+      "einheit": "°C"
+     },
+     {
+      "signal": "TRIM_KURZ_B1",
+      "beschreibung": "Gemischkorrektur kurzfristig Bank 1",
+      "wert": 9.4,
+      "einheit": "%"
+     },
+     {
+      "signal": "TRIM_LANG_B1",
+      "beschreibung": "Gemischkorrektur langfristig Bank 1",
+      "wert": 17.2,
+      "einheit": "%"
+     },
+     {
+      "signal": "DREHZAHL",
+      "beschreibung": "Motordrehzahl",
+      "wert": 2340.0,
+      "einheit": "1/min"
+     },
+     {
+      "signal": "GESCHWINDIGKEIT",
+      "beschreibung": "Fahrzeuggeschwindigkeit",
+      "wert": 63,
+      "einheit": "km/h"
+     },
+     {
+      "signal": "ANSAUGLUFT",
+      "beschreibung": "Ansauglufttemperatur",
+      "wert": 21,
+      "einheit": "°C"
+     },
+     {
+      "signal": "DROSSELKLAPPE",
+      "beschreibung": "Drosselklappenstellung",
+      "wert": 28.6,
+      "einheit": "%"
+     }
+    ]
+   }
+  },
+  "simuliert": true
+ },
+ "info": {
+  "ok": true,
+  "steuergeraete": {
+   "0x7E8": {
+    "kalibrierung": "SIM-CAL-0815",
+    "name": "Motorelektronik"
+   },
+   "0x7E9": {
+    "name": "Getriebeelektronik"
+   }
+  }
+ },
+ "scan": [
+  {
+   "typ": "scan_fund",
+   "steuergeraet": {
+    "adresse": "0x710",
+    "name": "Gateway",
+    "im_profil": false,
+    "kennung": {
+     "system": "Gateway",
+     "teilenummer": "SIM-710-PN01",
+     "seriennummer": "SIM-710-0001",
+     "software": "0420"
+    },
+    "fehler": [
+     {
+      "code": "B1A42",
+      "fehlerart": "00",
+      "status": "0x08",
+      "bestaetigt": true,
+      "aktiv": false,
+      "beschreibung": "Unbekannt (herstellerspezifisch, kein Profil mit Quelle)",
+      "bekannt": false,
+      "quelle": null,
+      "statusbits": [
+       "Bestätigt und gespeichert"
+      ]
+     }
+    ],
+    "fehler_lesbar": true,
+    "hinweis": null
+   }
+  },
+  {
+   "typ": "scan_fund",
+   "steuergeraet": {
+    "adresse": "0x720",
+    "name": "Kombiinstrument",
+    "im_profil": false,
+    "kennung": {
+     "system": "Kombiinstrument",
+     "teilenummer": "SIM-720-PN01",
+     "seriennummer": "SIM-720-0001",
+     "software": "0420"
+    },
+    "fehler": [],
+    "fehler_lesbar": true,
+    "hinweis": null
+   }
+  },
+  {
+   "typ": "scan_fund",
+   "steuergeraet": {
+    "adresse": "0x730",
+    "name": "Servolenkung",
+    "im_profil": false,
+    "kennung": {
+     "system": "Servolenkung",
+     "teilenummer": "SIM-730-PN01",
+     "seriennummer": "SIM-730-0001",
+     "software": "0420"
+    },
+    "fehler": [
+     {
+      "code": "U0121",
+      "fehlerart": "00",
+      "status": "0x09",
+      "bestaetigt": true,
+      "aktiv": true,
+      "beschreibung": "Keine Kommunikation mit ABS-Steuergerät",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Beim letzten Test fehlgeschlagen",
+       "Bestätigt und gespeichert"
+      ]
+     }
+    ],
+    "fehler_lesbar": true,
+    "hinweis": null
+   }
+  },
+  {
+   "typ": "scan_fund",
+   "steuergeraet": {
+    "adresse": "0x740",
+    "name": "Karosserie",
+    "im_profil": false,
+    "kennung": {
+     "system": "Karosserie",
+     "teilenummer": "SIM-740-PN01",
+     "seriennummer": "SIM-740-0001",
+     "software": "0420"
+    },
+    "fehler": [],
+    "fehler_lesbar": true,
+    "hinweis": null
+   }
+  },
+  {
+   "typ": "scan_fund",
+   "steuergeraet": {
+    "adresse": "0x746",
+    "name": "Klimaanlage",
+    "im_profil": false,
+    "kennung": {
+     "system": "Klimaanlage",
+     "teilenummer": "SIM-746-PN01",
+     "seriennummer": "SIM-746-0001",
+     "software": "0420"
+    },
+    "fehler": [],
+    "fehler_lesbar": true,
+    "hinweis": null
+   }
+  },
+  {
+   "typ": "scan_fund",
+   "steuergeraet": {
+    "adresse": "0x76E",
+    "name": "Einparkhilfe",
+    "im_profil": false,
+    "kennung": {
+     "system": "Einparkhilfe",
+     "teilenummer": "SIM-76E-PN01",
+     "seriennummer": "SIM-76E-0001",
+     "software": "0420"
+    },
+    "fehler": [],
+    "fehler_lesbar": true,
+    "hinweis": null
+   }
+  },
+  {
+   "typ": "scan_fund",
+   "steuergeraet": {
+    "adresse": "0x772",
+    "name": "Infotainment",
+    "im_profil": false,
+    "kennung": {
+     "system": "Infotainment",
+     "teilenummer": "SIM-772-PN01",
+     "seriennummer": "SIM-772-0001",
+     "software": "0420"
+    },
+    "fehler": [],
+    "fehler_lesbar": true,
+    "hinweis": null
+   }
+  },
+  {
+   "typ": "scan_fund",
+   "steuergeraet": {
+    "adresse": "0x7B0",
+    "name": "ABS",
+    "im_profil": true,
+    "kennung": {
+     "system": "ABS/ESP",
+     "teilenummer": "SIM-7B0-PN01",
+     "seriennummer": "SIM-7B0-0001",
+     "software": "0420"
+    },
+    "fehler": [
+     {
+      "code": "U0100",
+      "fehlerart": "00",
+      "status": "0x08",
+      "bestaetigt": true,
+      "aktiv": false,
+      "beschreibung": "Keine Kommunikation mit Motorsteuergerät",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Bestätigt und gespeichert"
+      ]
+     }
+    ],
+    "fehler_lesbar": true,
+    "hinweis": null
+   }
+  },
+  {
+   "typ": "scan_fund",
+   "steuergeraet": {
+    "adresse": "0x7E0",
+    "name": "Motor",
+    "im_profil": true,
+    "kennung": {
+     "system": "Motorelektronik",
+     "teilenummer": "SIM-7E0-PN01",
+     "seriennummer": "SIM-7E0-0001",
+     "software": "0420"
+    },
+    "fehler": [
+     {
+      "code": "P0301",
+      "fehlerart": "00",
+      "status": "0x2F",
+      "bestaetigt": true,
+      "aktiv": true,
+      "beschreibung": "Zündaussetzer Zylinder 1",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Beim letzten Test fehlgeschlagen",
+       "In diesem Fahrzyklus fehlgeschlagen",
+       "Vorläufig (noch nicht bestätigt)",
+       "Bestätigt und gespeichert",
+       "Seit dem Löschen mindestens einmal fehlgeschlagen"
+      ]
+     },
+     {
+      "code": "P0171",
+      "fehlerart": "00",
+      "status": "0x08",
+      "bestaetigt": true,
+      "aktiv": false,
+      "beschreibung": "Gemisch zu mager (Bank 1)",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Bestätigt und gespeichert"
+      ]
+     },
+     {
+      "code": "P0420",
+      "fehlerart": "00",
+      "status": "0x04",
+      "bestaetigt": false,
+      "aktiv": false,
+      "beschreibung": "Katalysator Wirkungsgrad zu niedrig (Bank 1)",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Vorläufig (noch nicht bestätigt)"
+      ]
+     }
+    ],
+    "fehler_lesbar": true,
+    "hinweis": null
+   }
+  },
+  {
+   "typ": "scan_fund",
+   "steuergeraet": {
+    "adresse": "0x7E1",
+    "name": "Getriebe",
+    "im_profil": true,
+    "kennung": {
+     "system": "Getriebeelektronik",
+     "teilenummer": "SIM-7E1-PN01",
+     "seriennummer": "SIM-7E1-0001",
+     "software": "0420"
+    },
+    "fehler": [],
+    "fehler_lesbar": true,
+    "hinweis": null
+   }
+  },
+  {
+   "typ": "scan_ende",
+   "anzahl_steuergeraete": 10,
+   "anzahl_fehler": 6,
+   "neu_entdeckt": [
+    "0x710",
+    "0x720",
+    "0x730",
+    "0x740",
+    "0x746",
+    "0x76E",
+    "0x772"
+   ],
+   "simuliert": true
+  }
+ ],
+ "vollanalyse": {
+  "ok": true,
+  "simuliert": true,
+  "fahrzeug": {
+   "ok": true,
+   "vin_maskiert": "SML**************",
+   "gueltig": true,
+   "marke": "unbekannt",
+   "passende_profile": []
+  },
+  "obd_fehler": {
+   "ok": true,
+   "simuliert": true,
+   "gespeichert": {
+    "0x7E8": [
+     {
+      "code": "P0301",
+      "fehlerart": "00",
+      "status": "0x08",
+      "bestaetigt": true,
+      "aktiv": false,
+      "beschreibung": "Zündaussetzer Zylinder 1",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Bestätigt und gespeichert"
+      ]
+     },
+     {
+      "code": "P0171",
+      "fehlerart": "00",
+      "status": "0x08",
+      "bestaetigt": true,
+      "aktiv": false,
+      "beschreibung": "Gemisch zu mager (Bank 1)",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Bestätigt und gespeichert"
+      ]
+     }
+    ],
+    "0x7E9": []
+   },
+   "vorlaeufig": {
+    "0x7E8": [
+     {
+      "code": "P0301",
+      "fehlerart": "00",
+      "status": "0x04",
+      "bestaetigt": false,
+      "aktiv": false,
+      "beschreibung": "Zündaussetzer Zylinder 1",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Vorläufig (noch nicht bestätigt)"
+      ]
+     },
+     {
+      "code": "P0420",
+      "fehlerart": "00",
+      "status": "0x04",
+      "bestaetigt": false,
+      "aktiv": false,
+      "beschreibung": "Katalysator Wirkungsgrad zu niedrig (Bank 1)",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Vorläufig (noch nicht bestätigt)"
+      ]
+     }
+    ],
+    "0x7E9": []
+   },
+   "permanent": {
+    "0x7E8": [],
+    "0x7E9": []
+   },
+   "anzahl_gespeichert": 2
+  },
+  "steuergeraete": [
+   {
+    "adresse": "0x710",
+    "name": "Gateway",
+    "im_profil": false,
+    "kennung": {
+     "system": "Gateway",
+     "teilenummer": "SIM-710-PN01",
+     "seriennummer": "SIM-710-0001",
+     "software": "0420"
+    },
+    "fehler": [
+     {
+      "code": "B1A42",
+      "fehlerart": "00",
+      "status": "0x08",
+      "bestaetigt": true,
+      "aktiv": false,
+      "beschreibung": "Unbekannt (herstellerspezifisch, kein Profil mit Quelle)",
+      "bekannt": false,
+      "quelle": null,
+      "statusbits": [
+       "Bestätigt und gespeichert"
+      ]
+     }
+    ],
+    "fehler_lesbar": true,
+    "hinweis": null
+   },
+   {
+    "adresse": "0x720",
+    "name": "Kombiinstrument",
+    "im_profil": false,
+    "kennung": {
+     "system": "Kombiinstrument",
+     "teilenummer": "SIM-720-PN01",
+     "seriennummer": "SIM-720-0001",
+     "software": "0420"
+    },
+    "fehler": [],
+    "fehler_lesbar": true,
+    "hinweis": null
+   },
+   {
+    "adresse": "0x730",
+    "name": "Servolenkung",
+    "im_profil": false,
+    "kennung": {
+     "system": "Servolenkung",
+     "teilenummer": "SIM-730-PN01",
+     "seriennummer": "SIM-730-0001",
+     "software": "0420"
+    },
+    "fehler": [
+     {
+      "code": "U0121",
+      "fehlerart": "00",
+      "status": "0x09",
+      "bestaetigt": true,
+      "aktiv": true,
+      "beschreibung": "Keine Kommunikation mit ABS-Steuergerät",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Beim letzten Test fehlgeschlagen",
+       "Bestätigt und gespeichert"
+      ]
+     }
+    ],
+    "fehler_lesbar": true,
+    "hinweis": null
+   },
+   {
+    "adresse": "0x740",
+    "name": "Karosserie",
+    "im_profil": false,
+    "kennung": {
+     "system": "Karosserie",
+     "teilenummer": "SIM-740-PN01",
+     "seriennummer": "SIM-740-0001",
+     "software": "0420"
+    },
+    "fehler": [],
+    "fehler_lesbar": true,
+    "hinweis": null
+   },
+   {
+    "adresse": "0x746",
+    "name": "Klimaanlage",
+    "im_profil": false,
+    "kennung": {
+     "system": "Klimaanlage",
+     "teilenummer": "SIM-746-PN01",
+     "seriennummer": "SIM-746-0001",
+     "software": "0420"
+    },
+    "fehler": [],
+    "fehler_lesbar": true,
+    "hinweis": null
+   },
+   {
+    "adresse": "0x76E",
+    "name": "Einparkhilfe",
+    "im_profil": false,
+    "kennung": {
+     "system": "Einparkhilfe",
+     "teilenummer": "SIM-76E-PN01",
+     "seriennummer": "SIM-76E-0001",
+     "software": "0420"
+    },
+    "fehler": [],
+    "fehler_lesbar": true,
+    "hinweis": null
+   },
+   {
+    "adresse": "0x772",
+    "name": "Infotainment",
+    "im_profil": false,
+    "kennung": {
+     "system": "Infotainment",
+     "teilenummer": "SIM-772-PN01",
+     "seriennummer": "SIM-772-0001",
+     "software": "0420"
+    },
+    "fehler": [],
+    "fehler_lesbar": true,
+    "hinweis": null
+   },
+   {
+    "adresse": "0x7B0",
+    "name": "ABS",
+    "im_profil": true,
+    "kennung": {
+     "system": "ABS/ESP",
+     "teilenummer": "SIM-7B0-PN01",
+     "seriennummer": "SIM-7B0-0001",
+     "software": "0420"
+    },
+    "fehler": [
+     {
+      "code": "U0100",
+      "fehlerart": "00",
+      "status": "0x08",
+      "bestaetigt": true,
+      "aktiv": false,
+      "beschreibung": "Keine Kommunikation mit Motorsteuergerät",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Bestätigt und gespeichert"
+      ]
+     }
+    ],
+    "fehler_lesbar": true,
+    "hinweis": null
+   },
+   {
+    "adresse": "0x7E0",
+    "name": "Motor",
+    "im_profil": true,
+    "kennung": {
+     "system": "Motorelektronik",
+     "teilenummer": "SIM-7E0-PN01",
+     "seriennummer": "SIM-7E0-0001",
+     "software": "0420"
+    },
+    "fehler": [
+     {
+      "code": "P0301",
+      "fehlerart": "00",
+      "status": "0x2F",
+      "bestaetigt": true,
+      "aktiv": true,
+      "beschreibung": "Zündaussetzer Zylinder 1",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Beim letzten Test fehlgeschlagen",
+       "In diesem Fahrzyklus fehlgeschlagen",
+       "Vorläufig (noch nicht bestätigt)",
+       "Bestätigt und gespeichert",
+       "Seit dem Löschen mindestens einmal fehlgeschlagen"
+      ]
+     },
+     {
+      "code": "P0171",
+      "fehlerart": "00",
+      "status": "0x08",
+      "bestaetigt": true,
+      "aktiv": false,
+      "beschreibung": "Gemisch zu mager (Bank 1)",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Bestätigt und gespeichert"
+      ]
+     },
+     {
+      "code": "P0420",
+      "fehlerart": "00",
+      "status": "0x04",
+      "bestaetigt": false,
+      "aktiv": false,
+      "beschreibung": "Katalysator Wirkungsgrad zu niedrig (Bank 1)",
+      "bekannt": true,
+      "quelle": "SAE J2012 (generisch)",
+      "statusbits": [
+       "Vorläufig (noch nicht bestätigt)"
+      ]
+     }
+    ],
+    "fehler_lesbar": true,
+    "hinweis": null
+   },
+   {
+    "adresse": "0x7E1",
+    "name": "Getriebe",
+    "im_profil": true,
+    "kennung": {
+     "system": "Getriebeelektronik",
+     "teilenummer": "SIM-7E1-PN01",
+     "seriennummer": "SIM-7E1-0001",
+     "software": "0420"
+    },
+    "fehler": [],
+    "fehler_lesbar": true,
+    "hinweis": null
+   }
+  ],
+  "readiness": {
+   "ok": true,
+   "steuergeraete": {
+    "0x7E8": {
+     "mil": true,
+     "anzahl_fehler": 2,
+     "motor": "Benzin",
+     "tests": [
+      {
+       "name": "Zündaussetzer",
+       "fertig": true
+      },
+      {
+       "name": "Kraftstoffsystem",
+       "fertig": true
+      },
+      {
+       "name": "Bauteile",
+       "fertig": true
+      },
+      {
+       "name": "Katalysator",
+       "fertig": true
+      },
+      {
+       "name": "Tankentlüftung",
+       "fertig": false
+      },
+      {
+       "name": "Lambdasonde",
+       "fertig": true
+      },
+      {
+       "name": "Lambdasonden-Heizung",
+       "fertig": true
+      }
+     ],
+     "au_bereit": false
+    },
+    "0x7E9": {
+     "mil": false,
+     "anzahl_fehler": 0,
+     "motor": "Benzin",
+     "tests": [
+      {
+       "name": "Zündaussetzer",
+       "fertig": true
+      },
+      {
+       "name": "Kraftstoffsystem",
+       "fertig": true
+      },
+      {
+       "name": "Bauteile",
+       "fertig": true
+      }
+     ],
+     "au_bereit": true
+    }
+   },
+   "simuliert": true
+  },
+  "freeze_frame": {
+   "ok": true,
+   "steuergeraete": {
+    "0x7E8": {
+     "ausloeser": "P0301",
+     "beschreibung": "Zündaussetzer Zylinder 1",
+     "werte": [
+      {
+       "signal": "LAST",
+       "beschreibung": "Motorlast berechnet",
+       "wert": 64.3,
+       "einheit": "%"
+      },
+      {
+       "signal": "KUEHLMITTEL",
+       "beschreibung": "Kühlmitteltemperatur",
+       "wert": 82,
+       "einheit": "°C"
+      },
+      {
+       "signal": "TRIM_KURZ_B1",
+       "beschreibung": "Gemischkorrektur kurzfristig Bank 1",
+       "wert": 9.4,
+       "einheit": "%"
+      },
+      {
+       "signal": "TRIM_LANG_B1",
+       "beschreibung": "Gemischkorrektur langfristig Bank 1",
+       "wert": 17.2,
+       "einheit": "%"
+      },
+      {
+       "signal": "DREHZAHL",
+       "beschreibung": "Motordrehzahl",
+       "wert": 2340.0,
+       "einheit": "1/min"
+      },
+      {
+       "signal": "GESCHWINDIGKEIT",
+       "beschreibung": "Fahrzeuggeschwindigkeit",
+       "wert": 63,
+       "einheit": "km/h"
+      },
+      {
+       "signal": "ANSAUGLUFT",
+       "beschreibung": "Ansauglufttemperatur",
+       "wert": 21,
+       "einheit": "°C"
+      },
+      {
+       "signal": "DROSSELKLAPPE",
+       "beschreibung": "Drosselklappenstellung",
+       "wert": 28.6,
+       "einheit": "%"
+      }
+     ]
+    }
+   },
+   "simuliert": true
+  },
+  "live": {
+   "ok": true,
+   "werte": [
+    {
+     "signal": "LAST",
+     "wert": 21.57,
+     "einheit": "%",
+     "beschreibung": "Motorlast berechnet"
+    },
+    {
+     "signal": "KUEHLMITTEL",
+     "wert": 89,
+     "einheit": "°C",
+     "beschreibung": "Kühlmitteltemperatur"
+    },
+    {
+     "signal": "SAUGROHRDRUCK",
+     "wert": 34,
+     "einheit": "kPa",
+     "beschreibung": "Saugrohrdruck absolut"
+    },
+    {
+     "signal": "DREHZAHL",
+     "wert": 780.0,
+     "einheit": "1/min",
+     "beschreibung": "Motordrehzahl"
+    },
+    {
+     "signal": "GESCHWINDIGKEIT",
+     "wert": 0,
+     "einheit": "km/h",
+     "beschreibung": "Fahrzeuggeschwindigkeit"
+    },
+    {
+     "signal": "ANSAUGLUFT",
+     "wert": 24,
+     "einheit": "°C",
+     "beschreibung": "Ansauglufttemperatur"
+    },
+    {
+     "signal": "LUFTMASSE",
+     "wert": 2.9,
+     "einheit": "g/s",
+     "beschreibung": "Luftmasse"
+    },
+    {
+     "signal": "DROSSELKLAPPE",
+     "wert": 12.55,
+     "einheit": "%",
+     "beschreibung": "Drosselklappenstellung"
+    },
+    {
+     "signal": "TANK",
+     "wert": 48.24,
+     "einheit": "%",
+     "beschreibung": "Tankfüllstand"
+    },
+    {
+     "signal": "LUFTDRUCK",
+     "wert": 100,
+     "einheit": "kPa",
+     "beschreibung": "Umgebungsluftdruck"
+    },
+    {
+     "signal": "SPANNUNG",
+     "wert": 14.2,
+     "einheit": "V",
+     "beschreibung": "Steuergerätespannung"
+    },
+    {
+     "signal": "UMGEBUNG",
+     "wert": 16,
+     "einheit": "°C",
+     "beschreibung": "Umgebungstemperatur"
+    },
+    {
+     "signal": "OELTEMPERATUR",
+     "wert": 92,
+     "einheit": "°C",
+     "beschreibung": "Motoröltemperatur"
+    },
+    {
+     "signal": "TRIM_KURZ_B1",
+     "wert": 3.12,
+     "einheit": "%",
+     "beschreibung": "Gemischkorrektur kurzfristig Bank 1"
+    },
+    {
+     "signal": "TRIM_LANG_B1",
+     "wert": 17.19,
+     "einheit": "%",
+     "beschreibung": "Gemischkorrektur langfristig Bank 1",
+     "warnung": "Gemischkorrektur über ±15 %. Falschluft, Einspritzung oder Lambdasonde prüfen."
+    },
+    {
+     "signal": "TRIM_KURZ_B2",
+     "wert": null,
+     "einheit": "%",
+     "fehler": "nicht unterstützt"
+    },
+    {
+     "signal": "TRIM_LANG_B2",
+     "wert": null,
+     "einheit": "%",
+     "fehler": "nicht unterstützt"
+    },
+    {
+     "signal": "LAMBDA_SOLL",
+     "wert": 1.0,
+     "einheit": "λ",
+     "beschreibung": "Lambda Sollwert"
+    },
+    {
+     "signal": "ZUENDWINKEL",
+     "wert": 8.5,
+     "einheit": "°",
+     "beschreibung": "Zündzeitpunkt (vor OT)"
+    },
+    {
+     "signal": "LAST_ABSOLUT",
+     "wert": 23.92,
+     "einheit": "%",
+     "beschreibung": "Motorlast absolut"
+    },
+    {
+     "signal": "DROSSEL_RELATIV",
+     "wert": 5.1,
+     "einheit": "%",
+     "beschreibung": "Drosselklappe relativ"
+    },
+    {
+     "signal": "DREHMOMENT",
+     "wert": 14,
+     "einheit": "%",
+     "beschreibung": "Motordrehmoment Ist"
+    },
+    {
+     "signal": "LAUFZEIT",
+     "wert": 942,
+     "einheit": "s",
+     "beschreibung": "Laufzeit seit Motorstart"
+    },
+    {
+     "signal": "RAILDRUCK",
+     "wert": null,
+     "einheit": "kPa",
+     "fehler": "nicht unterstützt"
+    },
+    {
+     "signal": "VERBRAUCH",
+     "wert": 0.9,
+     "einheit": "l/h",
+     "beschreibung": "Kraftstoffverbrauch"
+    },
+    {
+     "signal": "AGR_SOLL",
+     "wert": null,
+     "einheit": "%",
+     "fehler": "nicht unterstützt"
+    },
+    {
+     "signal": "KAT_TEMP_B1",
+     "wert": 612.0,
+     "einheit": "°C",
+     "beschreibung": "Katalysatortemperatur Bank 1"
+    },
+    {
+     "signal": "KM_MIT_MIL",
+     "wert": 137,
+     "einheit": "km",
+     "beschreibung": "Strecke mit leuchtender Motorkontrollleuchte"
+    },
+    {
+     "signal": "KM_SEIT_LOESCHEN",
+     "wert": 1483,
+     "einheit": "km",
+     "beschreibung": "Strecke seit dem letzten Löschen"
+    }
+   ],
+   "simuliert": true
+  },
+  "sollwerte": {
+   "zustand": "leerlauf_warm",
+   "zustand_text": "Leerlauf, Motor betriebswarm (Kühlmittel über 75 °C), Fahrzeug steht",
+   "vergleich": [
+    {
+     "signal": "TRIM_LANG_B1",
+     "ist": 17.19,
+     "soll_min": -10.0,
+     "soll_max": 10.0,
+     "bewertung": "zu_hoch",
+     "art": "richtwert",
+     "quelle": "Allgemeiner Richtwert, kein Herstellerwert",
+     "hinweis": "Dauerhaft positiv: zu mager (Falschluft, Einspritzung, Kraftstoffdruck). Negativ: zu fett."
+    },
+    {
+     "signal": "DREHZAHL",
+     "ist": 780.0,
+     "soll_min": 600.0,
+     "soll_max": 950.0,
+     "bewertung": "ok",
+     "art": "richtwert",
+     "quelle": "Allgemeiner Richtwert, kein Herstellerwert",
+     "hinweis": "Leerlaufdrehzahl. Mit Klimaanlage oder Verbrauchern bis etwa 1000 1/min möglich."
+    },
+    {
+     "signal": "KAT_TEMP_B1",
+     "ist": 612.0,
+     "soll_min": 300.0,
+     "soll_max": 750.0,
+     "bewertung": "ok",
+     "art": "richtwert",
+     "quelle": "Allgemeiner Richtwert, kein Herstellerwert",
+     "hinweis": "Modellwert des Steuergeräts, kein gemessener Wert."
+    },
+    {
+     "signal": "KUEHLMITTEL",
+     "ist": 89,
+     "soll_min": 80.0,
+     "soll_max": 105.0,
+     "bewertung": "ok",
+     "art": "richtwert",
+     "quelle": "Allgemeiner Richtwert, kein Herstellerwert",
+     "hinweis": "Kennfeldthermostat kann im Teillastbereich über 100 °C regeln."
+    },
+    {
+     "signal": "LAMBDA_SOLL",
+     "ist": 1.0,
+     "soll_min": 0.98,
+     "soll_max": 1.02,
+     "bewertung": "ok",
+     "art": "richtwert",
+     "quelle": "Allgemeiner Richtwert, kein Herstellerwert",
+     "hinweis": "Im Regelbetrieb λ = 1."
+    },
+    {
+     "signal": "LAST",
+     "ist": 21.57,
+     "soll_min": 15.0,
+     "soll_max": 35.0,
+     "bewertung": "ok",
+     "art": "richtwert",
+     "quelle": "Allgemeiner Richtwert, kein Herstellerwert",
+     "hinweis": ""
+    },
+    {
+     "signal": "OELTEMPERATUR",
+     "ist": 92,
+     "soll_min": 80.0,
+     "soll_max": 120.0,
+     "bewertung": "ok",
+     "art": "richtwert",
+     "quelle": "Allgemeiner Richtwert, kein Herstellerwert",
+     "hinweis": ""
+    },
+    {
+     "signal": "SPANNUNG",
+     "ist": 14.2,
+     "soll_min": 13.2,
+     "soll_max": 14.8,
+     "bewertung": "ok",
+     "art": "richtwert",
+     "quelle": "Allgemeiner Richtwert, kein Herstellerwert",
+     "hinweis": "Ladespannung. Intelligente Lichtmaschinen regeln zeitweise auf 12,5 V herunter."
+    },
+    {
+     "signal": "TRIM_KURZ_B1",
+     "ist": 3.12,
+     "soll_min": -10.0,
+     "soll_max": 10.0,
+     "bewertung": "ok",
+     "art": "richtwert",
+     "quelle": "Allgemeiner Richtwert, kein Herstellerwert",
+     "hinweis": "Pendelt im Regelbetrieb um 0 %."
+    },
+    {
+     "signal": "ZUENDWINKEL",
+     "ist": 8.5,
+     "soll_min": 0.0,
+     "soll_max": 20.0,
+     "bewertung": "ok",
+     "art": "richtwert",
+     "quelle": "Allgemeiner Richtwert, kein Herstellerwert",
+     "hinweis": ""
+    }
+   ],
+   "abweichungen": 1
+  },
+  "rmi_fundstellen": {},
+  "rmi_dokumente": 0
+ },
+ "funktionen": {
+  "ok": true,
+  "version": "intern",
+  "verfuegbar": true,
+  "funktionen": [
+   {
+    "id": "kuehlerluefter_test",
+    "name": "Stellgliedtest Kühlerlüfter",
+    "modul": "Motor",
+    "art": "stellglied",
+    "anfrage": "2F 01 23 03 FF",
+    "stopp": "2F 01 23 00",
+    "quelle": "Simulator (Demo), keine echten Herstellerwerte",
+    "beschreibung": "Lüfter läuft mit voller Drehzahl, bis gestoppt wird. Finger weg vom Lüfter."
+   },
+   {
+    "id": "drosselklappe_anlernen",
+    "name": "Drosselklappe anlernen",
+    "modul": "Motor",
+    "art": "grundeinstellung",
+    "anfrage": "31 01 0F 01",
+    "stopp": null,
+    "quelle": "Simulator (Demo), keine echten Herstellerwerte",
+    "beschreibung": "Lernt die Endanschläge neu. Zündung an, Motor aus, kein Gas geben."
+   }
+  ]
+ },
+ "ki_beispiel": {
+  "ok": true,
+  "anbieter": "beispiel",
+  "modell": "Beispielantwort (Vorschau)",
+  "bewertung": {
+   "zusammenfassung": "Zündaussetzer an Zylinder 1 bei deutlich magerem Gemisch (Langzeitkorrektur +17 %). Der vorläufige Kat-Code ist wahrscheinlich eine Folge der Aussetzer, nicht die Ursache.",
+   "ampel": "gelb",
+   "fahrbereit": "Fahrbereit mit Einschränkung. Keine hohe Last, bis die Aussetzer behoben sind, sonst droht Kat-Schaden.",
+   "ursachen": [
+    {
+     "titel": "Falschluft im Ansaugtrakt",
+     "wahrscheinlichkeit": "hoch",
+     "sicherheit": "belegt",
+     "begruendung": "Langzeitkorrektur +17 % im Leerlauf bei gleichzeitigem P0171. Mageres Gemisch begünstigt Aussetzer, besonders an einem Zylinder nahe der Leckstelle.",
+     "codes": [
+      "P0171",
+      "P0301"
+     ],
+     "belege": [
+      {
+       "art": "messwert",
+       "bezug": "TRIM_LANG_B1",
+       "text": "Langzeitkorrektur +17,2 %, Richtwert −10 bis +10 %"
+      },
+      {
+       "art": "fehlercode",
+       "bezug": "P0171",
+       "text": "Gemisch zu mager, Bank 1, gespeichert"
+      },
+      {
+       "art": "messwert",
+       "bezug": "LUFTMASSE",
+       "text": "Luftmasse im Leerlauf unauffällig, spricht gegen den Luftmassenmesser"
+      }
+     ]
+    },
+    {
+     "titel": "Zündspule oder Zündkerze Zylinder 1",
+     "wahrscheinlichkeit": "mittel",
+     "sicherheit": "plausibel",
+     "begruendung": "P0301 ist aktiv und bestätigt. Freeze-Frame bei 2340 1/min und 64 % Last: typischer Lastaussetzer.",
+     "codes": [
+      "P0301"
+     ],
+     "belege": [
+      {
+       "art": "fehlercode",
+       "bezug": "P0301",
+       "text": "Zündaussetzer Zylinder 1, bestätigt"
+      },
+      {
+       "art": "freeze_frame",
+       "bezug": "P0301",
+       "text": "Aufgetreten bei 2340 1/min und 64 % Last"
+      }
+     ]
+    },
+    {
+     "titel": "Einspritzventil Zylinder 1",
+     "wahrscheinlichkeit": "niedrig",
+     "sicherheit": "vermutung",
+     "begruendung": "Würde Aussetzer und Magerkeit an einem Zylinder erklären, ist aber seltener als die beiden anderen Ursachen. Kein eigener Beleg in den Daten.",
+     "codes": [
+      "P0301",
+      "P0171"
+     ],
+     "belege": []
+    }
+   ],
+   "pruefschritte": [
+    {
+     "schritt": "Sichtprüfung Unterdruckschläuche, Kurbelgehäuseentlüftung und Saugrohrdichtung",
+     "werkzeug": "Lampe, Spiegel",
+     "minuten": 10
+    },
+    {
+     "schritt": "Rauchtest Ansaugtrakt",
+     "werkzeug": "Rauchgenerator",
+     "minuten": 20
+    },
+    {
+     "schritt": "Zündspule Zylinder 1 mit Zylinder 2 tauschen, Fehler löschen, Probefahrt: wandert der Fehler mit?",
+     "werkzeug": "Steckschlüssel, dieses Tool",
+     "minuten": 25
+    },
+    {
+     "schritt": "Zündkerze Zylinder 1 ausbauen und Kerzenbild prüfen",
+     "werkzeug": "Zündkerzenschlüssel",
+     "minuten": 15
+    },
+    {
+     "schritt": "Nach Reparatur: Fehler löschen, 20 Minuten gemischte Fahrt, Readiness und Gemischkorrektur kontrollieren",
+     "werkzeug": "dieses Tool",
+     "minuten": 30
+    }
+   ],
+   "unklar": [
+    "B1A42 im Gateway ist herstellerspezifisch, Bedeutung ohne RMI-Daten unbekannt.",
+    "U0121 in der Servolenkung (keine Kommunikation mit ABS) ist nur gespeichert, nicht aktiv. Nach Löschen beobachten."
+   ]
+  },
+  "simuliert": true
+ }
+}
