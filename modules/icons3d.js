@@ -18,51 +18,17 @@ function gearPath(cx, cy, outer, inner, teeth) {
 }
 
 /* body: Formen, die Tiefe, Verlauf und Glanz bekommen. detail: [klasse, form] darüber. */
-/* Coupé: dient als Fahrzeug-Symbol und, mit Plus-Abzeichen, als »Fahrzeug anlegen«. */
+/* Coupé: dient als Fahrzeug-Symbol und, mit Plus-Abzeichen, als »Fahrzeug anlegen«. Schlicht wie die anderen Icons:
+   eine Karosserie mit flacher Kabine weit hinten, getönte Scheiben, zwei Räder, Scheinwerfer vorn rechts. */
 const CAR = {
-  /* Eigenes GT-Coupé: lange Haube, Kabine weit hinten, kurzes Heck mit Abrisskante, Front rechts. */
-  body: [P("M3.6 46.8 L3.4 41 c0-1.6 .9-2.7 2.6-3.2 L9.5 36.6 l.4-.9 C14 35 17 33.2 21 31.2 C24.5 29.6 28.5 28.8 32 28.9 C35.5 29 38.5 30.2 41 32.4 L44 34.2 C49 35 55 35.6 59 36.6 c2 .5 3 1.8 3 3.6 V45 c0 1.2-.8 2-2 2 H57.2 a8.2 8.2 0 0 0 -16.4 0 H24.6 a8.2 8.2 0 0 0 -16.4 0 Z")],
-  /* Nur innerhalb der Karosserie: dunklere Unterseite für Volumen, Lichtband entlang der Schulter. */
-  clipped: [
-    ["d-shade", R(0, 41.6, 64, 12)],
-    ["d-reflect", P("M0 39.2 C20 38.4 40 38 64 38.4 V39.5 C40 39.1 20 39.5 0 40.3 Z")],
-    ["d-crease", P("M0 42.8 C22 42.4 42 42.3 64 42.6 V43.1 C42 42.8 22 42.9 0 43.3 Z")],
-  ],
+  body: [P("M4 45.5V39c0-2 1.2-3.2 3.5-3.8l3.5-.9c5-6.8 11-11.7 19-12.1 5-.2 9 2.3 12.6 7.8l12.9 2.6c3.5.7 5.5 2.8 5.5 5.9v7c0 1.1-.9 2-2 2h-1.5a8.5 8.5 0 0 0-17 0h-16a8.5 8.5 0 0 0-17 0H6c-1.1 0-2-.9-2-2z")],
   detail: [
-    ["d-underglow", ["ellipse", { cx: 32.5, cy: 56.2, rx: 25, ry: 1.8 }]],
-    ["d-win", P("M14.6 35.8 C18 33.6 21.5 31.6 25 30.4 C28 29.6 31.5 29.5 34 30 C36.6 30.6 38.6 31.8 40.2 33.4 L40.6 35 H16.4 Z")],
-    ["d-glare", P("M33 29.8 L36 30.4 L32.6 35 H29.8 Z")],
-    ["d-glare2", P("M37.6 31.3 L38.8 32 L36.4 35 H35.2 Z")],
-    ["d-chrome", P("M14.6 35.8 C18 33.6 21.5 31.6 25 30.4 C28 29.6 31.5 29.5 34 30 C36.6 30.6 38.6 31.8 40.2 33.4")],
-    ["d-chrome", P("M44 35.6 C50 36.2 55 36.8 59.6 37.8")],
-    ["d-pillar", R(28.4, 29.7, 1.7, 5.4, .7)],
-    ["d-ink", P("M40.4 33.6 l3-.3 .3 1.5-3 .3z")],
-    ["d-intake", P("M42 39 L47.4 38.8 L46.8 40.5 L42.4 40.7 Z")],
-    ["d-slat", P("M42.8 39.8 L46.6 39.7")],
-    ["d-gap", P("M29.8 35.4 C29.6 38.6 30.2 42.2 31.4 45")],
-    ["d-ink", R(32.6, 37.2, 3.2, .9, .45)],
-    ["d-ink", R(24.8, 45.4, 15.6, 1.5, .75)],
-    ["d-ink", P("M56.6 43.2 h5.2 v1.4 h-5.8z")],
-    ["d-ink", P("M57.4 46.1 H61.8 l.4 .9 H57.2z")],
-    ["d-ink", R(3.6, 44.4, 4.4, 2.4, .6)],
-    ["d-exhaust", C(5, 45.6, .75)],
-    ["d-exhaust", C(6.9, 45.6, .75)],
-    ["d-head", P("M55.8 37.2 L61.8 38.6 L61.6 40 L56.2 39 Z")],
-    ["d-drl", P("M57.4 41.2 L61.6 41.8")],
-    ["d-tail", P("M3.4 38.6 L9.6 37.6 L9.6 38.9 L3.5 39.9 Z")],
-    ...[16.4, 49].flatMap((x) => {
-      const pt = (r, deg) => { const a = deg * Math.PI / 180; return `${(x + r * Math.cos(a)).toFixed(2)} ${(48 + r * Math.sin(a)).toFixed(2)}`; };
-      const spokes = [0, 1, 2, 3, 4].flatMap((k) => [-7, 7].map((o) => `M${pt(1.8, k * 72 - 90 + o * .6)}L${pt(4.9, k * 72 - 90 + o)}`)).join("");
-      return [
-        ["d-tire", C(x, 48, 7.4)],
-        ["d-sidewall", C(x, 48, 6.5)],
-        ["d-rimface", C(x, 48, 5.3)],
-        ["d-caliper", P(`M${pt(3.9, 200)}A3.9 3.9 0 0 1 ${pt(3.9, 245)}`)],
-        ["d-spoke", P(spokes)],
-        ["d-rimlip", C(x, 48, 5.3)],
-        ["d-cap", C(x, 48, 1.5)],
-      ];
-    }),
+    ["d-win", P("M13.6 34c4.3-5.2 9-8.6 14.4-9.2h.6V34z")],
+    ["d-win", P("M30.4 24.7c4 0 7 1.7 9.6 5.9l.6 3.4H30.4z")],
+    ["d-crease", P("M7 39.3c18-.8 35-.8 53-.3v.9c-18-.5-35-.5-53 .3z")],
+    ["d-head", P("M56 34.6l4.6 1.4-.1 1.6-4.1-.8z")],
+    ["d-tail", P("M4.2 37.4l4.4-1v1.6l-4.4.9z")],
+    ...[16, 49].flatMap((x) => [["d-tire", C(x, 47.5, 7)], ["d-rimface", C(x, 47.5, 4.3)], ["d-rimlip", C(x, 47.5, 4.3)], ["d-cap", C(x, 47.5, 1.5)]]),
   ],
 };
 

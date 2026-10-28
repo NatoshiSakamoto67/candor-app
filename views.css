@@ -219,8 +219,17 @@
 .param { grid-template-columns: 20px minmax(0, 1fr) auto 14px; gap: 4px 12px; align-items: center; }
 .param .v { font: 500 17px var(--font-num); text-align: right; font-variant-numeric: tabular-nums; }
 .param .v small { font: 400 var(--t-2) var(--font-text); color: var(--text-muted); margin-left: 4px; }
-.param .sollbar { grid-column: 1 / -1; height: 20px; }
+.param .sollbar { grid-column: 1 / -1; height: 34px; }
+.param .sollbar[hidden] { display: none; }
+/* Skalenbeschriftung unter dem Balken: Enden außen bündig, Sollgrenzen mittig unter der Bandkante */
+.param .sb-l { position: absolute; top: 19px; transform: translateX(-50%); font: 500 10.5px/14px var(--font-num); font-variant-numeric: tabular-nums; color: var(--text-muted); white-space: nowrap; }
+.param .sb-l.l0 { transform: none; } .param .sb-l.l3 { transform: translateX(-100%); }
+.param .sb-l.l1, .param .sb-l.l2 { color: var(--ok); }
+.param .sb-l.l1::before, .param .sb-l.l2::before { content: ""; position: absolute; left: 50%; top: -7px; width: 1px; height: 5px; background: var(--ok); }
+.param .sollbar .mk { transition: left 280ms var(--ease-out); }
+@media (prefers-reduced-motion: reduce) { .param .sollbar .mk { transition: none; } }
 .param .sollbar .trk, .param .sollbar .band { top: 7px; height: 6px; }
+.param .v b { font-weight: 500; }
 .param .sollbar .mk { top: 2px; height: 16px; }
 .param .sollbar .mk.ok { background: var(--text); }
 .param.warn { border-color: var(--warn); }

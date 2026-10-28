@@ -146,7 +146,10 @@ export function renderStatus() {
     { k: rpm == null ? "Motor" : rpm > 100 ? "Motor läuft" : "Zündung an", v: rpm == null ? "–" : rpm > 100 ? `${num(rpm, 0)} 1/min` : "Motor aus", tone: null, info: "signal:DREHZAHL", prio: 3 },
     state.recording ? { k: "Aufnahme", v: "läuft", tone: "running", info: "begriff:aufnahme", rec: true, prio: 1 } : null,
   ].filter(Boolean);
-  $("status-chips").replaceChildren(...chips.map(statusSegment));
+  /* Nur geänderte Chips tauschen: die Reihe behält ihre Scrollstellung und flackert nicht im Sekundentakt. */
+  const box = $("status-chips"), keys = chips.map((c) => JSON.stringify(c));
+  if (box.childElementCount !== chips.length) box.replaceChildren(...chips.map((c, i) => Object.assign(statusSegment(c), { _key: keys[i] })));
+  else [...box.children].forEach((el, i) => { if (el._key !== keys[i]) el.replaceWith(Object.assign(statusSegment(chips[i]), { _key: keys[i] })); });
   const band = $("conn-band");
   band.hidden = !state.connLost;
   if (state.connLost && !band.childElementCount) band.replaceChildren(mark("crit"),

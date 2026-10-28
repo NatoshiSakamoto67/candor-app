@@ -26,6 +26,13 @@ export function s(tag, attrs, ...children) {
 }
 
 const FMT = new Map();
+/* Feste Nachkommastellen für Messwerte: 14,20 bleibt 14,20 und springt nicht auf 14,2 und damit nicht in der Breite. */
+const FIX = new Map();
+export const numFix = (value, digits = 1) => {
+  if (value == null || Number.isNaN(value)) return "–";
+  if (!FIX.has(digits)) FIX.set(digits, new Intl.NumberFormat("de-DE", { maximumFractionDigits: digits, minimumFractionDigits: digits }));
+  return FIX.get(digits).format(value);
+};
 export const num = (value, digits = 1) => {
   if (value == null || Number.isNaN(value)) return "–";
   if (!FMT.has(digits)) FMT.set(digits, new Intl.NumberFormat("de-DE", { maximumFractionDigits: digits, minimumFractionDigits: 0 }));

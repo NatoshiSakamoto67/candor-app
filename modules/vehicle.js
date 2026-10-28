@@ -28,13 +28,16 @@ export function renderVehicleCard() {
           h("div", { class: "veh-head" }, plate(fz), h("h2", { class: "h2 vname" }, vehicleName(fz))),
           h("p", { class: "sm" }, vehicleFacts(fz) || "Weitere Angaben unter Bearbeiten"))),
       h("div", { class: "row-actions" },
-        h("button", { class: "btn sec", type: "button", onclick: () => go("fahrzeuge") }, icon("car"), "Wechseln"),
-        h("button", { class: "btn qt", type: "button", "data-info": `fahrzeug:${fz.id}` }, "Details"),
-        st ? h("button", { class: "btn qt", type: "button", onclick: () => emit("reconnect") }, icon("reset"), "Neu verbinden") : null)),
+        h("button", { class: "btn sec small", type: "button", onclick: () => go("fahrzeuge") }, icon("car"), "Wechseln"),
+        h("button", { class: "btn qt small", type: "button", "data-info": `fahrzeug:${fz.id}` }, "Details"),
+        st ? h("button", { class: "btn qt small", type: "button", onclick: () => emit("reconnect") }, icon("reset"), "Neu verbinden") : null)),
     state.finWarnung ? h("div", { class: "fin-warn", role: "alert" }, mark("warn"),
       h("span", {}, `Das verbundene Auto meldet Herstellercode ${(v.vin_maskiert || "").slice(0, 3)}, die hinterlegte FIN beginnt mit ${(fz.fin || "").slice(0, 3)}. Ist das richtige Fahrzeug gewählt?`),
       h("button", { class: "btn sec small", type: "button", onclick: () => go("fahrzeuge") }, "Anderes wählen")) : null,
-    items.length ? h("dl", { class: "meta" }, ...items.map(([k, val, info]) => h("div", { class: "meta-i" }, h("dt", { class: "state-lbl" }, k), h("dd", {}, h("button", { class: "unbtn meta-v", type: "button", "data-info": info }, val))))) : null,
+    /* Verbindungsangaben: auf dem Handy eingeklappt, eine Zeile reicht als Überblick. */
+    items.length ? h("details", { class: "vmeta", open: matchMedia("(min-width: 600px)").matches ? "" : null },
+      h("summary", { class: "sm" }, `Verbindung: ${st.protokoll || "automatisch"}${v.vin_maskiert ? ` · FIN ${v.vin_maskiert.slice(0, 3)}…` : ""}`),
+      h("dl", { class: "meta" }, ...items.map(([k, val, info]) => h("div", { class: "meta-i" }, h("dt", { class: "state-lbl" }, k), h("dd", {}, h("button", { class: "unbtn meta-v", type: "button", "data-info": info }, val)))))) : null,
     ...((st && st.hinweise) || []).map((t) => h("p", { class: "sm" }, t)),
   ].filter(Boolean));
 }

@@ -66,7 +66,29 @@
 .recent-i:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface-1), 0 0 0 4px var(--accent); }
 .recent-i .t { font: 600 var(--t-5)/var(--t-5-lh) var(--font-display); }
 .btn .i3.btn-i3 { width: 26px; height: 26px; margin: -4px 0; }
-.vcard .plate { height: 34px; } .vcard .plate-t { font-size: 19px; }
+/* Fahrzeugkarte kompakt: sie ist Kopf, nicht Inhalt. Kleines Symbol, Kennzeichen in Normalgröße, Angaben in kleiner Schrift. */
+.vcard { padding: var(--sp-3) var(--sp-4); gap: var(--sp-2); }
+.vcard .veh-title { gap: var(--sp-3); align-items: center; }
+.vcard .veh-title .hero-ic .i3 { width: 48px; height: 48px; }
+.vcard .plate { height: 26px; } .vcard .plate-t { font-size: 15px; padding: 0 8px; } .vcard .plate-eu { width: 14px; font-size: 8px; }
+.vcard .vname { font: 600 var(--t-5)/var(--t-5-lh) var(--font-display); }
+.vcard .veh-head { gap: var(--sp-1) var(--sp-2); }
+.vcard .eyebrow { margin-bottom: 2px; }
+.vcard .row-actions { gap: var(--sp-1); }
+.vcard .vmeta { border-top: 1px solid var(--line); padding-top: var(--sp-2); }
+.vcard .vmeta summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px; min-height: 32px; color: var(--text-muted); }
+.vcard .vmeta summary::-webkit-details-marker { display: none; }
+.vcard .vmeta summary::after { content: ""; width: 7px; height: 7px; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg) translateY(-2px); margin-left: 4px; }
+.vcard .vmeta[open] summary::after { transform: rotate(-135deg) translate(-1px, -1px); }
+.vcard .vmeta[open] summary { margin-bottom: var(--sp-2); }
+.vcard .meta { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: var(--sp-2) var(--sp-4); }
+.vcard .meta-v { font: 500 var(--t-2)/16px var(--font-num); text-align: left; }
+.vcard > .sm { font-size: var(--t-2); }
+@media (max-width: 599px) {
+  .vcard .veh-title .hero-ic .i3 { width: 40px; height: 40px; }
+  .vcard .meta { grid-template-columns: 1fr 1fr; }
+  .vcard .row-actions .btn { flex: 1 1 auto; }
+}
 
 /* Kilometerstand je Sitzung */
 .km-card { display: grid; gap: var(--sp-3); align-items: center; padding: var(--sp-4) var(--sp-5); border-color: var(--accent); background: linear-gradient(100deg, var(--accent-soft), transparent 55%), var(--surface-1); }

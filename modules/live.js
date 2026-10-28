@@ -1,6 +1,6 @@
 /* Live-Werte: oben in einem Satz, ob alles im Rahmen ist, darunter drei Rundinstrumente. Zum Tiefergraben drei Reiter:
    Werte (auffällige zuerst), Diagramm (uPlot mit Sollband und synchronem Cursor), Aufnahme mit Trigger und Wiedergabe. */
-import { $, h, s, num, cssVar, mixColor, icon, mark, chev, toast, download, storageGet, storageSet, reducedMotion, clockTime, statusChip, jump } from "./dom.js";
+import { $, h, s, num, numFix, cssVar, mixColor, icon, mark, chev, toast, download, storageGet, storageSet, reducedMotion, clockTime, statusChip, jump } from "./dom.js";
 import { icon3d } from "./icons3d.js";
 import { state, WISSEN, on, emit, signalTitle, sollFor, logEvent } from "./state.js";
 import { buffer, pushSample, recordings, rec, startRecording, stopRecording, markRecording, armTrigger, disarmTrigger, deleteRecording, toCsv, stats, resample } from "./recorder.js";
@@ -287,27 +287,78 @@ function renderRecBar() {
 }
 
 /* ---------- Alle Messwerte ---------- */
+/* Ruhig statt neu: Zeilen entstehen einmal je Signal und werden danach nur noch beschriftet. Neu sortiert wird nur,
+   wenn ein Wert die Gruppe wechselt, und das erst nach zwei Messungen in Folge (kein Springen an der Grenze). */
+const DIGITS = { "1/min": 0, "°C": 0, kPa: 0, "km/h": 0, s: 0, km: 0, "%": 1, "g/s": 1, "°": 1, "l/h": 1, V: 2, "λ": 3 };
+export const digitsFor = (unit) => DIGITS[unit] ?? 2;
+const rows = new Map();
+const shownBad = new Map();
+let layoutKey = "";
+function settledBad(sig, raw) {
+  const s0 = shownBad.get(sig) || { bad: raw, n: 0 };
+  if (raw === s0.bad) s0.n = 0; else if (++s0.n >= 2) { s0.bad = raw; s0.n = 0; }
+  shownBad.set(sig, s0);
+  return s0.bad;
+}
+/* Skala je Signal: runde Grenzen (1-2-5) um das Sollband, die nur wächst, wenn ein Wert hinausläuft. So bleibt das Band stehen. */
+const scales = new Map();
+function niceStep(span) { const p = 10 ** Math.floor(Math.log10(span)), f = span / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; }
+export function scaleFor(sig, soll, wert) {
+  const lo = Math.min(soll.soll_min, wert), hi = Math.max(soll.soll_max, wert);
+  const old = scales.get(sig);
+  if (old && old.a <= lo && old.b >= hi && old.min === soll.soll_min && old.max === soll.soll_max) return old;
+  const band = soll.soll_max - soll.soll_min || Math.abs(soll.soll_max) || 1;
+  const step = niceStep(Math.max(hi - lo, band * 2) / 4);
+  const a = Math.min(old && old.min === soll.soll_min ? old.a : Infinity, Math.floor(Math.min(lo, soll.soll_min - band * .5) / step) * step);
+  const b = Math.max(old && old.max === soll.soll_max ? old.b : -Infinity, Math.ceil(Math.max(hi, soll.soll_max + band * .5) / step) * step);
+  const next = { a, b, min: soll.soll_min, max: soll.soll_max };
+  scales.set(sig, next);
+  return next;
+}
+function paramRow(sig) {
+  const r = { mark: h("span"), t: h("div", { class: "t" }), d: h("div", { class: "d" }), val: h("b"), unit: h("small"),
+    bar: h("span", { class: "sollbar", "aria-hidden": "true" }), band: h("span", { class: "band" }), mk: h("span", { class: "mk" }),
+    labs: [0, 1, 2, 3].map((i) => h("span", { class: `sb-l l${i}` })) };
+  r.bar.append(h("span", { class: "trk" }), r.band, ...r.labs, r.mk);
+  r.el = h("button", { class: "tap param", type: "button", "data-info": `signal:${sig}` }, r.mark, h("span", {}, r.t, r.d), h("span", { class: "v" }, r.val, r.unit), chev(), r.bar);
+  return r;
+}
+function fillRow(r, sig, v, soll, bad) {
+  const meta = WISSEN.signale[sig], dg = digitsFor(v.einheit);
+  r.el.classList.toggle("warn", bad);
+  if (r.isBad !== bad) { r.mark.replaceWith(r.mark = bad ? mark("warn") : h("span")); r.isBad = bad; }
+  r.t.textContent = meta ? meta.titel : sig;
+  r.d.textContent = v.warnung || (soll ? `Soll ${numFix(soll.soll_min, dg)} bis ${numFix(soll.soll_max, dg)} ${v.einheit} (${soll.art === "hersteller" ? "Herstellerwert" : "Richtwert"})` : meta ? meta.kurz : "");
+  r.val.textContent = numFix(v.wert, dg); r.unit.textContent = v.einheit || "";
+  r.bar.hidden = !soll;
+  if (!soll) return;
+  const sc = scaleFor(sig, soll, v.wert), pct = (x) => ((x - sc.a) / (sc.b - sc.a)) * 100;
+  r.band.style.left = `${pct(soll.soll_min)}%`; r.band.style.width = `${pct(soll.soll_max) - pct(soll.soll_min)}%`;
+  r.mk.style.left = `${pct(v.wert)}%`; r.mk.classList.toggle("ok", !bad);
+  /* Beschriftung: Skalenenden außen, Sollgrenzen unter den Bandkanten */
+  [[sc.a, 0], [soll.soll_min, pct(soll.soll_min)], [soll.soll_max, pct(soll.soll_max)], [sc.b, 100]].forEach(([x, at], i) => {
+    r.labs[i].textContent = num(x, dg); r.labs[i].style.left = `${at}%`; });
+}
 export function renderParams() {
-  const rows = Object.entries(state.live).filter(([, v]) => v.wert != null).map(([sig, v]) => {
+  const list = Object.entries(state.live).filter(([, v]) => v.wert != null);
+  const bad = [], fine = [];
+  for (const [sig, v] of list) {
     const soll = sollFor(sig);
-    const meta = WISSEN.signale[sig];
-    const bad = Boolean(v.warnung) || (soll && soll.bewertung !== "ok");
-    let range = null;
-    if (soll) {
-      const lo = Math.min(soll.soll_min, v.wert), hi = Math.max(soll.soll_max, v.wert), pad = (hi - lo) * .25 || 1, a = lo - pad, b = hi + pad;
-      const pct = (x) => ((x - a) / (b - a)) * 100;
-      range = h("span", { class: "sollbar", "aria-hidden": "true" }, h("span", { class: "trk" }), h("span", { class: "band", style: `left:${pct(soll.soll_min)}%;width:${pct(soll.soll_max) - pct(soll.soll_min)}%` }), h("span", { class: "mk" + (bad ? "" : " ok"), style: `left:${pct(v.wert)}%` }));
-    }
-    return h("button", { class: "tap param" + (bad ? " warn" : ""), type: "button", "data-info": `signal:${sig}` }, bad ? mark("warn") : h("span"),
-      h("span", {}, h("div", { class: "t" }, meta ? meta.titel : sig), h("div", { class: "d" }, v.warnung || (soll ? `Soll ${num(soll.soll_min)} bis ${num(soll.soll_max)} ${v.einheit} (${soll.art === "hersteller" ? "Herstellerwert" : "Richtwert"})` : meta ? meta.kurz : ""))),
-      h("span", { class: "v" }, num(v.wert, 2), h("small", {}, v.einheit)), chev(), range);
-  });
-  const bad = rows.filter((r) => r.classList.contains("warn")), fine = rows.filter((r) => !r.classList.contains("warn"));
-  $("params").replaceChildren(...[
-    bad.length ? h("h3", { class: "pgroup t-warn" }, mark("warn"), `Auffällig (${bad.length})`) : null, bad.length ? h("div", { class: "list" }, ...bad) : null,
-    fine.length ? h("h3", { class: "pgroup" }, mark("ok"), `Im Rahmen (${fine.length})`) : null, fine.length ? h("div", { class: "list" }, ...fine) : null].filter(Boolean));
-  renderLiveHero(rows.length, bad.map((r) => r.dataset.info.slice(7)));
-  $("live-state").textContent = state.analysis ? state.analysis.sollwerte.zustand_text : "";
+    const isBad = settledBad(sig, Boolean(v.warnung) || Boolean(soll && soll.bewertung !== "ok"));
+    if (!rows.has(sig)) rows.set(sig, paramRow(sig));
+    fillRow(rows.get(sig), sig, v, soll, isBad);
+    (isBad ? bad : fine).push(sig);
+  }
+  const key = `${bad.join(",")}|${fine.join(",")}`;
+  if (key !== layoutKey) {
+    layoutKey = key;
+    $("params").replaceChildren(...[
+      bad.length ? h("h3", { class: "pgroup t-warn" }, mark("warn"), `Auffällig (${bad.length})`) : null, bad.length ? h("div", { class: "list" }, ...bad.map((sig) => rows.get(sig).el)) : null,
+      fine.length ? h("h3", { class: "pgroup" }, mark("ok"), `Im Rahmen (${fine.length})`) : null, fine.length ? h("div", { class: "list" }, ...fine.map((sig) => rows.get(sig).el)) : null].filter(Boolean));
+  }
+  renderLiveHero(list.length, bad);
+  const zustand = state.analysis ? state.analysis.sollwerte.zustand_text : "";
+  if ($("live-state").textContent !== zustand) $("live-state").textContent = zustand;
 }
 
 /* ---------- Takt ---------- */
