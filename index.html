@@ -47,12 +47,14 @@
 
       <!-- Start -->
       <section class="view view-start" id="view-start" aria-labelledby="page-title">
-        <div class="card vcard" id="vehicle-card" hidden></div>
-        <form class="card km-card" id="start-km" novalidate hidden></form>
+        <div class="vcard-strip" id="vehicle-card" hidden></div>
         <div class="card start-empty" id="start-empty"></div>
         <div class="tiles" id="start-tiles"></div>
-        <section class="card start-recent" id="start-recent" aria-label="Zuletzt benutzte Fahrzeuge" hidden></section>
-        <button class="card hb-link" id="start-handbuch" type="button"></button>
+        <div class="start-mehr" id="start-mehr">
+          <form class="card km-card" id="start-km" novalidate hidden></form>
+          <section class="card start-recent" id="start-recent" aria-label="Zuletzt benutzte Fahrzeuge" hidden></section>
+          <button class="card hb-link" id="start-handbuch" type="button"></button>
+        </div>
       </section>
 
       <!-- Verbinden -->

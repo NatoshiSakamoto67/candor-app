@@ -13,34 +13,23 @@ import { erstelle3d, webglMoeglich, GRUPPE_BAUTEILE } from "./auto3d.js";
 /* ---------- Fahrzeugkopf: gewähltes Fahrzeug aus dem Bestand, darunter was der Adapter erkannt hat ---------- */
 export function renderVehicleCard() {
   const st = state.status, v = state.vehicle || {}, fz = state.fahrzeug;
-  if (!fz) { $("vehicle-card").replaceChildren(); return; }
-  const items = st ? [
-    ["Erkannt", st.fahrzeug || "–", "begriff:vollscan"],
-    ["FIN gelesen", v.vin_maskiert || "–", "begriff:vin"],
-    ["Protokoll", st.protokoll || "automatisch", "begriff:obd"],
-    ["Version", st.version === "intern" ? "intern" : "Markt", "begriff:version"],
-    ["Schreiben", st.schreiben_an ? "an, mit Freigabe" : "aus", "begriff:halten"],
-    ["KI", st.ki ? (st.ki === "beispiel" ? "Beispiel" : st.ki) : "aus", "begriff:ki"],
-  ] : [];
-  $("vehicle-card").replaceChildren(...[
-    h("div", { class: "sec-head" },
-      h("div", { class: "veh-title" }, h("span", { class: "hero-ic", "aria-hidden": "true" }, icon3d("car")),
-        h("div", {}, h("p", { class: "eyebrow" }, st ? "Aktives Fahrzeug · verbunden" : "Aktives Fahrzeug · nicht verbunden"),
-          h("div", { class: "veh-head" }, plate(fz), h("h2", { class: "h2 vname" }, vehicleName(fz))),
-          h("p", { class: "sm" }, vehicleFacts(fz) || "Weitere Angaben unter Bearbeiten"))),
-      h("div", { class: "row-actions" },
-        h("button", { class: "btn sec small", type: "button", onclick: () => go("fahrzeuge") }, icon("car"), "Wechseln"),
-        h("button", { class: "btn qt small", type: "button", "data-info": `fahrzeug:${fz.id}` }, "Details"),
-        st ? h("button", { class: "btn qt small", type: "button", onclick: () => emit("reconnect") }, icon("reset"), "Neu verbinden") : null)),
+  const box = $("vehicle-card");
+  if (!fz) { box.replaceChildren(); box.hidden = true; return; }
+  box.hidden = false;
+  /* Schmaler Streifen: Kennzeichen, Name, Verbindungszustand; alles Weitere hinter einem kleinen Menü. */
+  const zustand = state.connLost ? ["crit", "Verbindung weg"] : !st ? ["neutral", "nicht verbunden"] : st.simuliert ? ["warn", "Simulator"] : v.mode === "demo" ? ["warn", "Vorschau"] : ["ok", "verbunden"];
+  box.replaceChildren(...[
+    h("div", { class: "vstrip" },
+      plate(fz, "sm"),
+      h("button", { class: "vstrip-name unbtn", type: "button", "data-info": `fahrzeug:${fz.id}`, "aria-label": `${vehicleName(fz)}, Details` },
+        h("b", {}, vehicleName(fz)), vehicleFacts(fz) ? h("span", { class: "sm" }, vehicleFacts(fz)) : null),
+      h("span", { class: `cs t-${zustand[0]} vstrip-zu` }, zustand[0] !== "neutral" ? mark(zustand[0]) : null, zustand[1]),
+      h("div", { class: "vstrip-tools" },
+        st ? h("button", { class: "icb", type: "button", "aria-label": "Neu verbinden", title: "Neu verbinden", onclick: () => emit("reconnect") }, icon("reset")) : null,
+        h("button", { class: "icb", type: "button", "aria-label": "Fahrzeug wechseln", title: "Fahrzeug wechseln", onclick: () => go("fahrzeuge") }, icon("car")))),
     state.finWarnung ? h("div", { class: "fin-warn", role: "alert" }, mark("warn"),
       h("span", {}, `Das verbundene Auto meldet Herstellercode ${(v.vin_maskiert || "").slice(0, 3)}, die hinterlegte FIN beginnt mit ${(fz.fin || "").slice(0, 3)}. Ist das richtige Fahrzeug gewählt?`),
-      h("button", { class: "btn sec small", type: "button", onclick: () => go("fahrzeuge") }, "Anderes wählen")) : null,
-    /* Verbindungsangaben: auf dem Handy eingeklappt, eine Zeile reicht als Überblick. */
-    items.length ? h("details", { class: "vmeta", open: matchMedia("(min-width: 600px)").matches ? "" : null },
-      h("summary", { class: "sm" }, `Verbindung: ${st.protokoll || "automatisch"}${v.vin_maskiert ? ` · FIN ${v.vin_maskiert.slice(0, 3)}…` : ""}`),
-      h("dl", { class: "meta" }, ...items.map(([k, val, info]) => h("div", { class: "meta-i" }, h("dt", { class: "state-lbl" }, k), h("dd", {}, h("button", { class: "unbtn meta-v", type: "button", "data-info": info }, val)))))) : null,
-    ...((st && st.hinweise) || []).map((t) => h("p", { class: "sm" }, t)),
-  ].filter(Boolean));
+      h("button", { class: "btn sec small", type: "button", onclick: () => go("fahrzeuge") }, "Anderes wählen")) : null].filter(Boolean));
 }
 
 /* ---------- Knoten: gescannte Steuergeräte plus Profil-Module, die (noch) nicht geantwortet haben ---------- */

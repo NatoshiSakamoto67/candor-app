@@ -178,7 +178,7 @@ function takt() { for (const el of $("wg-raster")?.children || []) el._update &&
 
 export function initWidgets() {
   const sec = h("section", { class: "widgets", id: "widgets", "aria-label": "Mein Cockpit", hidden: true });
-  $("start-tiles").before(sec);
+  $("start-mehr").prepend(sec);
   on("live-tick", () => { if (!$("view-start").hidden) takt(); });
   on("status", () => { if (!$("view-start").hidden && Boolean(state.status) === $("widgets").hidden) zeichne(); });
   on("render", zeichne);

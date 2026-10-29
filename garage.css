@@ -171,7 +171,7 @@
 
 /* Einfacher Modus (einfach.js): Ampel, ein Satz, Fehler in Alltagssprache. Profi-Bereiche ausgeblendet. */
 .modus-wahl { justify-self: end; }
-html[data-modus="einfach"] #widgets, html[data-modus="einfach"] #start-tiles, html[data-modus="einfach"] .vcard .vmeta { display: none !important; }
+html[data-modus="einfach"] #widgets, html[data-modus="einfach"] #start-tiles, html[data-modus="einfach"] #start-mehr { display: none !important; }
 .einfach { display: grid; gap: var(--sp-3); }
 .einfach[hidden] { display: none; }
 .ef-held { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--sp-4); padding: var(--sp-5); align-items: start; }
@@ -193,3 +193,17 @@ html[data-modus="einfach"] #widgets, html[data-modus="einfach"] #start-tiles, ht
 .ef-aufwand { margin: 2px 0; display: flex; gap: 6px; align-items: flex-start; font: 500 var(--t-2)/16px var(--font-text); color: var(--text-muted); }
 .ef-aufwand .mark, .ef-aufwand .mark svg { width: 16px; height: 16px; flex: none; }
 @media (max-width: 599px) { .ef-held { padding: var(--sp-4); gap: var(--sp-3); } .ef-ampel i { width: 22px; height: 22px; } .ef-titel { font-size: 22px; line-height: 26px; } }
+
+/* Schmaler Fahrzeugstreifen auf der Startseite: nur Kennzeichen, Name, Verbindung, kleine Werkzeuge. */
+.vcard-strip[hidden] { display: none; }
+.vstrip { display: flex; align-items: center; gap: var(--sp-3); padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--r-2); background: var(--surface-1); }
+.vstrip .plate { flex: none; }
+.vstrip-name { display: flex; align-items: baseline; gap: 8px; min-width: 0; flex: 1; text-align: left; color: var(--text); overflow: hidden; }
+.vstrip-name b { font: 600 var(--t-4)/var(--t-4-lh) var(--font-display); white-space: nowrap; }
+.vstrip-name .sm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.vstrip-name:hover b { text-decoration: underline; text-underline-offset: 3px; }
+.vstrip-zu { flex: none; }
+.vstrip-tools { display: flex; gap: 2px; flex: none; }
+.vstrip .fin-warn { margin-top: 0; }
+@media (max-width: 599px) { .vstrip-name .sm { display: none; } .vstrip { padding: 6px 8px; gap: var(--sp-2); } }
+.start-mehr { display: grid; gap: var(--sp-4); margin-top: var(--sp-2); }
