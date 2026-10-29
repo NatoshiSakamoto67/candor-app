@@ -173,7 +173,27 @@
 .gauges { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-3); }
 .gauge { padding: 8px 6px 10px; display: grid; justify-items: center; gap: 0; cursor: pointer; color: var(--text); font: inherit; }
 .gauge:hover { background: var(--surface-3); }
-.gauge canvas { width: 100%; max-width: 210px; aspect-ratio: 1; display: block; }
+.gauge .ri { width: 100%; max-width: 230px; }
+/* Rundinstrument (rundinstrument.js): ruhige Grautöne, Farbe nur für Zonen und bei Abweichung */
+.ri { display: block; overflow: visible; font-family: var(--font-num); }
+.ri-spur { fill: none; stroke: var(--line-strong); stroke-width: 1.5; }
+.ri-band { fill: none; stroke: color-mix(in oklab, var(--ok) 32%, transparent); stroke-width: 7; }
+.ri-grenze { fill: none; stroke: var(--ok); stroke-width: 2.6; }
+.ri-rot { fill: none; stroke: var(--crit); stroke-width: 3.5; }
+.ri-tief { fill: none; stroke: var(--warn); stroke-width: 3.5; }
+.ri-strich { fill: none; stroke: var(--text-muted); stroke-width: 1; opacity: .7; }
+.ri-strich.gross { stroke: var(--text); stroke-width: 2; opacity: 1; }
+.ri-zahl { fill: var(--text-muted); font-size: 13px; font-weight: 600; text-anchor: middle; dominant-baseline: central; font-variant-numeric: tabular-nums; }
+.ri-faktor { fill: var(--text-muted); font-size: 9.5px; font-weight: 600; text-anchor: middle; letter-spacing: .04em; }
+.ri-extrem { fill: none; stroke: var(--text-muted); stroke-width: 1.2; stroke-linejoin: round; }
+.ri-nadel { transform-box: view-box; transform-origin: 100px 96px; transition: transform 420ms cubic-bezier(.22, 1, .36, 1); }
+.ri-nadel path, .ri-nadel circle { fill: var(--text); }
+.ri-nadel .ri-nabe { fill: var(--surface-1); }
+.ri-wert { fill: var(--text); font-size: 28px; font-weight: 600; text-anchor: middle; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.ri-einheit { fill: var(--text-muted); font-family: var(--font-text); font-size: 11.5px; font-weight: 500; text-anchor: middle; }
+.ri.warn .ri-nadel path, .ri.warn .ri-nadel circle:not(.ri-nabe) { fill: var(--warn); } .ri.warn .ri-wert { fill: var(--warn); }
+.ri.crit .ri-nadel path, .ri.crit .ri-nadel circle:not(.ri-nabe) { fill: var(--crit); } .ri.crit .ri-wert { fill: var(--crit); }
+@media (prefers-reduced-motion: reduce) { .ri-nadel { transition: none; } }
 .chan-pick { display: grid; gap: var(--sp-3); margin-bottom: var(--sp-3); }
 .chan-pick > * { min-width: 0; }
 .chan-pick .seg, .report-tools .seg { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
@@ -544,4 +564,11 @@ button.hstat { cursor: pointer; } button.hstat:hover { border-color: var(--tone-
   .topo-3d { aspect-ratio: 1; } .t3-pin .pin-n { display: none; }
   .t3-card { top: auto; bottom: 56px; left: 8px; width: calc(100% - 16px); padding: var(--sp-2) var(--sp-3); gap: 2px; }
   .t3-card .row-actions { margin-top: 4px; }
+}
+/* Handy: Instrumente in voller Größe, seitlich wischbar (rastet je Instrument ein), statt drei winzige nebeneinander */
+@media (max-width: 599px) {
+  .view-live .gauges { grid-auto-flow: column; grid-auto-columns: 62%; grid-template-columns: none; overflow-x: auto; scroll-snap-type: x mandatory;
+    gap: var(--sp-2); padding: 2px 16px 6px; margin-inline: -16px; scroll-padding-inline: 16px; scrollbar-width: none; }
+  .view-live .gauges::-webkit-scrollbar { display: none; }
+  .view-live .gauges .gauge { scroll-snap-align: start; }
 }

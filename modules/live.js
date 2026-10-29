@@ -2,31 +2,19 @@
    Werte (auffällige zuerst), Diagramm (uPlot mit Sollband und synchronem Cursor), Aufnahme mit Trigger und Wiedergabe. */
 import { $, h, s, num, numFix, cssVar, mixColor, icon, mark, chev, toast, download, storageGet, storageSet, reducedMotion, clockTime, statusChip, jump } from "./dom.js";
 import { icon3d } from "./icons3d.js";
+import { rundinstrument, SKALEN } from "./rundinstrument.js";
 import { state, WISSEN, on, emit, signalTitle, sollFor, logEvent } from "./state.js";
 import { buffer, pushSample, recordings, rec, startRecording, stopRecording, markRecording, armTrigger, disarmTrigger, deleteRecording, toCsv, stats, resample } from "./recorder.js";
 export { historyOf } from "./recorder.js";
 
 const isLiveVisible = () => !$("view-live").hidden;
 
-/* ---------- Rundinstrumente ---------- */
-/* Präzise ablesbar (Recherche 28.10.: FAA AC 25-11B, ISA-101, Few): 270°-Bogen, beschriftete Hauptstriche nach 1-2-5
-   mit Nebenstrichen, Normalbereich neutral hinterlegt und mit Grenzstrichen markiert, Farbe nur bei Abweichung,
-   Min/Max seit Start als kleine Dreiecke. Ziffer mit fester Stellenzahl und Totband gegen Zittern. */
+/* ---------- Rundinstrumente (rundinstrument.js, SVG) ---------- */
 const GAUGES = [
-  { sig: "DREHZAHL", min: 0, max: 8000, major: 1000, minor: 250, red: 6500, digits: 0, round: 10, label: "Drehzahl", factor: 1000, unit: "1/min ×1000" },
-  { sig: "KUEHLMITTEL", min: 40, max: 140, major: 20, minor: 5, red: 115, digits: 0, round: 1, label: "Kühlmittel" },
-  { sig: "SPANNUNG", min: 10, max: 16, major: 1, minor: .2, red: 15.2, low: 12, digits: 2, round: .01, label: "Bordnetz" },
+  { sig: "DREHZAHL", label: "Drehzahl", einheit: "1/min" },
+  { sig: "KUEHLMITTEL", label: "Kühlmittel", einheit: "°C" },
+  { sig: "SPANNUNG", label: "Bordnetz", einheit: "V" },
 ];
-/* Nadel: kritisch gedämpfte Feder, 95 % nach etwa 150 ms (motion.md 4.6). */
-const needles = {};
-const OMEGA = 31.6;
-function springNeedle(sig, target, dt) {
-  const n = needles[sig] || (needles[sig] = { x: target, v: 0 });
-  if (reducedMotion() || dt > .25) { n.x = target; n.v = 0; return n.x; }
-  const a = -2 * OMEGA * n.v - OMEGA * OMEGA * (n.x - target);
-  n.v += a * dt; n.x += n.v * dt;
-  return n.x;
-}
 /* Ziffer: auf die Anzeigestufe gerundet, springt erst, wenn der Wert sich um mehr als drei Viertel Stufe bewegt. */
 const shown = {};
 export function steadyDigit(key, raw, step) {
@@ -34,66 +22,20 @@ export function steadyDigit(key, raw, step) {
   if (shown[key] == null || Math.abs(raw - shown[key]) >= step * .75) shown[key] = r;
   return shown[key];
 }
-const extremes = {};
+const instrumente = new Map();
 function buildGauges() {
-  $("gauges").replaceChildren(...GAUGES.map((g) => h("button", { class: "card gauge", type: "button", "data-info": `signal:${g.sig}`, "aria-label": `${g.label}, Infoblatt` },
-    h("canvas", { id: "g-" + g.sig, width: 380, height: 380, "aria-hidden": "true" }), h("span", { class: "state-lbl" }, g.label))));
+  $("gauges").replaceChildren(...GAUGES.map((g) => {
+    const ri = rundinstrument(SKALEN[g.sig], { einheit: g.einheit, titel: g.label });
+    instrumente.set(g.sig, ri);
+    return h("button", { class: "card gauge", type: "button", "data-info": `signal:${g.sig}`, "aria-label": `${g.label}, Infoblatt` }, ri.el, h("span", { class: "state-lbl" }, g.label));
+  }));
 }
-let gaugeDt = 0;
-function drawGauge(g) {
-  const canvas = $("g-" + g.sig);
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  const W = canvas.width, H = canvas.height, cx = W / 2, cy = H * .43, R = Math.min(W, H) * .39;
-  const entry = state.live[g.sig];
-  /* Liefert das Auto den Wert nicht, steht die Nadel am Anfang und statt einer Zahl ein Strich. */
-  const hasValue = Boolean(entry) && typeof entry.wert === "number";
-  const target = hasValue ? entry.wert : g.min;
-  if (hasValue) { const e = extremes[g.sig] || (extremes[g.sig] = { lo: target, hi: target }); e.lo = Math.min(e.lo, target); e.hi = Math.max(e.hi, target); }
-  const val = springNeedle(g.sig, target, gaugeDt);
-  const a0 = Math.PI * .75, a1 = Math.PI * 2.25;
-  const ang = (v) => a0 + (Math.min(Math.max(v, g.min), g.max) - g.min) / (g.max - g.min) * (a1 - a0);
-  const at = (a, r) => [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
-  const line = (a, r1, r2) => { const [x1, y1] = at(a, r1), [x2, y2] = at(a, r2); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); };
-  const arcSeg = (from, to, r, w, color) => { ctx.lineWidth = w; ctx.strokeStyle = color; ctx.beginPath(); ctx.arc(cx, cy, r, ang(from), ang(to)); ctx.stroke(); };
-  const text = cssVar("--text"), muted = cssVar("--text-muted"), crit = cssVar("--crit"), warn = cssVar("--warn"), line2 = cssVar("--line-strong");
-  ctx.clearRect(0, 0, W, H);
-  ctx.lineCap = "butt";
-  const soll = sollFor(g.sig);
-  const outside = hasValue && ((soll && (target < soll.soll_min || target > soll.soll_max)) || target >= g.red || (g.low && target < g.low));
-  const alarm = hasValue && (target >= g.red || (g.low && target < g.low));
-  /* Grundbogen, Normalbereich als helle Fläche innen, Warn- und Rotzonen dünn außen */
-  arcSeg(g.min, g.max, R, 2, line2);
-  if (soll) arcSeg(soll.soll_min, soll.soll_max, R - 9, 16, mixColor(text, null, 0, .13));
-  arcSeg(g.red, g.max, R + 5, 5, crit);
-  if (g.low) arcSeg(g.min, g.low, R + 5, 5, warn);
-  /* Teilung: Nebenstriche fein, Hauptstriche länger mit Zahl */
-  ctx.strokeStyle = muted;
-  const n = Math.round((g.max - g.min) / g.minor);
-  for (let i = 0; i <= n; i++) {
-    const v = g.min + i * g.minor, isMajor = Math.abs(((v - g.min) / g.major) - Math.round((v - g.min) / g.major)) < 1e-6;
-    ctx.lineWidth = isMajor ? 3 : 1.5; ctx.strokeStyle = isMajor ? text : muted;
-    line(ang(v), R, R - (isMajor ? 18 : 9));
+function updateGauges() {
+  for (const g of GAUGES) {
+    const ri = instrumente.get(g.sig), e = state.live[g.sig], cfg = SKALEN[g.sig];
+    const v = e && typeof e.wert === "number" ? e.wert : null;
+    ri.setze(v, sollFor(g.sig), v == null ? "" : numFix(steadyDigit(g.sig, v, cfg.stufe), cfg.digits));
   }
-  ctx.fillStyle = text; ctx.font = `600 ${Math.round(R * .2)}px ${cssVar("--font-num")}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  for (let v = g.min; v <= g.max + 1e-9; v += g.major) { const [x, y] = at(ang(v), R - 40); ctx.fillText(num(g.factor ? v / g.factor : v, 0), x, y); }
-  /* Sollgrenzen: kräftige Querstriche über den Bogen */
-  if (soll) { ctx.strokeStyle = cssVar("--ok"); ctx.lineWidth = 4; line(ang(soll.soll_min), R + 9, R - 20); line(ang(soll.soll_max), R + 9, R - 20); }
-  /* Min/Max seit Start: hohle Dreiecke außen */
-  const ex = extremes[g.sig];
-  if (ex) for (const v of [ex.lo, ex.hi]) {
-    const a = ang(v), [px, py] = at(a, R + 12), [lx, ly] = at(a - .045, R + 24), [rx, ry] = at(a + .045, R + 24);
-    ctx.strokeStyle = muted; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(lx, ly); ctx.lineTo(rx, ry); ctx.closePath(); ctx.stroke();
-  }
-  /* Zeiger schmal, endet vor den Zahlen; Farbe nur bei Abweichung */
-  const needle = alarm ? crit : outside ? warn : text;
-  ctx.lineCap = "round"; ctx.strokeStyle = needle; ctx.lineWidth = 4; line(ang(val), 0, R - 22);
-  ctx.fillStyle = needle; ctx.beginPath(); ctx.arc(cx, cy, 8, 0, Math.PI * 2); ctx.fill();
-  const shownVal = hasValue ? steadyDigit(g.sig, target, g.round) : null;
-  ctx.fillStyle = alarm ? crit : outside ? warn : text; ctx.font = `600 ${Math.round(R * .4)}px ${cssVar("--font-num")}`;
-  ctx.fillText(hasValue ? numFix(shownVal, g.digits) : "–", cx, cy + R * .98);
-  ctx.font = `500 ${Math.round(R * .19)}px ${cssVar("--font-text")}`; ctx.fillStyle = muted;
-  ctx.fillText(hasValue ? (g.unit || entry.einheit || "") : "nicht gemeldet", cx, cy + R * 1.3);
 }
 
 /* ---------- Kanäle und Diagramme ---------- */
@@ -319,7 +261,7 @@ const DIGITS = { "1/min": 0, "°C": 0, kPa: 0, "km/h": 0, s: 0, km: 0, "%": 0, "
 export const digitsFor = (unit) => DIGITS[unit] ?? 2;
 /* Gemischkorrektur: Abweichung um null, feste Skala −25 bis +25 %, Teilung 5 %, Vorzeichen immer sichtbar. */
 const isTrim = (sig) => /^TRIM_/.test(sig);
-const signed = (x, dg) => (x > 0 ? "+" : x < 0 ? "−" : "±") + numFix(Math.abs(x), dg);
+export const signed = (x, dg) => (x > 0 ? "+" : x < 0 ? "−" : "±") + numFix(Math.abs(x), dg);
 const rows = new Map();
 const shownBad = new Map();
 let layoutKey = "";
@@ -332,7 +274,7 @@ function settledBad(sig, raw) {
 /* Skala je Signal: runde Grenzen (1-2-5) um das Sollband, die nur wächst, wenn ein Wert hinausläuft. So bleibt das Band stehen. */
 const scales = new Map();
 /* Beim Fahrzeugwechsel zurücksetzen, damit Skalen und Schleppzeiger nicht vom alten Auto bleiben. */
-export function setzeLiveZurueck() { scales.clear(); rows.clear(); shownBad.clear(); layoutKey = ""; for (const k in needles) delete needles[k]; for (const k in extremes) delete extremes[k]; for (const k in shown) delete shown[k]; }
+export function setzeLiveZurueck() { scales.clear(); rows.clear(); shownBad.clear(); layoutKey = ""; for (const ri of instrumente.values()) ri.zuruecksetzen(); for (const k in shown) delete shown[k]; }
 function niceStep(span) { const p = 10 ** Math.floor(Math.log10(span)), f = span / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; }
 export function scaleFor(sig, soll, wert) {
   if (isTrim(sig)) return { a: -25, b: 25, step: 5, min: soll.soll_min, max: soll.soll_max };
@@ -410,7 +352,7 @@ export async function pollLive() {
     emit("status");
     emit("live-tick");
     if (rec.active) renderRecBar();
-    if (isLiveVisible()) { renderParams(); if (view.mode === "live") updateCharts(); }
+    if (isLiveVisible()) { renderParams(); updateGauges(); if (view.mode === "live") updateCharts(); }
     misses = 0;
     if (state.connLost) { state.connLost = false; toast("Verbindung wieder da. Messwerte laufen."); logEvent("Verbindung wieder da"); emit("status"); emit("conn"); }
   } catch (_) {
@@ -420,14 +362,6 @@ export async function pollLive() {
   }
 }
 let misses = 0;
-let lastFrame = 0;
-let animLaeuft = false;
-function animate(ts) {
-  if (!isLiveVisible()) { animLaeuft = false; lastFrame = 0; return; }  // nicht sichtbar: Schleife anhalten, spart Akku
-  if (ts - lastFrame > 33) { gaugeDt = lastFrame ? (ts - lastFrame) / 1000 : 0; lastFrame = ts; GAUGES.forEach(drawGauge); }
-  requestAnimationFrame(animate);
-}
-export function starteGauges() { if (!animLaeuft && isLiveVisible()) { animLaeuft = true; lastFrame = 0; requestAnimationFrame(animate); } }
 
 /* ---------- Überblick oben und Reiter zum Tiefergraben ---------- */
 let heroKey = "";
@@ -466,7 +400,7 @@ function setLiveTab(id) {
   $("live-tabs").scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
 }
 
-export function renderLive() { renderLiveTabs(); renderChannelPicker(); renderRecorder(); renderParams(); updateCharts(); resizeCharts(); }
+export function renderLive() { renderLiveTabs(); renderChannelPicker(); renderRecorder(); renderParams(); updateGauges(); updateCharts(); resizeCharts(); }
 
 export function initLive() {
   buildGauges();
@@ -474,7 +408,6 @@ export function initLive() {
   on("theme", () => { if (charts.size) { rebuildCharts(); } });
   on("recording", renderRecorder);
   on("chart-add", (sig) => { if (!channels.includes(sig)) setChannels([...channels, sig]); setLiveTab("diagramm"); });
-  on("tab", (id) => { if (id === "live") { renderLive(); starteGauges(); } });
-  on("render", () => { if (isLiveVisible()) { renderLive(); starteGauges(); } });
-  starteGauges();
+  on("tab", (id) => { if (id === "live") renderLive(); });
+  on("render", () => { if (isLiveVisible()) renderLive(); });
 }
