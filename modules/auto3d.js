@@ -106,7 +106,7 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
   const groesse = huellbox.getSize(new THREE.Vector3()), mitte = huellbox.getCenter(new THREE.Vector3());
   const schatten = bodenSchatten(groesse.x, groesse.z); schatten.position.x = mitte.x; schatten.position.z = mitte.z; scene.add(schatten);
   /* Kamera wächst mit dem Fahrzeug: Motorrad nah, LKW weit */
-  const k = Math.max(groesse.x, groesse.y * 1.6) / 4.77;
+  const k = Math.max(groesse.x, groesse.y * 2.1) / 4.77;  // hohe, kurze Fahrzeuge (Motorrad mit Spiegeln) ganz im Bild
   steuerung.minDistance = 1.2 * k; steuerung.maxDistance = 14 * k;
 
   /* Materialien je Rolle merken, damit Technik-Ansicht und Hervorhebung sie umschalten können */
@@ -191,8 +191,9 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
     }
     const [pos, ziel] = ANSICHT[name];
     flug = null;
-    kamera.position.set(mitte.x + pos[0] * k, pos[1] * k + (name === "unten" ? 0 : groesse.y * .1), mitte.z + pos[2] * k);
-    steuerung.target.set(mitte.x + ziel[0] * k, Math.min(ziel[1] * k, groesse.y * .55), mitte.z);
+    const eng = Math.max(1, Math.min(2.4, 1.5 / kamera.aspect));  // Hochformat am Handy: weiter weg, damit alles ins Bild passt
+    kamera.position.set(mitte.x + pos[0] * k * eng, pos[1] * k * eng + (name === "unten" ? 0 : groesse.y * .1), mitte.z + pos[2] * k * eng);
+    steuerung.target.set(mitte.x + ziel[0] * k, Math.min(Math.max(ziel[1] * k, groesse.y * .4), groesse.y * .55), mitte.z);
     steuerung.maxPolarAngle = name === "unten" ? Math.PI : Math.PI * .49;
     anstossen();
   }
