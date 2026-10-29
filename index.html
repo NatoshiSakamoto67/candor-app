@@ -51,9 +51,9 @@
         <div class="card start-empty" id="start-empty"></div>
         <div class="tiles" id="start-tiles"></div>
         <div class="start-mehr" id="start-mehr">
+          <button class="card hb-link" id="start-handbuch" type="button"></button>
           <form class="card km-card" id="start-km" novalidate hidden></form>
           <section class="card start-recent" id="start-recent" aria-label="Zuletzt benutzte Fahrzeuge" hidden></section>
-          <button class="card hb-link" id="start-handbuch" type="button"></button>
         </div>
       </section>
 
@@ -240,7 +240,14 @@
       <!-- KI-Chat (chat.js) -->
       <section class="view view-agent" id="view-agent" aria-labelledby="page-title" hidden>
         <div class="cx-ambient" aria-hidden="true"></div>
-        <div class="cx-top"><span class="cs t-info">Nur Vorschläge</span><span class="sm">Die KI sieht den Fahrzeugstand ohne FIN und führt nichts aus.</span><button class="btn qt small" id="cx-clear" type="button" hidden>Neuer Chat</button></div>
+        <aside class="cx-side" id="cx-side" aria-label="Chat-Verlauf"></aside>
+        <div class="cx-schleier" id="cx-schleier" hidden></div>
+        <div class="cx-main">
+        <div class="cx-top">
+          <button class="icb cx-verlauf-btn" id="cx-verlauf" type="button" aria-label="Chat-Verlauf öffnen" aria-controls="cx-side" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
+          <h2 class="cx-titel" id="cx-titel">Neuer Chat</h2>
+          <button class="btn qt small" id="cx-clear" type="button">Neuer Chat</button>
+        </div>
         <div class="cx-log" id="cx-log" aria-live="polite"></div>
         <form class="cx-composer glass" id="cx-composer" novalidate>
           <div class="cx-chips" id="cx-chips" hidden></div>
@@ -258,6 +265,8 @@
           <input type="file" id="cx-image" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
           <input type="file" id="cx-camera" accept="image/*" capture="environment" hidden>
         </form>
+        <p class="cx-hinweis">Nur Vorschläge: Die KI sieht den Fahrzeugstand ohne FIN und führt nichts aus.</p>
+        </div>
       </section>
 
       <!-- Bericht -->

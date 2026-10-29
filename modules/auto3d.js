@@ -19,10 +19,10 @@ function laden() {
   return (ladung ||= (async () => {
     /* Feste relative Pfade statt Importmap: die Sicherheitsrichtlinie des Servers erlaubt kein eingebettetes Skript. */
     const three = await import("../vendor/three/three.module.js");
-    const [gltf, orbit, room, meshopt] = await Promise.all([import("../vendor/three/jsm/loaders/GLTFLoader.js"), import("../vendor/three/jsm/controls/OrbitControls.js"),
-      import("../vendor/three/jsm/environments/RoomEnvironment.js"), import("../vendor/three/jsm/libs/meshopt_decoder.module.js")]);
+    const [gltf, orbit, room, meshopt, hdr] = await Promise.all([import("../vendor/three/jsm/loaders/GLTFLoader.js"), import("../vendor/three/jsm/controls/OrbitControls.js"),
+      import("../vendor/three/jsm/environments/RoomEnvironment.js"), import("../vendor/three/jsm/libs/meshopt_decoder.module.js"), import("../vendor/three/jsm/loaders/HDRLoader.js")]);
     THREE = three;
-    addons = { GLTFLoader: gltf.GLTFLoader, OrbitControls: orbit.OrbitControls, RoomEnvironment: room.RoomEnvironment, MeshoptDecoder: meshopt.MeshoptDecoder };
+    addons = { GLTFLoader: gltf.GLTFLoader, OrbitControls: orbit.OrbitControls, RoomEnvironment: room.RoomEnvironment, MeshoptDecoder: meshopt.MeshoptDecoder, HDRLoader: hdr.HDRLoader };
   })().catch((e) => { ladung = null; throw e; }));
 }
 
@@ -38,17 +38,52 @@ function bodenSchatten(laenge, breite) {
   return m;
 }
 
+/* Feine Metallic-Flakes: kleine zufällige Normalen, sehr fein gekachelt. Einmal erzeugt, von allen Lacken geteilt. */
+let flakes = null;
+function flakeTextur() {
+  if (flakes) return flakes;
+  const n = 128, c = document.createElement("canvas"); c.width = c.height = n;
+  const g = c.getContext("2d"), img = g.createImageData(n, n);
+  for (let i = 0; i < n * n; i++) {
+    const x = Math.random() * 2 - 1, y = Math.random() * 2 - 1, z = Math.sqrt(Math.max(0, 1 - (x * x + y * y) * .35));
+    img.data.set([(x * .35 + 1) * 127.5, (y * .35 + 1) * 127.5, z * 255, 255], i * 4);
+  }
+  g.putImageData(img, 0, 0);
+  flakes = new THREE.CanvasTexture(c);
+  flakes.wrapS = flakes.wrapT = THREE.RepeatWrapping; flakes.repeat.set(60, 60);
+  return flakes;
+}
+/* Materialien nach Rolle aufwerten: Lack mit Klarlack und Flakes, Glas spiegelnd und getönt, Chrom und Lampen klar. */
+function veredeln(m) {
+  const name = m.name || "";
+  if (name === "lack") {
+    const p = new THREE.MeshPhysicalMaterial({ name, color: m.color, metalness: .55, roughness: .38, clearcoat: 1, clearcoatRoughness: .025,
+      normalMap: flakeTextur(), normalScale: new THREE.Vector2(.18, .18), envMapIntensity: 1.15 });
+    m.dispose(); return p;
+  }
+  if (name === "glas") {
+    const p = new THREE.MeshPhysicalMaterial({ name, color: 0x0a0f14, metalness: 0, roughness: .02, clearcoat: 1, clearcoatRoughness: 0, transparent: true, opacity: .62, envMapIntensity: 1.6 });
+    m.dispose(); return p;
+  }
+  if (name === "chrom" || name === "linse") Object.assign(m, { envMapIntensity: 1.6 });
+  if (name === "felge") Object.assign(m, { envMapIntensity: 1.3 });
+  return m;
+}
+
 export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
   await laden();
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  /* Neutrales Tonemapping (Khronos PBR Neutral): Lackfarben bleiben farbecht wie im Konfigurator */
+  renderer.toneMapping = THREE.NeutralToneMapping;
+  renderer.toneMappingExposure = 1.0;
   const scene = new THREE.Scene();
   const pmrem = new THREE.PMREMGenerator(renderer);
   const room = new addons.RoomEnvironment();
   scene.environment = pmrem.fromScene(room, .04).texture;
+  /* Studio-HDRI (Poly Haven, CC0) für echte Reflexe im Lack; lädt parallel zum Modell, bis dahin trägt das Raumlicht */
+  const hdrLaden = new addons.HDRLoader().loadAsync("umgebung/studio_small_09_1k.hdr");
   const sonne = new THREE.DirectionalLight(0xffffff, 1.6); sonne.position.set(4, 8, 3); scene.add(sonne);
   scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x1a1d22, .6));
   const kamera = new THREE.PerspectiveCamera(32, 1, .05, 100);
@@ -79,8 +114,7 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
   auto.traverse((o) => {
     if (!o.isMesh) return;
     const owner = (() => { let p = o; while (p && p !== auto && !p.userData.id) p = p.parent; return p && p.userData.id ? p : null; })();
-    o.material = o.material.clone();
-    if (o.material.name === "glas") Object.assign(o.material, { transparent: true, opacity: .82 });
+    o.material = veredeln(o.material.clone());
     if (owner) {
       const id = owner.userData.id;
       if (!bauteile.has(id)) bauteile.set(id, { id, name: owner.userData.name || id, gruppe: owner.userData.gruppe || "", meshes: [], knoten: owner });
@@ -118,6 +152,15 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
   /* Nur zeichnen, wenn die Bühne wirklich sichtbar ist (spart Akku beim Wechsel der Seite oder Bauart). */
   const sicht = new IntersectionObserver((e) => { sichtbar = e[0].isIntersecting && e[0].intersectionRatio > 0; if (sichtbar) anstossen(); });
   sicht.observe(box);
+  hdrLaden.then((tex) => {
+    if (weg) { tex.dispose(); return; }
+    tex.mapping = THREE.EquirectangularReflectionMapping;
+    const alt = scene.environment;
+    scene.environment = pmrem.fromEquirectangular(tex).texture;
+    scene.environmentRotation = new THREE.Euler(0, Math.PI * .65, 0);
+    tex.dispose(); alt?.dispose?.();
+    anstossen();
+  }).catch(() => {});
   steuerung.addEventListener("change", anstossen);
   const groesseAnpassen = () => {
     const r = box.getBoundingClientRect();
@@ -138,6 +181,7 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
       zustand(letzteToene);
     }
     modus = name;
+    zustand(letzteToene);
     const technik = name === "technik" || name === "unten";
     for (const o of huelle) {
       const m = o.material;
@@ -160,8 +204,9 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
     letzteToene = toene || {};
     if (modus === "fehler") return;
     puls = new Map();
+    const aussen = modus === "aussen";  // außen keine Zustandsfarben: sonst schimmern Steuergeräte durch die Scheibe
     for (const [id, b] of bauteile) {
-      const ton = toene[id];
+      const ton = aussen ? null : toene[id];
       for (const m of b.meshes) {
         m.material.emissive = new THREE.Color(ton ? TON[ton] : 0x000000);
         m.material.emissiveIntensity = ton ? .55 : 0;

@@ -133,6 +133,13 @@
 }
 @media (min-width: 1280px) { .view-car .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .topo[data-view="bus"] { grid-area: auto; }
+/* 3D ist die Hauptbühne: oben über die volle Breite, auf dem Handy zuerst */
+@media (max-width: 599px) { .view-car .topo[data-view="3d"] { order: 0; } }
+@media (min-width: 768px) {
+  .view-car:has(.topo[data-view="3d"]) { grid-template-areas: "topo topo" "stats stats" "ecus timeline"; grid-template-columns: 1fr 1fr; }
+  .view-car .topo[data-view="3d"] { grid-area: topo; position: static; }
+  .topo[data-view="3d"] .topo-3d { aspect-ratio: 21 / 9; max-height: min(640px, 66dvh); }
+}
 @media (min-width: 768px) {
   .view-car:has(.topo[data-view="bus"]) { grid-template-areas: "topo topo" "stats stats" "ecus timeline"; grid-template-columns: 1fr 1fr; }
   .view-car .topo[data-view="bus"] { grid-area: topo; position: static; }

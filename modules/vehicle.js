@@ -313,10 +313,10 @@ function t3Pins() {
 /* Nach jedem Bild: Etiketten an die Bildschirmlage ihres Bauteils schieben (nur Lage, kein Neubau) */
 function t3PinsSetzen() {
   if (!v3) return;
-  const fehler = v3.modus === "fehler";
+  const fehler = v3.modus === "fehler", gruppen = v3.modus === "technik" || v3.modus === "oben";
   for (const pin of $("t3-pins").children) {
     const at = v3.lage(pin.dataset.bt);
-    pin.hidden = fehler || !at || !at.sichtbar;
+    pin.hidden = !gruppen || !at || !at.sichtbar;
     if (at) { pin.style.left = `${at.x}px`; pin.style.top = `${at.y}px`; }
   }
   /* Beschriftungen: nicht übereinander; wer mit einer schon gezeigten kollidiert, bleibt verborgen */

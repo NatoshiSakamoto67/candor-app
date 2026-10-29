@@ -8,15 +8,25 @@ import { go } from "./shell.js";
 import { render as markdown } from "./md.js";
 import { icon3d } from "./icons3d.js";
 import { similar, forAi as caseForAi } from "./faelle.js";
+import { verlauf, suche as chatSuche, gruppe as zeitGruppe, GRUPPEN } from "./chatverlauf.js";
+import { vehicleName } from "./fahrzeuge.js";
 
 const MAX_FILES = 5, MAX_BYTES = 10 * 1024 * 1024, MAX_EDGE = 2000, MAX_HISTORY = 60, SEND_HISTORY = 20;
 const IMAGE = /^image\/(png|jpeg|webp|gif)$/, TEXT = /\.(txt|csv|log|json|md|xml)$/i;
 const QUICK = ["Was bedeuten meine Fehlercodes?", "Wo fange ich bei der Fehlersuche an?", "Besteht das Auto die AU?", "Such im Internet nach bekannten Problemen zu diesem Modell"];
 let files = [], web = storageGet("kfzdiag-websuche", true), running = null;
 
-const key = () => `kfzdiag-chat-${(state.fahrzeug && state.fahrzeug.id) || "ohne"}`;
-const history = () => storageGet(key(), []);
-const saveHistory = (list) => storageSet(key(), list.slice(-MAX_HISTORY));
+/* Verlauf: mehrere Chats (chatverlauf.js); jeder Chat gehört zum Fahrzeug, mit dem er begonnen wurde. */
+const chats = verlauf({ get: storageGet, set: storageSet });
+const aktivId = () => { const id = chats.aktiv(); return id && chats.holen(id) ? id : null; };
+const history = (id = aktivId()) => (id ? chats.holen(id).nachrichten : []);
+/* Ohne aktiven Chat legt die erste Nachricht einen an; ein laufende Antwort schreibt in ihren eigenen Chat. */
+function saveHistory(list, id = aktivId()) {
+  let ziel = id;
+  if (!ziel) { const fz = state.fahrzeug; ziel = chats.neu(fz ? { id: fz.id, name: vehicleName(fz) } : null).id; }
+  chats.setzeNachrichten(ziel, list.slice(-MAX_HISTORY));
+  return ziel;
+}
 const isServer = () => state.src && state.src.mode === "server";
 
 /* ---------- Anhänge ---------- */
@@ -113,9 +123,60 @@ function emptyView() {
     h("div", { class: "cx-quick" }, ...QUICK.map((q) => h("button", { class: "cx-q glass", type: "button", onclick: () => send(q) }, q))));
 }
 function renderHistory() {
-  const list = history();
+  const list = history(), c = aktivId() && chats.holen(aktivId());
   $("cx-log").replaceChildren(...(list.length ? list.map(messageView) : [emptyView()]));
+  $("cx-titel").textContent = c ? c.titel : "Neuer Chat";
   $("cx-clear").hidden = !list.length;
+  renderSide();
+}
+
+/* ---------- Seitenleiste: Neuer Chat, Suche, Chats nach Zeit (auf dem Handy als Schublade) ---------- */
+let sucheText = "", umbenennen = null, loeschFrage = null;
+function seiteZu() { $("view-agent").classList.remove("side-auf"); $("cx-schleier").hidden = true; $("cx-verlauf").setAttribute("aria-expanded", "false"); }
+function seiteAuf() { $("view-agent").classList.add("side-auf"); $("cx-schleier").hidden = false; $("cx-verlauf").setAttribute("aria-expanded", "true"); requestAnimationFrame(() => $("cx-side").querySelector("input")?.focus()); }
+function oeffneChat(id) { if (running) return; chats.setzeAktiv(id); umbenennen = loeschFrage = null; seiteZu(); renderHistory(); requestAnimationFrame(scrollEnd); }
+function neuerChat() { if (running) return; chats.setzeAktiv(null); seiteZu(); renderHistory(); $("cx-input").focus(); }
+function chatZeile(c) {
+  const aktiv = c.id === aktivId();
+  if (umbenennen === c.id) {
+    const eingabe = h("input", { class: "inp", value: c.titel, maxlength: 120, "aria-label": "Neuer Titel" });
+    const fertig = (speichern) => { if (speichern) chats.umbenennen(c.id, eingabe.value); umbenennen = null; renderHistory(); };
+    eingabe.addEventListener("keydown", (ev) => { if (ev.key === "Enter") fertig(true); if (ev.key === "Escape") fertig(false); });
+    eingabe.addEventListener("blur", () => fertig(true));
+    requestAnimationFrame(() => { eingabe.focus(); eingabe.select(); });
+    return h("li", { class: "cx-chat bearbeiten" }, eingabe);
+  }
+  if (loeschFrage === c.id) return h("li", { class: "cx-chat frage" }, h("span", {}, "Chat löschen?"),
+    h("button", { class: "btn dng small", type: "button", onclick: () => { chats.loeschen(c.id); loeschFrage = null; renderHistory(); } }, "Löschen"),
+    h("button", { class: "btn qt small", type: "button", onclick: () => { loeschFrage = null; renderSide(); } }, "Behalten"));
+  return h("li", { class: `cx-chat${aktiv ? " aktiv" : ""}` },
+    h("button", { class: "cx-chat-auf", type: "button", "aria-current": aktiv ? "true" : null, onclick: () => oeffneChat(c.id) },
+      h("span", { class: "cx-chat-t" }, c.titel), h("span", { class: "cx-chat-m" }, [c.fzName, clockTime(new Date(c.geaendert))].filter(Boolean).join(" · "))),
+    h("button", { class: "cx-chat-x", type: "button", "aria-label": `Chat »${c.titel}« umbenennen`, onclick: () => { umbenennen = c.id; renderSide(); } }, h("svg", { viewBox: "0 0 24 24", "aria-hidden": "true" }, h("path", { d: "M4 20h4L19 9l-4-4L4 16zM14 6l4 4" }))),
+    h("button", { class: "cx-chat-x", type: "button", "aria-label": `Chat »${c.titel}« löschen`, onclick: () => { loeschFrage = c.id; renderSide(); } }, h("svg", { viewBox: "0 0 24 24", "aria-hidden": "true" }, h("path", { d: "M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" }))));
+}
+function renderSide() {
+  const side = $("cx-side"), alle = chats.alle();
+  const feld = side.querySelector(".cx-suche input");
+  const hadFocus = feld && document.activeElement === feld;
+  const eingabe = h("input", { class: "inp", type: "search", value: sucheText, placeholder: "Chats durchsuchen", "aria-label": "Chats durchsuchen", autocomplete: "off" });
+  eingabe.addEventListener("input", () => { sucheText = eingabe.value; renderSide(); });
+  let inhalt;
+  if (sucheText.trim()) {
+    const treffer = chatSuche(alle, sucheText);
+    inhalt = h("section", { class: "cx-gruppe" }, h("h3", { class: "cx-gruppe-t" }, "Treffer in Titeln und Texten"),
+      treffer.length ? h("ul", { class: "cx-liste" }, ...treffer.map((t) => h("li", { class: "cx-chat" }, h("button", { class: "cx-chat-auf", type: "button", onclick: () => oeffneChat(t.id) },
+        h("span", { class: "cx-chat-t" }, t.titel), t.ausschnitt ? h("span", { class: "cx-chat-m" }, t.ausschnitt) : null)))) : h("p", { class: "sm cx-leer" }, "Nichts gefunden."));
+  } else {
+    const nachGruppe = GRUPPEN.map((g) => [g, alle.filter((c) => zeitGruppe(c.geaendert) === g)]).filter(([, l]) => l.length);
+    inhalt = nachGruppe.length ? h("div", {}, ...nachGruppe.map(([g, l]) => h("section", { class: "cx-gruppe" }, h("h3", { class: "cx-gruppe-t" }, g), h("ul", { class: "cx-liste" }, ...l.map(chatZeile)))))
+      : h("p", { class: "sm cx-leer" }, "Noch keine Chats.");
+  }
+  side.replaceChildren(
+    h("div", { class: "cx-side-kopf" }, h("button", { class: "btn pri cx-neu", type: "button", onclick: neuerChat }, icon("plus"), "Neuer Chat"),
+      h("button", { class: "icb cx-side-zu", type: "button", "aria-label": "Verlauf schließen", onclick: seiteZu }, icon("close"))),
+    h("label", { class: "cx-suche" }, eingabe), inhalt);
+  if (hadFocus) { eingabe.focus(); eingabe.setSelectionRange(eingabe.value.length, eingabe.value.length); }
 }
 const scrollEnd = () => { const last = $("cx-log").lastElementChild; if (last) last.scrollIntoView({ block: "end", behavior: reducedMotion() ? "auto" : "smooth" }); };
 
@@ -149,7 +210,7 @@ export async function send(textArg) {
   const sent = files;
   files = []; input.value = ""; grow(); renderChips();
   const list = [...history(), { rolle: "nutzer", text, anhaenge: sent.map((f) => ({ name: f.name, art: f.art })), zeit: Date.now() }];
-  saveHistory(list); renderHistory();
+  const chatId = saveHistory(list); chats.setzeAktiv(chatId); renderHistory();
   const answer = { rolle: "ki", text: "", zeit: Date.now() };
   const node = messageView(answer);
   node.classList.add("ki-busy");
@@ -190,8 +251,9 @@ export async function send(textArg) {
     for (const f of sent) if (f.vorschau) URL.revokeObjectURL(f.vorschau);
     running = null;
     if (!answer.text) Object.assign(answer, { text: "Keine Antwort erhalten.", fehler: true, frage: text });
-    saveHistory([...history(), answer]);
-    node.replaceWith(messageView(answer));
+    saveHistory([...history(chatId), answer], chatId);
+    if (aktivId() === chatId) node.replaceWith(messageView(answer)); else node.remove();
+    renderSide();
     updateSend(); scrollEnd();
   }
 }
@@ -228,13 +290,20 @@ export function initAgent() {
   $("cx-mic").addEventListener("click", dictate);
   $("cx-web").addEventListener("click", () => { web = false; storageSet("kfzdiag-websuche", false); renderToggles(); toast("Websuche aus."); });
   for (const id of ["cx-file", "cx-image", "cx-camera"]) $(id).addEventListener("change", (ev) => { addFiles(ev.target.files); ev.target.value = ""; });
-  $("cx-clear").addEventListener("click", () => { if (running) return; saveHistory([]); renderHistory(); });
+  $("cx-clear").addEventListener("click", neuerChat);
+  $("cx-verlauf").addEventListener("click", () => ($("view-agent").classList.contains("side-auf") ? seiteZu() : seiteAuf()));
+  $("cx-schleier").addEventListener("click", seiteZu);
+  $("cx-side").addEventListener("keydown", (ev) => { if (ev.key === "Escape") { seiteZu(); $("cx-verlauf").focus(); } });
+  /* Alte Verläufe je Fahrzeug einmalig als Chats übernehmen */
+  const alt = Object.keys(localStorage).filter((k) => /^kfzdiag-chat-(?!aktiv$)/.test(k));
+  chats.uebernehmen(alt, (id) => { const fz = (storageGet("kfzdiag-fahrzeuge", []) || []).find((v) => v.id === id); return fz ? vehicleName(fz) : ""; });
   const view = $("view-agent");
   view.addEventListener("dragover", (ev) => { if (ev.dataTransfer.types.includes("Files")) { ev.preventDefault(); view.classList.add("drop"); } });
   view.addEventListener("dragleave", (ev) => { if (ev.target === view || !view.contains(ev.relatedTarget)) view.classList.remove("drop"); });
   view.addEventListener("drop", (ev) => { ev.preventDefault(); view.classList.remove("drop"); addFiles(ev.dataTransfer.files); });
   on("tab", (id) => { if (id === "agent") { renderHistory(); renderToggles(); updateSend(); requestAnimationFrame(scrollEnd); } });
-  on("fahrzeug-aktiv", () => { if (!$("view-agent").hidden) renderHistory(); });
+  /* Anderes Fahrzeug: neuer leerer Chat, der Verlauf bleibt in der Seitenleiste */
+  on("fahrzeug-aktiv", () => { const c = aktivId() && chats.holen(aktivId()); if (c && state.fahrzeug && c.fz && c.fz !== state.fahrzeug.id) chats.setzeAktiv(null); if (!$("view-agent").hidden) renderHistory(); });
   on("chat-prefill", (text) => { const el = $("cx-input"); el.value = text; grow(); updateSend(); requestAnimationFrame(() => el.focus()); });
   renderToggles(); updateSend();
 }
