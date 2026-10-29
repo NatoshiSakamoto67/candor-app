@@ -278,3 +278,24 @@ dialog::backdrop { background: rgba(0, 0, 0, .45); }
   .statusbar .who { flex: 1 1 0; }
   .status-tools { gap: 0; }
 }
+
+/* Nichts darf die Seite breiter machen als den Bildschirm: Kinder von Rastern dürfen schrumpfen (min-width 0),
+   lange Namen werden gekürzt statt die Seite zu verbreitern (iPhone, 29.10.). */
+.view > *, .main > .gutter, .tiles > *, .vcard-strip, .vstrip > * { min-width: 0; }
+.vstrip-name { flex: 1 1 0; overflow: hidden; }
+.vstrip-name b { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.modus-wahl { max-width: 100%; }
+
+/* Handy: Kopfleiste schmaler – kleinere Abstände, niedrigere Zustandschips, kleinere Marke */
+@media (max-width: 599px) {
+  .statusbar.sb { min-height: 0; padding-block: 4px; gap: 2px var(--sp-2); padding-top: max(4px, env(safe-area-inset-top, 0px)); }
+  .statusbar .brand-mark { width: 24px; height: 24px; }
+  .statusbar h1 { font-size: var(--t-4); line-height: 20px; }
+  .statusbar .veh { font-size: 10px; line-height: 13px; }
+  .statusbar .icb, .statusbar .nav-btn { min-height: 36px; min-width: 36px; height: 36px; }
+  .schip { min-height: 30px; padding: 0 6px; font-size: var(--t-2); }
+  .schip .mark, .schip .mark svg { width: 16px; height: 16px; }
+  .sim-band { padding: 6px 10px; font-size: 10px; line-height: 13px; }
+}
+/* Zustandschips auf dem Handy wischbar: weicher Rand rechts zeigt, dass es weitergeht, statt hart abgeschnitten */
+@media (max-width: 599px) { .status-chips { -webkit-mask-image: linear-gradient(to right, #000 82%, transparent); mask-image: linear-gradient(to right, #000 82%, transparent); padding-right: 24px; } }

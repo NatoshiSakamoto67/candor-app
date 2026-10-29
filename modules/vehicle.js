@@ -24,7 +24,7 @@ export function renderVehicleCard() {
       plate(fz, "sm"),
       h("button", { class: "vstrip-name unbtn", type: "button", "data-info": `fahrzeug:${fz.id}`, "aria-label": `${vehicleName(fz)}, Details` },
         h("b", {}, vehicleName(fz)), vehicleFacts(fz) ? h("span", { class: "sm" }, vehicleFacts(fz)) : null),
-      h("span", { class: `cs t-${zustand[0]} vstrip-zu` }, zustand[0] !== "neutral" ? mark(zustand[0]) : null, zustand[1]),
+      h("span", { class: `cs t-${zustand[0]} vstrip-zu`, title: zustand[1] }, zustand[0] !== "neutral" ? mark(zustand[0]) : null, h("span", { class: "vstrip-zu-t" }, zustand[1])),
       h("div", { class: "vstrip-tools" },
         st ? h("button", { class: "icb", type: "button", "aria-label": "Neu verbinden", title: "Neu verbinden", onclick: () => emit("reconnect") }, icon("reset")) : null,
         h("button", { class: "icb", type: "button", "aria-label": "Fahrzeug wechseln", title: "Fahrzeug wechseln", onclick: () => go("fahrzeuge") }, icon("car")))),

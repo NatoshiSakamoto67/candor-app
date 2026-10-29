@@ -192,7 +192,7 @@ html[data-modus="einfach"] #widgets, html[data-modus="einfach"] #start-tiles, ht
 .vstrip-zu { flex: none; }
 .vstrip-tools { display: flex; gap: 2px; flex: none; }
 .vstrip .fin-warn { margin-top: 0; }
-@media (max-width: 599px) { .vstrip-name .sm { display: none; } .vstrip { padding: 6px 8px; gap: var(--sp-2); } }
+@media (max-width: 599px) { .vstrip-name .sm { display: none; } .vstrip-zu:has(.mark) .vstrip-zu-t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } .vstrip { padding: 6px 8px; gap: var(--sp-2); } }
 .start-mehr { display: grid; gap: var(--sp-4); margin-top: var(--sp-2); }
 
 /* Widget-Inhalt: senkrecht mittig im freien Raum, damit gleich hohe Karten nicht leer wirken */
