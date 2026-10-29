@@ -57,6 +57,8 @@ const shortName = (name, max = 11) => (name.length > max ? name.slice(0, max - 1
 const SVG_NS = "http://www.w3.org/2000/svg";
 const templates = new Map();
 let bauart = storageGet("kfzdiag-bauart", "limousine");
+/* Einmalig auf 3D umstellen: wer vor der 3D-Ansicht schon eine Ansicht gespeichert hatte, landet sonst in der Draufsicht. */
+if (webglMoeglich() && !storageGet("kfzdiag-3d-eingefuehrt", false)) { storageSet("kfzdiag-topo-ansicht", "3d"); storageSet("kfzdiag-3d-eingefuehrt", true); }
 let view = storageGet("kfzdiag-topo-ansicht", webglMoeglich() ? "3d" : "fahrzeug");
 if (view === "3d" && !webglMoeglich()) view = "fahrzeug";
 
