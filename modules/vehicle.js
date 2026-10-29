@@ -234,8 +234,13 @@ function box3d() {
   return box;
 }
 function t3Modes() {
-  $("t3-modes").replaceChildren(...ANSICHTEN_3D.map(([id, label]) => h("button", { type: "button", "aria-pressed": String(v3 && v3.modus === id),
-    onclick: () => { if (!v3) return; v3.ansicht(id); t3Modes(); $("t3-card").hidden = true; } }, label)));
+  const box = $("t3-modes");
+  /* Knöpfe nur einmal bauen, danach nur den gedrückten Zustand setzen: der Tastaturfokus bleibt erhalten. */
+  if (box.childElementCount !== ANSICHTEN_3D.length) {
+    box.replaceChildren(...ANSICHTEN_3D.map(([id, label]) => h("button", { type: "button", "data-ansicht": id,
+      onclick: () => { if (!v3) return; v3.ansicht(id); t3Modes(); $("t3-card").hidden = true; } }, label)));
+  }
+  for (const b of box.children) b.setAttribute("aria-pressed", String(Boolean(v3) && v3.modus === b.dataset.ansicht));
 }
 function t3Toene(nodes) {
   const toene = {};
