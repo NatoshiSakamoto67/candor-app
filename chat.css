@@ -224,3 +224,38 @@
 .cx-ambient { background: radial-gradient(46vmax 18vmax at 58% 100%, color-mix(in oklab, var(--ki-a) 9%, transparent), transparent 70%), var(--surface-0); }
 [data-theme="hell"] .cx-ambient { background: radial-gradient(46vmax 18vmax at 58% 100%, color-mix(in oklab, var(--ki-a) 6%, transparent), transparent 70%), var(--surface-0); }
 .cx-ambient::after { display: none; }
+
+/* Einfacher wie Claude/XDAB-Chat (David, 29.10.): leerer Chat = kurze Begrüßung, Eingabe in der Mitte, drei kurze
+   Vorschläge darunter. KI-Antworten ohne Blase, nur Text neben dem Roboter. Auf dem Handy ohne Statuszeile. */
+.view-agent.leer .cx-main { grid-template-rows: auto minmax(0, 1fr) auto auto auto; padding-bottom: 16vh; }
+.view-agent.leer .cx-log { align-self: end; padding-bottom: var(--sp-2); }
+.view-agent.leer .cx-composer { position: static; }
+.cx-empty { display: grid; justify-items: center; gap: var(--sp-3); padding: 0 var(--sp-3); }
+.cx-empty .h2 { font: 600 var(--t-7, 28px)/1.2 var(--font-display); letter-spacing: -.01em; max-width: 22ch; text-wrap: balance; }
+.cx-empty-ic .i3 { width: 64px; height: 64px; }
+.cx-vorschlaege { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; max-width: 860px; margin: 0 auto; }
+.cx-vorschlaege[hidden] { display: none; }
+.cx-q { padding: 7px 14px 7px 28px; border-radius: var(--r-pill); border: 1px solid var(--line); background: color-mix(in oklab, var(--surface-1) 70%, transparent); font: 500 var(--t-3)/20px var(--font-text); box-shadow: none; }
+.cx-q:hover { transform: none; background: var(--surface-2); }
+.cx-q::before { left: 12px; width: 7px; height: 7px; margin-top: -3.5px; box-shadow: none; }
+.cx-msg.ai .cx-body, [data-theme="hell"] .cx-msg.ai .cx-body { padding: 4px 0 0; border: 0; border-radius: 0; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.cx-msg.ai.err .cx-body { padding: 10px 14px; border: 1px solid var(--crit-line); border-radius: var(--r-2); }
+.cx-top { min-height: 40px; }
+.cx-titel { font: 500 var(--t-3)/20px var(--font-text); color: var(--text-muted); }
+.cx-neu-btn svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+#cx-plus { position: relative; }
+#cx-plus.web-an::after { content: ""; position: absolute; right: 7px; top: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--ki-c); }
+.cx-hinweis { font-size: 11px; opacity: .8; }
+/* Seitenleiste ruhig: kein Kasten, »Neuer Chat« als schlichte Zeile */
+.cx-side .cx-neu { justify-content: flex-start; gap: 8px; background: none; color: var(--text); border: 1px solid var(--line); box-shadow: none; font-weight: 600; }
+.cx-side .cx-neu:hover { background: color-mix(in oklab, var(--ki-a) 12%, transparent); }
+@media (min-width: 900px) {
+  .cx-side { background: none; border: 0; border-right: 1px solid var(--line); border-radius: 0; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 0 var(--sp-3) 0 0; }
+  .view-agent.leer .cx-top { visibility: hidden; }
+}
+@media (max-width: 599px) {
+  body:has(#view-agent:not([hidden])) .status-chips, body:has(#view-agent:not([hidden])) .sim-band { display: none; }
+  .view-agent.leer .cx-main { padding-bottom: 10vh; }
+  .cx-empty .h2 { font-size: 22px; }
+  .cx-empty-ic .i3 { width: 56px; height: 56px; }
+}

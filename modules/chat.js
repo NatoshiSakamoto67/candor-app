@@ -13,7 +13,9 @@ import { vehicleName } from "./fahrzeuge.js";
 
 const MAX_FILES = 5, MAX_BYTES = 10 * 1024 * 1024, MAX_EDGE = 2000, MAX_HISTORY = 60, SEND_HISTORY = 20;
 const IMAGE = /^image\/(png|jpeg|webp|gif)$/, TEXT = /\.(txt|csv|log|json|md|xml)$/i;
-const QUICK = ["Was bedeuten meine Fehlercodes?", "Wo fange ich bei der Fehlersuche an?", "Besteht das Auto die AU?", "Such im Internet nach bekannten Problemen zu diesem Modell"];
+/* Kurze Vorschläge unter der Eingabe wie bei Claude: kurzer Text auf dem Knopf, ganze Frage beim Senden. */
+const QUICK = [["Fehler erklären", "Was bedeuten meine Fehlercodes?"], ["Wo fange ich an?", "Wo fange ich bei der Fehlersuche an?"], ["Schafft es die AU?", "Besteht das Auto die AU?"]];
+const QUICK_LEER = [["Was kannst du?", "Was kannst du für mich am Auto tun?"], ["Typische Probleme", "Such im Internet nach bekannten Problemen zu diesem Modell"], ["Wo fange ich an?", "Wo fange ich bei der Fehlersuche an?"]];
 let files = [], web = storageGet("kfzdiag-websuche", true), running = null;
 
 /* Verlauf: mehrere Chats (chatverlauf.js); jeder Chat gehört zum Fahrzeug, mit dem er begonnen wurde. */
@@ -114,18 +116,28 @@ function messageView(m) {
       m.vorschlag ? suggestionView(m.vorschlag) : null,
       h("div", { class: "cx-meta" }, m.beispiel ? h("span", { class: "tag" }, "Beispielantwort der Vorschau") : null, m.modell ? h("span", {}, m.modell) : null, m.zeit ? h("span", {}, clockTime(new Date(m.zeit))) : null,
         !m.fehler && m.text ? h("button", { class: "cx-copy", type: "button", onclick: (ev) => { navigator.clipboard.writeText(m.text).then(() => { ev.target.textContent = "Kopiert"; }); } }, "Kopieren") : null,
+        m.fehler && /kein Fahrzeug verbunden/i.test(m.text) ? h("button", { class: "btn pri small", type: "button", onclick: () => go("connect") }, "Fahrzeug verbinden") : null,
+        m.fehler && /Einstellungen/.test(m.text) ? h("button", { class: "btn pri small", type: "button", onclick: () => go("einstellungen") }, "KI einrichten") : null,
         m.fehler && m.frage != null ? h("button", { class: "btn sec small", type: "button", onclick: () => send(m.frage) }, "Erneut senden") : null)));
 }
 function emptyView() {
+  const fz = state.fahrzeug;
   return h("div", { class: "cx-empty" }, h("span", { class: "cx-empty-ic", "aria-hidden": "true" }, icon3d("robot")),
-    h("h2", { class: "h2" }, "Frag die KI am Auto"),
-    h("p", { class: "p" }, "Sie sieht den aktuellen Fahrzeugstand, liest Fotos und PDFs und sucht auf Wunsch im Internet. Sie führt nichts aus; jeder Schritt am Auto braucht deine Freigabe."),
-    h("div", { class: "cx-quick" }, ...QUICK.map((q) => h("button", { class: "cx-q glass", type: "button", onclick: () => send(q) }, q))));
+    h("h2", { class: "h2" }, fz ? `Was ist mit dem ${vehicleName(fz)}?` : "Was ist mit dem Auto?"));
+}
+function renderQuick(leer) {
+  const box = $("cx-vorschlaege");
+  box.hidden = !leer;
+  if (!leer) { box.replaceChildren(); return; }
+  const liste = faultSet().size ? QUICK : QUICK_LEER;
+  box.replaceChildren(...liste.map(([kurz, frage]) => h("button", { class: "cx-q", type: "button", title: frage, onclick: () => send(frage) }, kurz)));
 }
 function renderHistory() {
   const list = history(), c = aktivId() && chats.holen(aktivId());
   $("cx-log").replaceChildren(...(list.length ? list.map(messageView) : [emptyView()]));
-  $("cx-titel").textContent = c ? c.titel : "Neuer Chat";
+  $("view-agent").classList.toggle("leer", !list.length);
+  renderQuick(!list.length);
+  $("cx-titel").textContent = c ? c.titel : "";
   $("cx-clear").hidden = !list.length;
   renderSide();
 }
@@ -277,7 +289,7 @@ function plusMenu() {
   menu.addEventListener("keydown", (ev) => { if (ev.key === "Escape") { close(); $("cx-plus").focus(); } });
   menu.querySelector("button").focus();
 }
-function renderToggles() { $("cx-web").hidden = !web; }
+function renderToggles() { $("cx-plus").classList.toggle("web-an", web); $("cx-plus").title = web ? "Anhängen, Websuche ist an" : "Anhängen, Websuche ist aus"; }
 
 export function initAgent() {
   const input = $("cx-input");
@@ -288,7 +300,6 @@ export function initAgent() {
   $("cx-stop").addEventListener("click", () => running && running.abort());
   $("cx-plus").addEventListener("click", plusMenu);
   $("cx-mic").addEventListener("click", dictate);
-  $("cx-web").addEventListener("click", () => { web = false; storageSet("kfzdiag-websuche", false); renderToggles(); toast("Websuche aus."); });
   for (const id of ["cx-file", "cx-image", "cx-camera"]) $(id).addEventListener("change", (ev) => { addFiles(ev.target.files); ev.target.value = ""; });
   $("cx-clear").addEventListener("click", neuerChat);
   $("cx-verlauf").addEventListener("click", () => ($("view-agent").classList.contains("side-auf") ? seiteZu() : seiteAuf()));
