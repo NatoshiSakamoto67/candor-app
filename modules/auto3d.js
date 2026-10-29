@@ -17,9 +17,10 @@ let THREE = null, addons = null, ladung = null;
 /* Die Imports einmal laden und das Versprechen merken; bei Fehler zurücksetzen, damit ein neuer Versuch möglich bleibt. */
 function laden() {
   return (ladung ||= (async () => {
-    const three = await import("three");
-    const [gltf, orbit, room, meshopt] = await Promise.all([import("three/addons/loaders/GLTFLoader.js"), import("three/addons/controls/OrbitControls.js"),
-      import("three/addons/environments/RoomEnvironment.js"), import("three/addons/libs/meshopt_decoder.module.js")]);
+    /* Feste relative Pfade statt Importmap: die Sicherheitsrichtlinie des Servers erlaubt kein eingebettetes Skript. */
+    const three = await import("../vendor/three/three.module.js");
+    const [gltf, orbit, room, meshopt] = await Promise.all([import("../vendor/three/jsm/loaders/GLTFLoader.js"), import("../vendor/three/jsm/controls/OrbitControls.js"),
+      import("../vendor/three/jsm/environments/RoomEnvironment.js"), import("../vendor/three/jsm/libs/meshopt_decoder.module.js")]);
     THREE = three;
     addons = { GLTFLoader: gltf.GLTFLoader, OrbitControls: orbit.OrbitControls, RoomEnvironment: room.RoomEnvironment, MeshoptDecoder: meshopt.MeshoptDecoder };
   })().catch((e) => { ladung = null; throw e; }));
