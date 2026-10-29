@@ -219,3 +219,8 @@
   .cx-side-zu { display: grid; }
 }
 @media (prefers-reduced-motion: reduce) { .cx-side { transition: none; } }
+
+/* Hintergrund ruhig: kein Raster, nur ein sehr dezenter Schein hinter der Eingabe (David, 29.10.) */
+.cx-ambient { background: radial-gradient(46vmax 18vmax at 58% 100%, color-mix(in oklab, var(--ki-a) 9%, transparent), transparent 70%), var(--surface-0); }
+[data-theme="hell"] .cx-ambient { background: radial-gradient(46vmax 18vmax at 58% 100%, color-mix(in oklab, var(--ki-a) 6%, transparent), transparent 70%), var(--surface-0); }
+.cx-ambient::after { display: none; }
