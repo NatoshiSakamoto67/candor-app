@@ -13,13 +13,16 @@ export const GRUPPE_BAUTEILE = {
 };
 const TON = { crit: 0xef4444, silent: 0xf59e0b, warn: 0xf59e0b, ok: 0x22c55e, pending: 0x94a3b8 };
 
-let THREE = null, addons = null;
-async function laden() {
-  if (THREE) return;
-  THREE = await import("three");
-  const [gltf, orbit, room, meshopt] = await Promise.all([import("three/addons/loaders/GLTFLoader.js"), import("three/addons/controls/OrbitControls.js"),
-    import("three/addons/environments/RoomEnvironment.js"), import("three/addons/libs/meshopt_decoder.module.js")]);
-  addons = { GLTFLoader: gltf.GLTFLoader, OrbitControls: orbit.OrbitControls, RoomEnvironment: room.RoomEnvironment, MeshoptDecoder: meshopt.MeshoptDecoder };
+let THREE = null, addons = null, ladung = null;
+/* Die Imports einmal laden und das Versprechen merken; bei Fehler zurücksetzen, damit ein neuer Versuch möglich bleibt. */
+function laden() {
+  return (ladung ||= (async () => {
+    const three = await import("three");
+    const [gltf, orbit, room, meshopt] = await Promise.all([import("three/addons/loaders/GLTFLoader.js"), import("three/addons/controls/OrbitControls.js"),
+      import("three/addons/environments/RoomEnvironment.js"), import("three/addons/libs/meshopt_decoder.module.js")]);
+    THREE = three;
+    addons = { GLTFLoader: gltf.GLTFLoader, OrbitControls: orbit.OrbitControls, RoomEnvironment: room.RoomEnvironment, MeshoptDecoder: meshopt.MeshoptDecoder };
+  })().catch((e) => { ladung = null; throw e; }));
 }
 
 /* Weicher Bodenschatten als Bild statt Echtzeitschatten: kostet auf dem Handy nichts. */
@@ -41,10 +44,10 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
-  box.replaceChildren(renderer.domElement);
   const scene = new THREE.Scene();
   const pmrem = new THREE.PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(new addons.RoomEnvironment(), .04).texture;
+  const room = new addons.RoomEnvironment();
+  scene.environment = pmrem.fromScene(room, .04).texture;
   const sonne = new THREE.DirectionalLight(0xffffff, 1.6); sonne.position.set(4, 8, 3); scene.add(sonne);
   scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x1a1d22, .6));
   const kamera = new THREE.PerspectiveCamera(32, 1, .05, 100);
@@ -53,9 +56,16 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
 
   const loader = new addons.GLTFLoader();
   loader.setMeshoptDecoder(addons.MeshoptDecoder);
-  const gltf = await loader.loadAsync(`modelle/${bauart}.glb`);
+  let gltf;
+  try {
+    gltf = await loader.loadAsync(`modelle/${bauart}.glb`);
+  } catch (err) {
+    steuerung?.dispose?.(); pmrem.dispose(); room.dispose(); renderer.dispose(); renderer.forceContextLoss();
+    throw err;
+  }
   const auto = gltf.scene;
   scene.add(auto);
+  box.replaceChildren(renderer.domElement);
   const huellbox = new THREE.Box3().setFromObject(auto);
   const groesse = huellbox.getSize(new THREE.Vector3()), mitte = huellbox.getCenter(new THREE.Vector3());
   const schatten = bodenSchatten(groesse.x, groesse.z); schatten.position.x = mitte.x; schatten.position.z = mitte.z; scene.add(schatten);
@@ -79,10 +89,11 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
   });
   for (const o of huelle) o.userData.orig = { opacity: o.material.opacity, transparent: o.material.transparent, depthWrite: o.material.depthWrite };
 
-  let w = 0, h = 0, laeuft = 0, puls = new Map(), modus = "aussen";
+  let w = 0, h = 0, laeuft = 0, puls = new Map(), modus = "aussen", sichtbar = true, weg = false;
   /* Dämpfung: update() meldet Bewegung, dann noch ein Bild; Pulsen hält die Schleife nur bei Fehlern am Laufen. */
   const zeichnen = () => {
     laeuft = 0;
+    if (weg || !sichtbar || !w) return;  // unsichtbar oder entsorgt: nicht zeichnen, nicht neu planen
     if (puls.size) pulsen();
     if (flug) fliegen();
     const bewegt = steuerung.update();
@@ -90,13 +101,17 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
     box.dispatchEvent(new Event("bild"));
     if (bewegt || puls.size || flug) anstossen();
   };
-  const anstossen = () => { if (!laeuft) laeuft = requestAnimationFrame(zeichnen); };
+  const anstossen = () => { if (!laeuft && !weg) laeuft = requestAnimationFrame(zeichnen); };
+  /* Nur zeichnen, wenn die Bühne wirklich sichtbar ist (spart Akku beim Wechsel der Seite oder Bauart). */
+  const sicht = new IntersectionObserver((e) => { sichtbar = e[0].isIntersecting && e[0].intersectionRatio > 0; if (sichtbar) anstossen(); });
+  sicht.observe(box);
   steuerung.addEventListener("change", anstossen);
   const groesseAnpassen = () => {
     const r = box.getBoundingClientRect();
     if (Math.abs(r.width - w) < 1 && Math.abs(r.height - h) < 1) return;
     w = r.width; h = r.height;
-    renderer.setSize(w, h, false); kamera.aspect = w / Math.max(1, h); kamera.updateProjectionMatrix(); anstossen();
+    renderer.setSize(w, h, false); kamera.aspect = w / Math.max(1, h); kamera.updateProjectionMatrix();
+    if (!weg && sichtbar) renderer.render(scene, kamera);
   };
   const ro = new ResizeObserver(groesseAnpassen); ro.observe(box);
 
@@ -134,8 +149,7 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
     }
     anstossen();
   }
-  const uhr = new THREE.Clock();
-  const pulsen = () => { const t = .35 + .35 * (1 + Math.sin(uhr.getElapsedTime() * 4)) / 2; for (const b of puls.values()) for (const m of b.meshes) m.material.emissiveIntensity = t; };
+  const pulsen = () => { const t = .35 + .35 * (1 + Math.sin(performance.now() / 250)) / 2; for (const b of puls.values()) for (const m of b.meshes) m.material.emissiveIntensity = t; };
 
   /* Antippen: Strahl in die Szene, erstes Bauteil gewinnt; Ziehen gilt nicht als Tippen */
   const strahl = new THREE.Raycaster(), maus = new THREE.Vector2();
@@ -146,10 +160,11 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
     const r = renderer.domElement.getBoundingClientRect();
     maus.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     strahl.setFromCamera(maus, kamera);
-    const ziele = [...bauteile.values()].flatMap((b) => b.meshes);
+    const offen = modus === "technik" || modus === "unten";
+    const ziele = [...[...bauteile.values()].flatMap((b) => b.meshes), ...(offen ? [] : huelle)];
     const treffer = strahl.intersectObjects(ziele, false)[0];
-    if (treffer && onPick) onPick(bauteile.get(treffer.object.userData.bt), { x: e.clientX - r.left, y: e.clientY - r.top });
-    else if (onPick) onPick(null);
+    const bt = treffer && treffer.object.userData.bt ? bauteile.get(treffer.object.userData.bt) : null;
+    if (onPick) onPick(bt, { x: e.clientX - r.left, y: e.clientY - r.top });
   });
 
   /* Kamerafahrt zu einem Bauteil: Technik-Ansicht, Bauteil in der Mitte, nah heran. Bewegung reduziert: sofort. */
@@ -172,11 +187,12 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
   }
 
   /* Bildschirmlage eines Bauteils (für Etiketten) */
-  const v = new THREE.Vector3();
+  const v = new THREE.Vector3(), zentren = new Map();
   function lage(id) {
     const b = bauteile.get(id); if (!b || !w) return null;
+    if (!zentren.has(id)) zentren.set(id, new THREE.Box3().setFromObject(b.knoten).getCenter(new THREE.Vector3()));
     kamera.updateMatrixWorld();
-    new THREE.Box3().setFromObject(b.knoten).getCenter(v).project(kamera);
+    v.copy(zentren.get(id)).project(kamera);
     return { x: (v.x + 1) / 2 * w, y: (1 - v.y) / 2 * h, sichtbar: v.z < 1 };
   }
 
@@ -186,6 +202,10 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
     bauteile, ansicht, zustand, lage, fokus, get modus() { return modus; },
     zeichne: anstossen,
     lackfarbe(hex) { for (const o of huelle) if (o.material.name === "lack") { o.material.color.set(hex); } anstossen(); },
-    entsorgen() { ro.disconnect(); cancelAnimationFrame(laeuft); steuerung.dispose(); renderer.dispose(); pmrem.dispose(); box.replaceChildren(); },
+    entsorgen() {
+      weg = true; ro.disconnect(); sicht.disconnect(); cancelAnimationFrame(laeuft); steuerung.dispose();
+      scene.traverse((o) => { o.geometry?.dispose?.(); for (const m of [].concat(o.material || [])) { for (const v of Object.values(m)) if (v && v.isTexture) v.dispose(); m.dispose?.(); } });
+      scene.environment?.dispose?.(); room.dispose?.(); pmrem.dispose(); renderer.dispose(); renderer.forceContextLoss(); box.replaceChildren();
+    },
   };
 }

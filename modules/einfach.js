@@ -24,13 +24,16 @@ export async function zeichneEinfach() {
   box.hidden = modus() !== "einfach";
   if (box.hidden) return;
   const fehler = [...faultSet().values()];
-  const key = JSON.stringify([Boolean(state.status), fehler.map((f) => f.code + f.art), state.live.KUEHLMITTEL?.wert > 112]);
+  const verbunden = Boolean(state.status);
+  const { stufe, gruende } = ampel(fehler.map((f) => f.code), state.live);
+  const key = JSON.stringify([verbunden, fehler.map((f) => f.code + f.art), stufe, gruende]);
   if (key === stand) return;
   stand = key;
-  const verbunden = Boolean(state.status);
-  const { stufe, gruende } = ampel(fehler.filter((f) => f.art === "gespeichert").map((f) => f.code).concat(fehler.filter((f) => f.art !== "gespeichert").map((f) => f.code)), state.live);
   const [titel, satz] = verbunden ? SATZ[stufe] : ["Auto prüfen", "Adapter einstecken, Zündung an, dann auf »Auto prüfen« tippen. Das dauert etwa eine halbe Minute."];
-  const liste = await Promise.all(fehler.map(async (f) => ({ f, w: await lookup(f.code).catch(() => null) })));
+  let liste;
+  try {
+    liste = await Promise.all(fehler.map(async (f) => ({ f, w: await lookup(f.code).catch(() => null) })));
+  } catch (_) { stand = ""; return; }
   if (stand !== key) return;
   box.replaceChildren(
     h("div", { class: `card ef-held t-${verbunden ? { gruen: "ok", gelb: "warn", rot: "crit" }[stufe] : "neutral"}` },

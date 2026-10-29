@@ -331,6 +331,8 @@ function settledBad(sig, raw) {
 }
 /* Skala je Signal: runde Grenzen (1-2-5) um das Sollband, die nur wächst, wenn ein Wert hinausläuft. So bleibt das Band stehen. */
 const scales = new Map();
+/* Beim Fahrzeugwechsel zurücksetzen, damit Skalen und Schleppzeiger nicht vom alten Auto bleiben. */
+export function setzeLiveZurueck() { scales.clear(); rows.clear(); shownBad.clear(); layoutKey = ""; for (const k in needles) delete needles[k]; for (const k in extremes) delete extremes[k]; for (const k in shown) delete shown[k]; }
 function niceStep(span) { const p = 10 ** Math.floor(Math.log10(span)), f = span / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; }
 export function scaleFor(sig, soll, wert) {
   if (isTrim(sig)) return { a: -25, b: 25, step: 5, min: soll.soll_min, max: soll.soll_max };
@@ -359,7 +361,7 @@ function fillRow(r, sig, v, soll, bad) {
   r.el.classList.toggle("warn", bad);
   if (r.isBad !== bad) { r.mark.replaceWith(r.mark = bad ? mark("warn") : h("span")); r.isBad = bad; }
   r.t.textContent = meta ? meta.titel : sig;
-  r.d.textContent = v.warnung || (soll ? `Soll ${numFix(soll.soll_min, dg)} bis ${numFix(soll.soll_max, dg)} ${v.einheit} (${soll.art === "hersteller" ? "Herstellerwert" : "Richtwert"})` : meta ? meta.kurz : "");
+  r.d.textContent = v.warnung || (soll ? `Soll ${numFix(soll.soll_min, dg)} bis ${numFix(soll.soll_max, dg)} ${v.einheit || ""} (${soll.art === "hersteller" ? "Herstellerwert" : "Richtwert"})` : meta ? meta.kurz : "");
   const trim = isTrim(sig), step = 10 ** -dg;
   const shownVal = steadyDigit(`p:${sig}`, v.wert, step);
   r.val.textContent = trim ? signed(shownVal, dg) : numFix(shownVal, dg); r.unit.textContent = v.einheit || "";
@@ -419,11 +421,13 @@ export async function pollLive() {
 }
 let misses = 0;
 let lastFrame = 0;
+let animLaeuft = false;
 function animate(ts) {
-  if (isLiveVisible() && ts - lastFrame > 33) { gaugeDt = lastFrame ? (ts - lastFrame) / 1000 : 0; lastFrame = ts; GAUGES.forEach(drawGauge); }
-  else if (!isLiveVisible()) lastFrame = 0;
+  if (!isLiveVisible()) { animLaeuft = false; lastFrame = 0; return; }  // nicht sichtbar: Schleife anhalten, spart Akku
+  if (ts - lastFrame > 33) { gaugeDt = lastFrame ? (ts - lastFrame) / 1000 : 0; lastFrame = ts; GAUGES.forEach(drawGauge); }
   requestAnimationFrame(animate);
 }
+export function starteGauges() { if (!animLaeuft && isLiveVisible()) { animLaeuft = true; lastFrame = 0; requestAnimationFrame(animate); } }
 
 /* ---------- Überblick oben und Reiter zum Tiefergraben ---------- */
 let heroKey = "";
@@ -470,7 +474,7 @@ export function initLive() {
   on("theme", () => { if (charts.size) { rebuildCharts(); } });
   on("recording", renderRecorder);
   on("chart-add", (sig) => { if (!channels.includes(sig)) setChannels([...channels, sig]); setLiveTab("diagramm"); });
-  on("tab", (id) => { if (id === "live") renderLive(); });
-  on("render", () => { if (isLiveVisible()) renderLive(); });
-  requestAnimationFrame(animate);
+  on("tab", (id) => { if (id === "live") { renderLive(); starteGauges(); } });
+  on("render", () => { if (isLiveVisible()) { renderLive(); starteGauges(); } });
+  starteGauges();
 }

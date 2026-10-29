@@ -154,7 +154,7 @@ async function renderVehicleView() {
   const nodes = topoNodes();
   renderPins(tpl, nodes);
   $("topo-sweep").classList.toggle("on", Boolean(state.scanning) && !reducedMotion());
-  svg.setAttribute("aria-label", `${BAUARTEN.find(([id]) => id === bauart)[1]} von oben, ${nodes.length} Steuergeräte in ${new Set(nodes.map(domainOf)).size} Gruppen`);
+  svg.setAttribute("aria-label", `${(BAUARTEN.find(([id]) => id === bauart) || [, bauart])[1]} von oben, ${nodes.length} Steuergeräte in ${new Set(nodes.map(domainOf)).size} Gruppen`);
 }
 
 /* ---------- Bus-Ansicht: Gateway in der Mitte, Segmente nach Funktionsdomäne (angenommen, nicht ausgelesen) ---------- */
@@ -235,7 +235,7 @@ function box3d() {
 }
 function t3Modes() {
   $("t3-modes").replaceChildren(...ANSICHTEN_3D.map(([id, label]) => h("button", { type: "button", "aria-pressed": String(v3 && v3.modus === id),
-    onclick: () => { v3.ansicht(id); t3Modes(); $("t3-card").hidden = true; } }, label)));
+    onclick: () => { if (!v3) return; v3.ansicht(id); t3Modes(); $("t3-card").hidden = true; } }, label)));
 }
 function t3Toene(nodes) {
   const toene = {};
@@ -256,7 +256,7 @@ function t3Pins() {
     if (!id) return null;
     return h("button", { class: `pin t3-pin t-${ZUSTAND[sum.worst].tone}`, type: "button", "data-bt": id, hidden: true,
       "aria-label": `${domainName(d)}: ${list.length} Steuergerät${list.length === 1 ? "" : "e"}, ${sum.text}. Bauteil zeigen`,
-      onclick: (ev) => { v3.fokus(id); t3Modes(); t3Karte(v3.bauteile.get(id), { x: ev.currentTarget.offsetLeft }); } },
+      onclick: (ev) => { if (!v3) return; v3.fokus(id); t3Modes(); t3Karte(v3.bauteile.get(id), { x: ev.currentTarget.offsetLeft }); } },
       mark(sum.worst === "crit" && sum.faults > 1 ? "crit" : sum.worst), h("span", { class: "pin-n" }, PIN_NAME[d]), h("span", { class: "pin-c num" }, list.length));
   }).filter(Boolean);
   $("t3-pins").replaceChildren(...pins);
@@ -282,8 +282,8 @@ function t3Karte(bt, at) {
     h("div", { class: "row-actions" }, list.length ? h("button", { class: "btn sec small", type: "button", onclick: () => jumpToGroup(d) }, "Zur Liste") : null,
       h("button", { class: "btn qt small", type: "button", onclick: () => { card.hidden = true; } }, "Schließen")));
   card.hidden = false;
-  card.style.setProperty("--x", `${Math.round(at.x)}px`);
-  if (v3 && v3.modus !== "technik") { v3.fokus(bt.id); t3Modes(); } else if (v3) v3.fokus(bt.id);
+  card.style.setProperty("--x", `${Math.round(at.x || 0)}px`);
+  if (v3) { v3.fokus(bt.id); t3Modes(); }
 }
 async function render3dView() {
   const box = box3d();
@@ -293,17 +293,19 @@ async function render3dView() {
     if (v3Laedt) return;
     if (v3) { v3.entsorgen(); v3 = null; }
     $("t3-card").hidden = true;
+    $("t3-pins").replaceChildren(); $("t3-modes").replaceChildren();
     $("t3-canvas").replaceChildren(h("p", { class: "sm t3-load" }, "3D-Modell lädt …"));
     v3Laedt = erstelle3d($("t3-canvas"), { bauart: modell, onPick: t3Karte }).catch((err) => { console.error(err); return null; });
     v3 = await v3Laedt; v3Laedt = null; v3Modell = modell;
     if (!v3) { toast("3D-Modell nicht ladbar, zeige die Draufsicht."); setView("fahrzeug"); return; }
+    if (modellFuer(bauart) !== modell) { v3.entsorgen(); v3 = null; v3Modell = null; return render3dView(); }
     $("t3-canvas").addEventListener("bild", t3PinsSetzen);
   }
   v3.zustand(t3Toene(topoNodes()));
   t3Modes(); t3Pins();
   const nodes = topoNodes();
   $("topo-pins").replaceChildren(); $("topo-rest").replaceChildren();
-  $("topo-stage").setAttribute("aria-label", `${BAUARTEN.find(([id]) => id === bauart)[1]} in 3D, ${nodes.length} Steuergeräte`);
+  $("topo-stage").setAttribute("aria-label", `${(BAUARTEN.find(([id]) => id === bauart) || [, bauart])[1]} in 3D, ${nodes.length} Steuergeräte`);
 }
 
 /* ---------- Topologie gesamt ---------- */
@@ -319,7 +321,10 @@ export function renderTopo() {
   if (view !== "3d") $("topo-stage").classList.remove("is-3d");
   if (view === "3d") render3dView(); else if (view === "bus") renderBusView(); else renderVehicleView();
 }
-function setView(next) { view = next; storageSet("kfzdiag-topo-ansicht", next); renderTopo(); }
+function setView(next) {
+  if (next !== "3d" && v3) { v3.entsorgen(); v3 = null; v3Modell = null; $("t3-card").hidden = true; }
+  view = next; storageSet("kfzdiag-topo-ansicht", next); renderTopo();
+}
 
 /* Tastatur: Tab in Adress-Reihenfolge, Pfeile zum Nachbarn (Zone für Zone), Enter oder Leertaste öffnet. */
 function setupTopoKeys() {

@@ -21,7 +21,8 @@ const SKALA = { DREHZAHL: [0, 8000], GESCHWINDIGKEIT: [0, 200], KUEHLMITTEL: [40
 let seq = 0;
 const neu = (typ, sig = null, groesse = "s") => ({ id: `w${Date.now().toString(36)}${seq++}`, typ, sig, groesse });
 const ausVorlage = (name) => VORLAGEN[name].map((e) => (Array.isArray(e) ? neu(e[0], e[1], e[2] || "s") : neu(e, null, "s")));
-let liste = storageGet("kfzdiag-widgets", null) || ausVorlage("werkstatt");
+const gueltig = (l) => Array.isArray(l) && l.every((w) => w && TYPEN[w.typ] && (!MIT_SIGNAL.has(w.typ) || typeof w.sig === "string"));
+let liste = (() => { const l = storageGet("kfzdiag-widgets", null); return gueltig(l) ? l : ausVorlage("werkstatt"); })();
 let bearbeiten = false;
 const speichern = () => storageSet("kfzdiag-widgets", liste);
 const wert = (sig) => { const v = state.live[sig]; return v && typeof v.wert === "number" ? v : null; };
@@ -81,7 +82,7 @@ function widget(w, i) {
   const el = h("article", { class: `wg card ${w.groesse}`, "data-id": w.id, "data-typ": w.typ },
     h("header", { class: "wg-kopf" }, h("span", { class: "eyebrow" }, titel)),
     bearbeiten ? h("div", { class: "wg-tools" },
-        h("button", { class: "wg-griff", type: "button", "aria-label": `${titel} verschieben (Pfeiltasten oder ziehen)`, onkeydown: (e) => schieben(e, i), onpointerdown: (e) => ziehen(e, el) }, "⋮⋮"),
+        h("button", { class: "wg-griff", type: "button", "aria-label": `${titel} verschieben (Pfeiltasten oder ziehen)`, onkeydown: (e) => schieben(e, w), onpointerdown: (e) => ziehen(e, el) }, "⋮⋮"),
         h("button", { class: "wg-btn", type: "button", "aria-label": `Größe ${w.groesse === "s" ? "breit" : "schmal"}`, onclick: () => { w.groesse = w.groesse === "s" ? "m" : "s"; speichern(); zeichne(); } }, w.groesse === "s" ? "S" : "M"),
         h("button", { class: "wg-btn", type: "button", "aria-label": `${titel} entfernen`, onclick: () => { liste = liste.filter((x) => x !== w); speichern(); zeichne(); } }, "×")) : null,
     bearbeiten ? body : h("button", { class: "wg-tap unbtn", type: "button", onclick: () => go(ziel), "aria-label": `${titel} öffnen` }, body));
@@ -118,29 +119,29 @@ function ziehen(e, el) {
   e.preventDefault();
   const raster = $("wg-raster");
   el.classList.add("zieht");
-  const griff = e.currentTarget;
-  griff.setPointerCapture(e.pointerId);
   const bewegen = (ev) => {
     const unter = document.elementFromPoint(ev.clientX, ev.clientY)?.closest(".wg");
     if (!unter || unter === el || unter.parentNode !== raster) return;
     const r = unter.getBoundingClientRect();
-    raster.insertBefore(el, ev.clientX > r.left + r.width / 2 || ev.clientY > r.bottom - 8 ? unter.nextSibling : unter);
+    const ref = ev.clientX > r.left + r.width / 2 || ev.clientY > r.bottom - 8 ? unter.nextSibling : unter;
+    /* moveBefore erhält den gedrückten Griff (kein Verlust der Pointer-Erfassung); sonst insertBefore. */
+    (raster.moveBefore || raster.insertBefore).call(raster, el, ref);
   };
   const ende = () => {
-    griff.removeEventListener("pointermove", bewegen); griff.removeEventListener("pointerup", ende); griff.removeEventListener("pointercancel", ende);
+    window.removeEventListener("pointermove", bewegen); window.removeEventListener("pointerup", ende); window.removeEventListener("pointercancel", ende);
     el.classList.remove("zieht");
     const ordnung = [...raster.children].map((c) => c.dataset.id);
     liste = ordnung.map((id) => liste.find((w) => w.id === id)).filter(Boolean);
     speichern();
   };
-  griff.addEventListener("pointermove", bewegen); griff.addEventListener("pointerup", ende); griff.addEventListener("pointercancel", ende);
+  window.addEventListener("pointermove", bewegen); window.addEventListener("pointerup", ende); window.addEventListener("pointercancel", ende);
 }
-function schieben(e, i) {
+function schieben(e, w) {
   const d = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 }[e.key];
   if (!d) return;
   e.preventDefault();
-  const j = i + d;
-  if (j < 0 || j >= liste.length) return;
+  const i = liste.indexOf(w), j = i + d;
+  if (i < 0 || j < 0 || j >= liste.length) return;
   [liste[i], liste[j]] = [liste[j], liste[i]];
   speichern(); zeichne();
   $("wg-raster").children[j]?.querySelector(".wg-griff")?.focus();

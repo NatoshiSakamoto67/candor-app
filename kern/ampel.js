@@ -5,10 +5,10 @@ const numFix = (x, d) => x.toLocaleString("de-DE", { minimumFractionDigits: d, m
 
 /* Regeln: rot = anhalten bzw. nur noch langsam zur Werkstatt, gelb = bald hin, grün = nichts gespeichert */
 /** @type {[RegExp, string][]} */
-const ROT = [[/^P05(2[0-4])$/, "Öldruck: Motor sofort abstellen, sonst droht Motorschaden."], [/^P0217$/, "Motor überhitzt: anhalten und abkühlen lassen."],
+const ROT = [[/^P0524$/, "Öldruck zu niedrig: Motor sofort abstellen, sonst droht Motorschaden."], [/^P0217$/, "Motor überhitzt: anhalten und abkühlen lassen."],
   [/^P030[0-9]$|^P031[0-2]$/, "Zündaussetzer: nur sanft und kurz zur Werkstatt, keine Vollgas-Fahrt, sonst leidet der Katalysator."]];
 /** @type {[RegExp, string][]} */
-const GELB = [[/^C0/, "Bremsen bzw. ABS: Die Grundbremse wirkt, ABS und ESP können ausfallen. Vorsichtig fahren."], [/^B00/, "Airbag-System: Ein Airbag löst im Unfall möglicherweise nicht aus."],
+const GELB = [[/^P052[0-3]$/, "Öldruckgeber meldet einen Fehler: bald prüfen lassen, Ölstand selbst kontrollieren."], [/^C0/, "Bremsen bzw. ABS: Die Grundbremse wirkt, ABS und ESP können ausfallen. Vorsichtig fahren."], [/^B00/, "Airbag-System: Ein Airbag löst im Unfall möglicherweise nicht aus."],
   [/^U0/, "Kommunikation zwischen Steuergeräten gestört: Funktionen können zeitweise ausfallen."]];
 /**
  * @param {string[]} codes
