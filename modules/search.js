@@ -4,7 +4,6 @@ import { $, h, num, icon } from "./dom.js";
 import { state, WISSEN, DTC_REG, on, emit, signalTitle } from "./state.js";
 import { openInfo } from "./info.js";
 import { showTab, go, TABS, CHECK_SUBS } from "./shell.js";
-import { FUNKTIONEN, VERBOTEN } from "../kern/service-katalog.js";
 
 let selected = 0;
 let results = [];
@@ -20,8 +19,6 @@ function buildIndex() {
   for (const [name, text] of Object.entries(WISSEN.readiness)) out.push({ kind: "Readiness", title: name, detail: text.slice(0, 80), spec: `test:${name}`, words: `${name} ${text}` });
   for (const [key, b] of Object.entries(WISSEN.begriffe)) out.push({ kind: "Begriff", title: b.titel, detail: b.text.slice(0, 80), spec: `begriff:${key}`, words: `${key} ${b.titel} ${b.text}` });
   for (const fn of (state.functions && state.functions.funktionen) || []) out.push({ kind: "Funktion", title: fn.name, detail: `${fn.modul} · ${fn.art}`, spec: `fn:${fn.id}`, words: `${fn.id} ${fn.name} ${fn.modul} ${fn.art}` });
-  for (const f of FUNKTIONEN.filter((x) => x.einfach || document.documentElement.dataset.modus !== "einfach")) out.push({ kind: "Service", title: f.name, detail: f.zweck, open: () => go("service", { sub: f.id }), words: `${f.name} ${f.zweck} ${f.alltag.join(" ")}` });
-  for (const v of VERBOTEN) out.push({ kind: "Nicht in CANdor", title: v.name, detail: v.grund, open: () => go("service"), words: `${v.name} ${v.alltag.join(" ")}` });
   for (const p of WISSEN.pruefpfade || []) out.push({ kind: "Prüfpfad", title: p.titel, detail: p.kurz, open: () => go("check", { sub: "pfade" }), words: `${p.titel} ${p.kurz} ${p.schritte.map((s) => s.titel).join(" ")}` });
   for (const t of TABS) out.push({ kind: "Bereich", title: t.label, detail: "Seite öffnen", open: () => showTab(t.id), words: t.label });
   for (const c of CHECK_SUBS) out.push({ kind: "Bereich", title: c.label, detail: c.text, open: () => go("check", { sub: c.id }), words: `${c.label} ${c.text}` });

@@ -1556,56 +1556,6 @@
     "stopp": null,
     "quelle": "Simulator (Demo), keine echten Herstellerwerte",
     "beschreibung": "Lernt die Endanschläge neu. Zündung an, Motor aus, kein Gas geben."
-   },
-   {
-    "id": "oelservice_reset",
-    "name": "Ölservice zurücksetzen",
-    "modul": "Motor",
-    "art": "reset",
-    "anfrage": "31 01 0F 10",
-    "stopp": null,
-    "quelle": "Simulator (Demo), keine echten Herstellerwerte",
-    "beschreibung": "Setzt die Serviceanzeige auf null. Im Demo-Fahrzeug liegt der Zähler im Motorsteuergerät."
-   },
-   {
-    "id": "batterie_anmelden",
-    "name": "Neue Batterie anmelden",
-    "modul": "Motor",
-    "art": "reset",
-    "anfrage": "31 01 0F 11",
-    "stopp": null,
-    "quelle": "Simulator (Demo), keine echten Herstellerwerte",
-    "beschreibung": "Meldet eine neue Batterie am Batteriesensor an."
-   },
-   {
-    "id": "leerlauf_anlernen",
-    "name": "Leerlauf anlernen",
-    "modul": "Motor",
-    "art": "grundeinstellung",
-    "anfrage": "31 01 0F 02",
-    "stopp": null,
-    "quelle": "Simulator (Demo), keine echten Herstellerwerte",
-    "beschreibung": "Lernt die Leerlaufdrehzahl neu. Motor warm, Verbraucher aus."
-   },
-   {
-    "id": "gemisch_reset",
-    "name": "Gemisch-Lernwerte zurücksetzen",
-    "modul": "Motor",
-    "art": "reset",
-    "anfrage": "31 01 0F 03",
-    "stopp": null,
-    "quelle": "Simulator (Demo), keine echten Herstellerwerte",
-    "beschreibung": "Löscht die Anpassung der Gemischregelung."
-   },
-   {
-    "id": "getriebe_grundeinstellung",
-    "name": "Getriebe-Grundeinstellung",
-    "modul": "Getriebe",
-    "art": "grundeinstellung",
-    "anfrage": "31 01 0F 20",
-    "stopp": null,
-    "quelle": "Simulator (Demo), keine echten Herstellerwerte",
-    "beschreibung": "Lernt Schaltpunkte und Kupplungen neu."
    }
   ]
  },

@@ -57,14 +57,12 @@ function flakeTextur() {
 function veredeln(m) {
   const name = m.name || "";
   if (name === "lack") {
-    /* Werte nach dem three.js-Autobeispiel (webgl_materials_car): Metallic-Lack unter Klarlack, Flakes als feine Normalen */
-    const p = new THREE.MeshPhysicalMaterial({ name, color: m.color, metalness: .9, roughness: .5, clearcoat: 1, clearcoatRoughness: .03,
+    const p = new THREE.MeshPhysicalMaterial({ name, color: m.color, metalness: .55, roughness: .38, clearcoat: 1, clearcoatRoughness: .025,
       normalMap: flakeTextur(), normalScale: new THREE.Vector2(.18, .18), envMapIntensity: 1.15 });
     m.dispose(); return p;
   }
   if (name === "glas") {
-    /* Dünnes, spiegelndes Glas mit wenig Deckkraft statt transmission: kein Zusatzdurchgang auf dem Handy (Recherche P3) */
-    const p = new THREE.MeshPhysicalMaterial({ name, color: 0x111820, metalness: 0, roughness: 0, ior: 1.5, transparent: true, opacity: .3, envMapIntensity: 1.6, depthWrite: false });
+    const p = new THREE.MeshPhysicalMaterial({ name, color: 0x0a0f14, metalness: 0, roughness: .02, clearcoat: 1, clearcoatRoughness: 0, transparent: true, opacity: .62, envMapIntensity: 1.6 });
     m.dispose(); return p;
   }
   if (name === "chrom" || name === "linse") Object.assign(m, { envMapIntensity: 1.6 });
@@ -77,9 +75,9 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  /* ACES-Tonemapping mit Belichtung 0,85 wie im three.js-Autobeispiel: Klarlack-Glanz bleibt, Lichter laufen nicht aus */
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = .85;
+  /* Neutrales Tonemapping (Khronos PBR Neutral): Lackfarben bleiben farbecht wie im Konfigurator */
+  renderer.toneMapping = THREE.NeutralToneMapping;
+  renderer.toneMappingExposure = 1.0;
   const scene = new THREE.Scene();
   const pmrem = new THREE.PMREMGenerator(renderer);
   const room = new addons.RoomEnvironment();
@@ -178,7 +176,7 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
   };
   function ansicht(name) {
     if (modus === "fehler") {
-      for (const o of alleMeshes) { o.material = o.userData.mat0; o.material.depthTest = true; o.renderOrder = 0; if (o.userData.kante) o.userData.kante.visible = false; }
+      for (const o of alleMeshes) { o.material = o.userData.mat0; if (o.userData.kante) o.userData.kante.visible = false; }
       fokusIds = null;
       zustand(letzteToene);
     }
@@ -248,9 +246,7 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
       const bt = o.userData.bt, k = o.userData.kante;
       if (bt && ziel.has(bt)) {
         const m = o.userData.mat0; o.material = m;
-        /* Fehlerteil obenauf: ohne Tiefentest und mit hoher Zeichenreihenfolge bleibt es durch Motor und Hülle sichtbar */
-        Object.assign(m, { transparent: false, opacity: 1, depthWrite: true, depthTest: false }); m.emissive = new THREE.Color(0xff2a2a); m.emissiveIntensity = .9; m.needsUpdate = true;
-        o.renderOrder = 10;
+        Object.assign(m, { transparent: false, opacity: 1, depthWrite: true }); m.emissive = new THREE.Color(0xff2a2a); m.emissiveIntensity = .9; m.needsUpdate = true;
         if (k) k.visible = false;
       } else if (bt && ctx.has(bt)) { o.material = umfeld; if (k) k.visible = true; }
       else { o.material = geist; if (k) k.visible = true; }

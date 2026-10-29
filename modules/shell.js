@@ -1,7 +1,7 @@
 /* Gerüst: Seiten wie am Werkstatt-Tester (Startseite mit Kacheln, jede Aufgabe eine eigene Seite, oben Zurück und Start),
    Statusleiste, Anzeige-Einstellungen. Infos öffnen als eigene Seite; Zurück führt an die alte Stelle zurück. */
 import { $, h, icon, mark, glyphId, num, reducedMotion, storageGet, storageSet, cssVar } from "./dom.js";
-import { AKZENTE, DEFAULT_AKZENT, normalizeHex, readableAccent, onAccent, nearCrit, accentFill } from "./farbe.js";
+import { AKZENTE, DEFAULT_AKZENT, normalizeHex, readableAccent, onAccent, nearCrit } from "./farbe.js";
 import { icon3d } from "./icons3d.js";
 import { vehicleLabel } from "./fahrzeuge.js";
 import { KAPITEL } from "./handbuch-inhalt.js";
@@ -18,8 +18,7 @@ export const PAGES = [
   { id: "car", label: "Steuergeräte", icon: "ecu" },
   { id: "faults", label: "Fehlerspeicher", icon: "faults" },
   { id: "live", label: "Live-Werte", icon: "live" },
-  { id: "check", label: "Prüfungen", icon: "check" },
-  { id: "service", label: "Service und Anlernen", icon: "wrench" },
+  { id: "check", label: "Prüfen und Service", icon: "check" },
   { id: "agent", label: "Assistent", icon: "chat" },
   { id: "report", label: "Bericht", icon: "report" },
   { id: "history", label: "Verlauf", icon: "clock" },
@@ -32,6 +31,7 @@ export const CHECK_SUBS = [
   { id: "soll", label: "Ist gegen Soll", icon: "gauge", text: "Messwerte mit Richtwerten vergleichen" },
   { id: "bereitschaft", label: "AU-Bereitschaft", icon: "exhaust", text: "Readiness-Tests vor der Abgasuntersuchung" },
   { id: "freeze", label: "Freeze-Frame", icon: "freeze", text: "Momentaufnahme beim Auftreten eines Fehlers" },
+  { id: "service", label: "Service-Funktionen", icon: "gear", text: "Stellglieder, Grundeinstellungen, Resets" },
   { id: "did", label: "Kennung lesen", icon: "tag", text: "Eigene Werte (DID) an einem Steuergerät lesen" },
   { id: "rmi", label: "Herstellerdokumente", icon: "book", text: "Suche in den lokalen RMI-PDFs" },
 ];
@@ -47,7 +47,7 @@ function parseHash() {
   const tail = decodeURIComponent(rest.join("/"));
   if (page === "info" && tail) return { page: "detail", sub: null, spec: tail };
   if (!PAGES.some((p) => p.id === page) || page === "detail") return null;
-  const sub = page === "check" ? (CHECK_SUBS.some((c) => c.id === tail) ? tail : null) : ["fahrzeug", "handbuch", "service"].includes(page) ? tail || null : null;
+  const sub = page === "check" ? (CHECK_SUBS.some((c) => c.id === tail) ? tail : null) : ["fahrzeug", "handbuch"].includes(page) ? tail || null : null;
   return { page, sub, spec: null };
 }
 const depth = () => (history.state && history.state.depth) || 0;
@@ -75,7 +75,6 @@ function render(r, scrollY = 0) {
     if (changed) { view.classList.remove("view-enter"); void view.offsetWidth; view.classList.add("view-enter"); }
     emit("tab", r.page);
     if (r.page === "check") emit("check-sub", r.sub);
-    if (r.page === "service") emit("service-sub", r.sub);
     if (r.page === "detail" && r.spec && $("pane-body").dataset.spec !== r.spec) emit("open-info", r.spec);
   };
   if (changed && document.startViewTransition && !reducedMotion()) {
@@ -102,7 +101,7 @@ export const showTab = (id, options = {}) => go(id, options);
 /* Zurück: im Verlauf, sonst eine Ebene höher (Unterseite zur Prüfen-Übersicht, alles andere zum Start). */
 export function back() {
   if (depth() > 0) { history.back(); return; }
-  go(route.sub && ["check", "service"].includes(route.page) ? route.page : "start", { replace: true });
+  go(route.page === "check" && route.sub ? "check" : "start", { replace: true });
 }
 
 /* ---------- Detailseite statt Seitenpanel: Infos, Erklärungen, Einstellungen ---------- */
@@ -193,9 +192,6 @@ function setAccent(root, hex, contrastMode) {
   const accent = readableAccent(hex, cssVar("--surface-1"), contrastMode === "hoch" ? 7 : 4.5) || hex;
   root.style.setProperty("--accent", accent);
   root.style.setProperty("--on-accent", onAccent(accent));
-  const f = accentFill(contrastMode === "hoch" ? accent : hex) || { fill: accent, ink: onAccent(accent) };
-  root.style.setProperty("--accent-fill", f.fill);
-  root.style.setProperty("--on-accent-fill", f.ink);
 }
 export function applyPrefs() {
   const root = document.documentElement, d = resolvedDisplay();

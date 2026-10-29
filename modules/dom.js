@@ -71,10 +71,6 @@ const PATHS = {
   reset: "M4 12a8 8 0 1 0 2.3-5.7M4 4v4h4",
   home: "M4 11l8-7 8 7M6 10v10h12V10",
   clock: "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M12 7v5l3 2",
-  wrench: "M14.6 3.6a5 5 0 0 0-6 6.6L3.6 15.2a2 2 0 0 0 0 2.8l2.4 2.4a2 2 0 0 0 2.8 0l5-5a5 5 0 0 0 6.6-6l-3.2 3.2-2.9-.7-.7-2.9z",
-  pulse: "M3 12h4l2.5-6 5 12L17 12h4",
-  stack: "M12 3l9 5-9 5-9-5zM3 13l9 5 9-5",
-  more: "M6 12h.01M12 12h.01M18 12h.01",
 };
 export const ICONS = { ...SPRITE, ...PATHS };
 export const spriteUse = (id, attrs = {}) => s("svg", { class: "ic", viewBox: "0 0 24 24", width: 24, height: 24, "aria-hidden": "true", ...attrs }, s("use", { href: `icons.svg#${id}` }));

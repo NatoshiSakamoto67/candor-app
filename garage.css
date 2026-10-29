@@ -158,7 +158,7 @@
 
 /* Einfacher Modus (einfach.js): Ampel, ein Satz, Fehler in Alltagssprache. Profi-Bereiche ausgeblendet. */
 .modus-wahl { justify-self: end; }
-html[data-modus="einfach"] #widgets, html[data-modus="einfach"] #start-ablauf, html[data-modus="einfach"] #start-mehr { display: none !important; }
+html[data-modus="einfach"] #widgets, html[data-modus="einfach"] #start-tiles, html[data-modus="einfach"] #start-mehr { display: none !important; }
 .einfach { display: grid; gap: var(--sp-3); }
 .einfach[hidden] { display: none; }
 .ef-held { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--sp-4); padding: var(--sp-5); align-items: start; }
