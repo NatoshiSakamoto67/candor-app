@@ -8,7 +8,7 @@ import { lookup } from "./dtcwissen.js";
 import { ampel } from "../kern/ampel.js";
 
 export const modus = () => storageGet("kfzdiag-modus", "profi");
-export function setzeModus(m) { storageSet("kfzdiag-modus", m); document.documentElement.dataset.modus = m; emit("render"); }
+export function setzeModus(m) { storageSet("kfzdiag-modus", m); document.documentElement.dataset.modus = m; emit("modus", m); emit("render"); }
 
 const SATZ = {
   gruen: ["Alles in Ordnung", "Im Fehlerspeicher steht nichts. Weiterfahren ist kein Problem."],
@@ -62,7 +62,8 @@ export function initEinfach() {
     h("button", { type: "button", "aria-pressed": String(modus() === id), onclick: () => { setzeModus(id); stand = ""; wahlZeichnen(); } }, label)));
   wahlZeichnen();
   $("vehicle-card").before(wahl, box);
-  on("modus", wahlZeichnen);
+  on("modus", () => { stand = ""; wahlZeichnen(); });
+  on("modus-setzen", (m) => setzeModus(m));
   on("render", zeichneEinfach);
   on("status", zeichneEinfach);
 }

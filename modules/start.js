@@ -1,59 +1,17 @@
 /* Startseite wie am Werkstatt-Tester: oben das gewählte Fahrzeug, darunter eine große Kachel je Aufgabe,
    unten die zuletzt benutzten Fahrzeuge zum schnellen Wechsel. Jede Kachel sagt in einer Zeile, wie es dort steht.
    Ohne Fahrzeug führt alles zuerst zum Anlegen, ohne Verbindung zum Verbinden. */
-import { $, h, icon, mark, num, chev, clockFull, reducedMotion } from "./dom.js";
+import { $, h, icon, mark, chev, clockFull, reducedMotion } from "./dom.js";
 import { icon3d } from "./icons3d.js";
 import { state, on, emit, logEvent, obdList, firstReadiness, totalFaults, pendingFaults } from "./state.js";
 import { go, CHECK_SUBS } from "./shell.js";
-import { historyCount } from "./history.js";
+
 import { vehicles, plate, selectVehicle, setVehicleKm } from "./garage.js";
 import { checkSessionKm } from "./befund.js";
 import { renderVehicleCard } from "./vehicle.js";
 import { sortVehicles, vehicleName } from "./fahrzeuge.js";
-
-function tileState(id) {
-  const live = state.live || {};
-  switch (id) {
-    case "car": {
-      if (state.scanning) return ["running", `Vollscan läuft, ${state.scanPct || 0} %`];
-      if (!state.scanned) return ["pending", "Vollscan noch nicht gelaufen"];
-      const bad = state.ecus.filter((e) => e.fehler.length).length;
-      return [bad ? "crit" : "ok", `${state.ecus.length} gefunden, ${bad ? `${bad} mit Fehler` : "alle ohne Fehler"}`];
-    }
-    case "faults": {
-      const stored = totalFaults(), pending = pendingFaults().length;
-      if (!stored && !pending) return ["ok", "Keine Fehler gespeichert"];
-      return [stored ? "crit" : "warn", [stored ? `${stored} gespeichert` : null, pending ? `${pending} vorläufig` : null].filter(Boolean).join(", ")];
-    }
-    case "live": {
-      const rpm = live.DREHZAHL && live.DREHZAHL.wert, volt = live.SPANNUNG && live.SPANNUNG.wert;
-      if (typeof rpm !== "number") return ["pending", "Noch keine Messwerte"];
-      return ["running", `${rpm > 100 ? "Motor läuft" : "Zündung an"}${typeof volt === "number" ? ` · ${num(volt, 1)} V` : ""}`];
-    }
-    case "check": {
-      const r = firstReadiness();
-      if (!r) return ["pending", `${CHECK_SUBS.length} Prüfungen und Service`];
-      const open = r.tests.filter((t) => !t.fertig).length;
-      return [open ? "warn" : "ok", open ? `AU: ${open} Test${open === 1 ? "" : "s"} offen` : "AU-Tests alle fertig"];
-    }
-    case "agent": return state.status && state.status.ki ? ["ok", state.status.ki === "beispiel" ? "Beispielantworten" : "bereit"] : ["pending", "ohne KI-Zugang"];
-    case "report": return state.postscan ? ["ok", "Vorher und nachher erfasst"] : state.snapshot ? ["pending", "Eingangsbefund da, Nachher-Scan offen"] : ["pending", "Vorher und nachher, zum Drucken"];
-    case "history": { const n = historyCount(); return ["pending", n ? `${n} gespeicherte Diagnose${n === 1 ? "" : "n"}` : "Noch keine Diagnose gespeichert"]; }
-    case "fahrzeuge": { const n = vehicles().length; return [null, n ? `${n} Fahrzeug${n === 1 ? "" : "e"} angelegt` : "Erstes Fahrzeug anlegen"]; }
-    default: return [null, ""];
-  }
-}
-
-const TILES = [
-  { id: "faults", label: "Fehlerspeicher", icon: "mil", needs: true },
-  { id: "car", label: "Steuergeräte", icon: "chip", needs: true },
-  { id: "live", label: "Live-Werte", icon: "scope", needs: true },
-  { id: "check", label: "Prüfen und Service", icon: "clipboard", needs: true },
-  { id: "agent", label: "Assistent", icon: "robot", needs: true },
-  { id: "report", label: "Bericht", icon: "report", needs: true },
-  { id: "history", label: "Verlauf", icon: "clock", needs: false },
-  { id: "fahrzeuge", label: "Fahrzeuge", icon: "garage", needs: false },
-];
+import { ablauf, weiterText } from "../kern/ablauf.js";
+import { erledigtHeute } from "./service.js";
 
 /* 3D-Neigung: die Kachel kippt leicht zum Zeiger, das Icon schwebt davor. Ohne Bewegungswunsch bleibt sie still. */
 export function tilt(el) {
@@ -136,27 +94,6 @@ function renderRecent() {
       plate(v, true), h("span", { class: "t" }, vehicleName(v)), h("span", { class: "sm" }, `zuletzt ${clockFull(new Date(v.benutzt))}`)))));
 }
 
-function renderEmpty(hasVehicle, ready) {
-  const box = $("start-empty");
-  box.hidden = hasVehicle && ready;
-  if (!hasVehicle) {
-    const known = vehicles().length;
-    box.replaceChildren(
-      h("span", { class: "hero-ic", "aria-hidden": "true" }, icon3d("carplus")),
-      h("div", {}, h("p", { class: "eyebrow" }, "Noch kein Fahrzeug gewählt"), h("h2", { class: "h2" }, known ? "Fahrzeug wählen oder anlegen" : "Zuerst das Fahrzeug anlegen"),
-        h("p", { class: "p" }, "Jede Diagnose gehört zu einem Fahrzeug. So findest du Fehler, Messungen und Berichte später wieder.")),
-      h("div", { class: "row-actions" },
-        h("button", { class: "btn pri big-btn", type: "button", onclick: () => go("fahrzeug") }, icon3d("carplus", "btn-i3"), "Fahrzeug anlegen"),
-        known ? h("button", { class: "btn sec", type: "button", onclick: () => go("fahrzeuge") }, `Aus ${known} wählen`) : null));
-  } else if (!ready) {
-    box.replaceChildren(
-      h("span", { class: "hero-ic", "aria-hidden": "true" }, icon3d("plug")),
-      h("div", {}, h("p", { class: "eyebrow" }, "Noch nicht verbunden"), h("h2", { class: "h2" }, "Fahrzeug verbinden"),
-        h("ol", { class: "prep" }, h("li", {}, "Adapter in die OBD-Buchse stecken, meist unter dem Lenkrad."), h("li", {}, "Zündung an, Motor darf laufen."), h("li", {}, "Verbinden antippen. Das Programm prüft, ob das Auto zum gewählten Fahrzeug passt."))),
-      h("button", { class: "btn pri big-btn", type: "button", onclick: () => go("connect") }, icon("gateway"), "Verbinden"));
-  }
-}
-
 /* Teile der Startseite nur neu bauen, wenn sich ihr Inhalt ändert. Messwerte kommen jede Sekunde; ein ständiger
    Neuaufbau kostet Zeit und kann beim Scrollen stören. */
 const built = new Map();
@@ -170,25 +107,57 @@ const cardKey = () => {
   return JSON.stringify([fz, st && [st.fahrzeug, st.protokoll, st.version, st.schreiben_an, st.ki, st.hinweise], v.vin_maskiert, state.finWarnung]);
 };
 
-let builtFor = null;
+/* Der rote Faden: sieben Schritte wie in der Werkstatt, der nächste ist hervorgehoben, darunter ein Weiter-Knopf. */
+function stand() {
+  const live = state.live || {}, r = firstReadiness();
+  const rpm = live.DREHZAHL && live.DREHZAHL.wert, volt = live.SPANNUNG && live.SPANNUNG.wert;
+  return {
+    fahrzeug: Boolean(state.fahrzeug), verbunden: Boolean(state.status), scanning: state.scanning, scanPct: state.scanPct, scanned: state.scanned,
+    steuergeraete: state.ecus.length, mitFehler: state.ecus.filter((e) => e.fehler.length).length,
+    gespeichert: totalFaults(), vorlaeufig: pendingFaults().length,
+    motorLaeuft: typeof rpm === "number" && rpm > 100, spannung: typeof volt === "number" ? volt : null,
+    readinessOffen: r ? r.tests.filter((t) => !t.fertig).length : null,
+    serviceErledigt: erledigtHeute(), eingang: Boolean(state.snapshot), nachher: Boolean(state.postscan),
+  };
+}
+const ZEICHEN = { fertig: "ok", problem: "crit", laeuft: "running", gesperrt: "locked" };
+function oeffnen(id, ziel) {
+  if (id === "scan" && state.status && !state.scanned && !state.scanning) { go("car"); emit("run-scan"); return; }
+  if (id === "fahrzeug" && !vehicles().length) { go("fahrzeug"); return; }
+  go(ziel);
+}
+let ablaufFuer = "";
+function renderAblauf() {
+  const s = stand(), a = ablauf(s);
+  const jetzt = a.schritte.find((x) => x.jetzt);
+  /* Neu bauen nur bei Zustandswechsel; Messwerte und Scan-Prozente nur als Text tauschen (Fokus bleibt). */
+  const key = JSON.stringify([a.schritte.map((x) => [x.zustand, x.jetzt]), weiterText(a.jetzt, s), s.nachher, vehicles().length]);
+  if (key === ablaufFuer) {
+    $("start-ablauf").querySelectorAll(".s-d").forEach((el, i) => { if (el.textContent !== a.schritte[i].text) el.textContent = a.schritte[i].text; });
+    return;
+  }
+  ablaufFuer = key;
+  const zielJetzt = jetzt.id === "fahrzeug" && !vehicles().length ? "fahrzeug" : jetzt.ziel;
+  $("start-ablauf").replaceChildren(
+    h("div", { class: "ablauf-kopf" },
+      h("div", {}, h("p", { class: "eyebrow" }, "Diagnose in sieben Schritten"), h("h2", { class: "h2", id: "ablauf-titel" }, jetzt.id === "abschluss" && s.nachher ? "Fertig. Bericht bereit." : `Als Nächstes: ${jetzt.label}`)),
+      h("button", { class: "btn pri big-btn ablauf-weiter", type: "button", onclick: () => oeffnen(jetzt.id, zielJetzt) }, weiterText(a.jetzt, s), icon("next"))),
+    h("ol", { class: "schritte" }, ...a.schritte.map((x, i) => h("li", { class: `schritt ${x.zustand}${x.jetzt ? " jetzt" : ""}` },
+      h("button", { type: "button", disabled: x.zustand === "gesperrt" || null, "aria-current": x.jetzt ? "step" : null, onclick: () => oeffnen(x.id, x.ziel) },
+        h("span", { class: `s-nr${x.zustand === "laeuft" ? " lk" : ""}`, "aria-hidden": "true" }, x.zustand === "fertig" ? "✓" : x.zustand === "problem" ? "!" : String(i + 1)),
+        h("span", { class: "s-t" }, x.label, h("span", { class: "sr" }, `, ${{ fertig: "erledigt", problem: "Befund", laeuft: "läuft", gesperrt: "gesperrt", offen: "offen" }[x.zustand]}`)),
+        h("span", { class: "s-d" }, x.text))))),
+    h("div", { class: "ablauf-mehr" }, ...[["agent", "Assistent", "chat"], ["report", "Bericht", "report"], ["history", "Verlauf", "clock"], ["fahrzeuge", "Fahrzeuge", "car"], ["handbuch", "Handbuch", "doc"]]
+      .map(([z, l, ic]) => h("button", { class: "btn qt small", type: "button", onclick: () => go(z) }, icon(ic), l))));
+}
+
 export function renderStart() {
-  const ready = Boolean(state.status), hasVehicle = Boolean(state.fahrzeug);
+  const hasVehicle = Boolean(state.fahrzeug);
   $("vehicle-card").hidden = !hasVehicle;
   once("card", cardKey(), renderVehicleCard);
-  once("empty", JSON.stringify([hasVehicle, ready, vehicles().length]), () => renderEmpty(hasVehicle, ready));
   renderKm();
   once("recent", JSON.stringify([state.fahrzeug && state.fahrzeug.id, vehicles().map((v) => [v.id, v.benutzt, v.kennzeichen, v.marke, v.modell])]), renderRecent);
-  /* Kacheln einmal bauen, danach nur die Zustandszeile tauschen: der Fokus bleibt, auch wenn jede Sekunde Messwerte kommen. */
-  if (builtFor !== ready) {
-    builtFor = ready;
-    $("start-tiles").replaceChildren(...TILES.map((t) => tile({ label: t.label, icon: t.icon, disabled: t.needs && !ready, onclick: t.open || (() => go(t.id)) })));
-  }
-  TILES.forEach((t, i) => {
-    const [tone, text] = t.text ? [null, t.text] : ready || !t.needs ? tileState(t.id) : ["locked", hasVehicle ? "Erst verbinden" : "Erst Fahrzeug anlegen"];
-    const el = $("start-tiles").children[i];
-    el.classList.toggle("hot", t.id === "faults" && tone === "crit");
-    el.querySelector(".tile-s").replaceChildren(...[tone ? mark(tone) : null, h("span", {}, text)].filter(Boolean));
-  });
+  renderAblauf();
 }
 
 export function renderCheckTiles() {

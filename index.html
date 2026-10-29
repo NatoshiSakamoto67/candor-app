@@ -3,7 +3,7 @@
 <head>
 <meta name="candor-quelle" content="vorschau">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0b1118">
+<meta name="theme-color" content="#0a0a0b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="handbuch.css">
 <link rel="stylesheet" href="chat.css">
 <link rel="stylesheet" href="motion.css">
+<link rel="stylesheet" href="feinschliff.css">
 
 <div class="app" id="app">
   <header class="statusbar sb gutter" id="statusbar" aria-label="Kopfzeile">
@@ -39,17 +40,18 @@
     <div class="status-chips" id="status-chips" aria-live="polite" aria-atomic="false"></div>
     <div class="status-tools" id="status-tools"></div>
   </header>
+  <nav class="tabbar" id="tabbar" aria-label="Bereiche"></nav>
 
 <main class="main" id="main">
     <div class="gutter">
+      <div class="subnav" id="subnav" hidden></div>
       <button class="sim-band cs t-info" id="sim-band" type="button" data-info="begriff:simulator" hidden>Simulator · synthetische Werte, kein echtes Auto · antippen für Erklärung</button>
       <div class="conn-band" id="conn-band" role="alert" hidden></div>
 
       <!-- Start -->
       <section class="view view-start" id="view-start" aria-labelledby="page-title">
         <div class="vcard-strip" id="vehicle-card" hidden></div>
-        <div class="card start-empty" id="start-empty"></div>
-        <div class="tiles" id="start-tiles"></div>
+        <section class="card ablauf" id="start-ablauf" aria-labelledby="ablauf-titel"></section>
         <div class="start-mehr" id="start-mehr">
           <button class="card hb-link" id="start-handbuch" type="button"></button>
           <form class="card km-card" id="start-km" novalidate hidden></form>
@@ -204,13 +206,6 @@
           </div>
           <div class="list" id="freeze"></div>
         </section>
-        <section class="sub" data-sub="service" hidden>
-          <div class="sec-head">
-            <div><p class="eyebrow">Stellglieder, Grundeinstellungen, Resets</p><h2>Service-Funktionen</h2></div>
-            <button class="ib" type="button" data-info="begriff:version" aria-label="Versionen"><span class="dot"><svg class="ic i-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#z-info-i"/></svg></span></button>
-          </div>
-          <div class="list" id="functions"></div>
-        </section>
         <section class="sub" data-sub="did" hidden>
           <div class="sec-head">
             <div><p class="eyebrow">Eigene Werte entdecken</p><h2>DID lesen</h2></div>
@@ -235,6 +230,20 @@
           </form>
           <div class="list" id="rmi-result"></div>
         </section>
+      </section>
+
+      <!-- Service und Anlernen (service.js) -->
+      <section class="view view-service" id="view-service" aria-labelledby="page-title" hidden>
+        <div class="sv-layout">
+          <div class="sv-katalog">
+            <label class="sv-such"><span class="sr">Was hast du gemacht?</span>
+              <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-suche"/></svg>
+              <input class="inp" id="sv-suche" type="search" placeholder="Was hast du gemacht? Etwa: neue Batterie, Beläge hinten" autocomplete="off"></label>
+            <div id="sv-liste"></div>
+          </div>
+          <aside class="sv-assistent card" id="sv-assistent" aria-label="Assistent für die gewählte Funktion"></aside>
+        </div>
+        <section class="card sv-buch" id="sv-buch" aria-label="Betriebsbuch"></section>
       </section>
 
       <!-- KI-Chat (chat.js) -->
