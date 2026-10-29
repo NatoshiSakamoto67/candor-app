@@ -1,7 +1,7 @@
 /* Bereich Fahrzeug: Fahrzeugkopf, Topologie (Bauart-Vorlage oder Bus-Schema) mit Legende und Zoom,
    Vollscan mit Fortschritt im Knopf, Zustandskacheln, Steuergeräteliste nach Domäne, Akte. */
 import { $, h, s, icon, mark, glyphId, chev, clockTime, storageGet, storageSet, toast, infoBtn, statusChip, reducedMotion } from "./dom.js";
-import { state, on, emit, logEvent, firstReadiness, totalFaults, takeSnapshot, completeSnapshot } from "./state.js";
+import { state, on, emit, logEvent, firstReadiness, totalFaults, takeSnapshot, completeSnapshot, faultSet } from "./state.js";
 import { UNASSIGNED, ZONE_ORDER, domainOf, domainName, byAddress } from "./topology.js";
 import { busy, showFailure, withTimeout, HILFE } from "./vorgang.js";
 import { icon3d } from "./icons3d.js";
@@ -9,6 +9,7 @@ import { go } from "./shell.js";
 import { plate, vehicleFacts } from "./garage.js";
 import { vehicleName, BAUARTEN } from "./fahrzeuge.js";
 import { erstelle3d, webglMoeglich, GRUPPE_BAUTEILE } from "./auto3d.js";
+import { bauteileFuer, kontextFuer, ersatzFuer, bauteilFuerSteuergeraet } from "../kern/bauteilfehler.js";
 
 /* ---------- Fahrzeugkopf: gewähltes Fahrzeug aus dem Bestand, darunter was der Adapter erkannt hat ---------- */
 export function renderVehicleCard() {
@@ -213,23 +214,74 @@ function renderBusView() {
 export const MODELLE = Object.fromEntries(["limousine", "kombi", "kleinwagen", "suv", "van", "pickup", "transporter", "lkw", "motorrad"].map((b) => [b, b]));
 const modellFuer = (b) => MODELLE[b] || "limousine";
 let v3 = null, v3Modell = null, v3Laedt = null;
-const ANSICHTEN_3D = [["aussen", "Außen"], ["technik", "Technik"], ["unten", "Unten"], ["oben", "Oben"]];
+const ANSICHTEN_3D = [["fehler", "Fehler"], ["aussen", "Außen"], ["technik", "Technik"], ["unten", "Unten"], ["oben", "Oben"]];
 function box3d() {
   let box = $("topo-3d");
   if (box) return box;
   box = h("div", { id: "topo-3d", class: "topo-3d" },
-    h("div", { class: "t3-canvas", id: "t3-canvas" }), h("div", { class: "t3-pins", id: "t3-pins" }),
+    h("div", { class: "t3-canvas", id: "t3-canvas" }), h("div", { class: "t3-pins", id: "t3-pins" }), h("div", { class: "t3-labels", id: "t3-labels" }),
     h("div", { class: "seg t3-modes", id: "t3-modes", role: "group", "aria-label": "3D-Ansicht" }),
     h("div", { class: "t3-card card", id: "t3-card", hidden: true }));
   $("topo-stage").querySelector(".topo-canvas").after(box);
+  box.after(h("div", { class: "t3-fehler", id: "t3-fehler", role: "group", "aria-label": "Fehler im Modell zeigen" }));
   return box;
+}
+/* Gefundene Probleme: jeder Fehlercode (Fahrzeug-OBD und Steuergeräte) mit den Bauteilen, die er betrifft */
+function t3Probleme() {
+  const out = new Map();
+  const add = (code, ecuName) => {
+    const t = bauteileFuer(code);
+    const ids = t.genau || !ecuName ? t.ids : bauteilFuerSteuergeraet(ecuName);
+    const name = t.genau || !ecuName ? t.name : `${ecuName} (Herstellercode)`;
+    if (!out.has(code)) out.set(code, { code, name, ids });
+  };
+  /* Steuergeräte zuerst: so bleibt bei Herstellercodes bekannt, welches Gerät sie meldet */
+  for (const e of state.ecus) for (const f of e.fehler || []) add(f.code, e.name);
+  for (const f of faultSet().values()) add(f.code, null);
+  return [...out.values()];
+}
+/* Ids auf Teile abbilden, die das Modell hat (Injektor → Motor beim LKW usw.) */
+function t3Aufloesen(ids) {
+  const out = [];
+  for (const id of ids) { let x = id, n = 0; while (x && !v3.bauteile.has(x) && n++ < 4) x = ersatzFuer(x); if (x && v3.bauteile.has(x)) out.push(x); }
+  return [...new Set(out)];
+}
+let t3Wahl = "alle";
+function t3FehlerZeigen(wahl) {
+  if (!v3) return;
+  const probleme = t3Probleme();
+  const gewaehlt = wahl === "alle" ? probleme : probleme.filter((p) => p.code === wahl);
+  const ids = t3Aufloesen(gewaehlt.flatMap((p) => p.ids));
+  const ctx = t3Aufloesen(ids.flatMap(kontextFuer));
+  t3Wahl = wahl;
+  if (!v3.fokusFehler(ids, ctx)) return;
+  $("t3-card").hidden = true;
+  t3Modes(); t3FehlerLeiste(); t3Labels();
+}
+function t3FehlerLeiste() {
+  const box = $("t3-fehler");
+  const probleme = t3Probleme();
+  box.hidden = !probleme.length;
+  if (!probleme.length) { box.replaceChildren(); return; }
+  const chip = (id, kopf, text) => h("button", { type: "button", class: "t3-chip", "aria-pressed": String(v3 && v3.modus === "fehler" && t3Wahl === id), onclick: () => t3FehlerZeigen(id) },
+    h("b", {}, kopf), text ? h("span", {}, text) : null);
+  box.replaceChildren(h("span", { class: "eyebrow" }, "Im Modell zeigen"),
+    h("div", { class: "t3-chips" }, chip("alle", `Alle ${probleme.length}`, ""), ...probleme.map((p) => chip(p.code, p.code, p.name))));
+}
+/* Beschriftung der leuchtenden Teile im Fehlerfokus */
+function t3Labels() {
+  const box = $("t3-labels");
+  const ids = v3 && v3.modus === "fehler" ? (v3.fokusIds || []) : [];
+  box.replaceChildren(...ids.slice(0, 8).map((id) => h("span", { class: "t3-label", "data-bt": id }, v3.bauteile.get(id).name)));
+  t3PinsSetzen();
 }
 function t3Modes() {
   const box = $("t3-modes");
   /* Knöpfe nur einmal bauen, danach nur den gedrückten Zustand setzen: der Tastaturfokus bleibt erhalten. */
-  if (box.childElementCount !== ANSICHTEN_3D.length) {
-    box.replaceChildren(...ANSICHTEN_3D.map(([id, label]) => h("button", { type: "button", "data-ansicht": id,
-      onclick: () => { if (!v3) return; v3.ansicht(id); t3Modes(); $("t3-card").hidden = true; } }, label)));
+  const liste = ANSICHTEN_3D.filter(([id]) => id !== "fehler" || t3Probleme().length);
+  if (box.childElementCount !== liste.length) {
+    box.replaceChildren(...liste.map(([id, label]) => h("button", { type: "button", "data-ansicht": id,
+      onclick: () => { if (!v3) return; if (id === "fehler") { t3FehlerZeigen(t3Wahl); return; } v3.ansicht(id); t3Modes(); t3FehlerLeiste(); t3Labels(); $("t3-card").hidden = true; } }, label)));
   }
   for (const b of box.children) b.setAttribute("aria-pressed", String(Boolean(v3) && v3.modus === b.dataset.ansicht));
 }
@@ -261,10 +313,21 @@ function t3Pins() {
 /* Nach jedem Bild: Etiketten an die Bildschirmlage ihres Bauteils schieben (nur Lage, kein Neubau) */
 function t3PinsSetzen() {
   if (!v3) return;
+  const fehler = v3.modus === "fehler";
   for (const pin of $("t3-pins").children) {
     const at = v3.lage(pin.dataset.bt);
-    pin.hidden = !at || !at.sichtbar;
+    pin.hidden = fehler || !at || !at.sichtbar;
     if (at) { pin.style.left = `${at.x}px`; pin.style.top = `${at.y}px`; }
+  }
+  /* Beschriftungen: nicht übereinander; wer mit einer schon gezeigten kollidiert, bleibt verborgen */
+  const belegt = [];
+  for (const l of $("t3-labels").children) {
+    const at = v3.lage(l.dataset.bt);
+    if (!fehler || !at || !at.sichtbar) { l.hidden = true; continue; }
+    l.style.left = `${at.x}px`; l.style.top = `${at.y}px`;
+    l.hidden = false;
+    const b = l.offsetWidth || 90, r = { x0: at.x - b / 2 - 4, x1: at.x + b / 2 + 4, y0: at.y - 34, y1: at.y - 10 };
+    if (belegt.some((q) => r.x0 < q.x1 && r.x1 > q.x0 && r.y0 < q.y1 && r.y1 > q.y0)) l.hidden = true; else belegt.push(r);
   }
 }
 function t3Karte(bt, at) {
@@ -289,16 +352,18 @@ async function render3dView() {
     if (v3Laedt) return;
     if (v3) { v3.entsorgen(); v3 = null; }
     $("t3-card").hidden = true;
-    $("t3-pins").replaceChildren(); $("t3-modes").replaceChildren();
+    $("t3-pins").replaceChildren(); $("t3-modes").replaceChildren(); $("t3-labels").replaceChildren();
     $("t3-canvas").replaceChildren(h("p", { class: "sm t3-load" }, "3D-Modell lädt …"));
     v3Laedt = erstelle3d($("t3-canvas"), { bauart: modell, onPick: t3Karte }).catch((err) => { console.error(err); return null; });
     v3 = await v3Laedt; v3Laedt = null; v3Modell = modell;
     if (!v3) { toast("3D-Modell nicht ladbar, zeige die Draufsicht."); setView("fahrzeug"); return; }
     if (modellFuer(bauart) !== modell) { v3.entsorgen(); v3 = null; v3Modell = null; return render3dView(); }
     $("t3-canvas").addEventListener("bild", t3PinsSetzen);
+    v3.zustand(t3Toene(topoNodes()));
+    if (t3Probleme().length) t3FehlerZeigen("alle");
   }
   v3.zustand(t3Toene(topoNodes()));
-  t3Modes(); t3Pins();
+  t3Modes(); t3Pins(); t3FehlerLeiste(); t3Labels();
   const nodes = topoNodes();
   $("topo-pins").replaceChildren(); $("topo-rest").replaceChildren();
   $("topo-stage").setAttribute("aria-label", `${(BAUARTEN.find(([id]) => id === bauart) || [, bauart])[1]} in 3D, ${nodes.length} Steuergeräte`);

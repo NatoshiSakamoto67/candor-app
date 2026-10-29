@@ -572,3 +572,19 @@ button.hstat { cursor: pointer; } button.hstat:hover { border-color: var(--tone-
   .view-live .gauges::-webkit-scrollbar { display: none; }
   .view-live .gauges .gauge { scroll-snap-align: start; }
 }
+/* Fehlerfokus: Leiste mit den Problemen unter dem 3D, rot leuchtende Teile beschriftet */
+.t3-fehler { display: grid; gap: 6px; margin-top: var(--sp-2); }
+.t3-fehler[hidden] { display: none; }
+.t3-fehler .eyebrow { margin: 0; }
+.t3-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.t3-chips::-webkit-scrollbar { display: none; }
+.t3-chip { flex: none; display: grid; gap: 1px; text-align: left; max-width: 240px; padding: 7px 11px; border-radius: var(--r-2); border: 1px solid var(--line); background: var(--surface-2); color: var(--text); cursor: pointer; font: 500 var(--t-2)/15px var(--font-text); }
+.t3-chip b { font: 600 var(--t-3)/18px var(--font-num); color: var(--crit); }
+.t3-chip span { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.t3-chip[aria-pressed="true"] { border-color: var(--crit); background: color-mix(in oklab, var(--crit) 12%, var(--surface-2)); box-shadow: 0 0 0 1px var(--crit); }
+.t3-chip:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--accent); }
+.t3-labels { position: absolute; inset: 0; pointer-events: none; }
+.t3-label { position: absolute; transform: translate(-50%, calc(-100% - 12px)); padding: 3px 8px; border-radius: var(--r-1); background: var(--crit); color: #fff; font: 600 11px/14px var(--font-text); white-space: nowrap; box-shadow: 0 4px 12px rgba(0, 0, 0, .3); }
+.t3-label::after { content: ""; position: absolute; left: 50%; bottom: -5px; margin-left: -5px; border: 5px solid transparent; border-bottom: 0; border-top-color: var(--crit); }
+.t3-label[hidden] { display: none; }
+@media (max-width: 599px) { .t3-modes { max-width: calc(100% - 16px); } .t3-modes button { padding: 0 9px; font-size: var(--t-2); } }

@@ -89,6 +89,18 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
     } else huelle.push(o);  // alles ohne Bauteil-Namen ist Hülle (Karosserie, Kabine, Aufbau, Verkleidung)
   });
   for (const o of huelle) o.userData.orig = { opacity: o.material.opacity, transparent: o.material.transparent, depthWrite: o.material.depthWrite };
+  const alleMeshes = [];
+  auto.traverse((o) => { if (o.isMesh) { o.userData.mat0 = o.material; alleMeshes.push(o); } });
+  /* Fehlerfokus: alles Übrige wird gläsern mit feinem Umriss, das Umfeld (etwa der Motor) halb sichtbar, das Bauteil glüht rot. */
+  const geist = new THREE.MeshBasicMaterial({ color: 0xa9bccf, transparent: true, opacity: .035, depthWrite: false });
+  const umfeld = new THREE.MeshStandardMaterial({ color: 0x8d99a6, metalness: .35, roughness: .5, transparent: true, opacity: .5, depthWrite: false });
+  const linienMat = new THREE.LineBasicMaterial({ color: 0x9fb6cc, transparent: true, opacity: .38, depthWrite: false });
+  let kantenGebaut = false;
+  const kantenBauen = () => {
+    if (kantenGebaut) return;
+    kantenGebaut = true;
+    for (const o of alleMeshes) { const l = new THREE.LineSegments(new THREE.EdgesGeometry(o.geometry, 30), linienMat); l.visible = false; l.raycast = () => {}; o.add(l); o.userData.kante = l; }
+  };
 
   let w = 0, h = 0, laeuft = 0, puls = new Map(), modus = "aussen", sichtbar = true, weg = false;
   /* Dämpfung: update() meldet Bewegung, dann noch ein Bild; Pulsen hält die Schleife nur bei Fehlern am Laufen. */
@@ -120,6 +132,11 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
     aussen: [[5.2, 2.0, 4.4], [0, .55, 0]], technik: [[4.6, 2.6, 4.0], [0, .5, 0]], unten: [[.5, -2.4, 4.2], [0, .3, 0]], oben: [[0, 7.5, .01], [0, 0, 0]],
   };
   function ansicht(name) {
+    if (modus === "fehler") {
+      for (const o of alleMeshes) { o.material = o.userData.mat0; if (o.userData.kante) o.userData.kante.visible = false; }
+      fokusIds = null;
+      zustand(letzteToene);
+    }
     modus = name;
     const technik = name === "technik" || name === "unten";
     for (const o of huelle) {
@@ -138,7 +155,10 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
 
   /* Zustand: je Bauteil ein Ton; Fehler pulsieren leicht (bei reduzierter Bewegung nur Farbe) */
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let letzteToene = {}, fokusIds = null;
   function zustand(toene) {
+    letzteToene = toene || {};
+    if (modus === "fehler") return;
     puls = new Map();
     for (const [id, b] of bauteile) {
       const ton = toene[id];
@@ -161,12 +181,45 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
     const r = renderer.domElement.getBoundingClientRect();
     maus.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     strahl.setFromCamera(maus, kamera);
-    const offen = modus === "technik" || modus === "unten";
+    const offen = modus === "technik" || modus === "unten" || modus === "fehler";
     const ziele = [...[...bauteile.values()].flatMap((b) => b.meshes), ...(offen ? [] : huelle)];
     const treffer = strahl.intersectObjects(ziele, false)[0];
     const bt = treffer && treffer.object.userData.bt ? bauteile.get(treffer.object.userData.bt) : null;
     if (onPick) onPick(bt, { x: e.clientX - r.left, y: e.clientY - r.top });
   });
+
+  /* Fehlerfokus: ids glühen rot, kontext bleibt halb sichtbar, der Rest wird gläsern mit Umrisslinien. Kamera fährt
+     so heran, dass alle betroffenen Teile im Bild sind, von der Seite, auf der sie sitzen. */
+  function fokusFehler(ids, kontext = []) {
+    kantenBauen();
+    const ziel = new Set(ids.filter((id) => bauteile.has(id))), ctx = new Set(kontext.filter((id) => bauteile.has(id) && !ziel.has(id)));
+    if (!ziel.size) return false;
+    modus = "fehler"; fokusIds = [...ziel];
+    puls = new Map();
+    for (const o of alleMeshes) {
+      const bt = o.userData.bt, k = o.userData.kante;
+      if (bt && ziel.has(bt)) {
+        const m = o.userData.mat0; o.material = m;
+        Object.assign(m, { transparent: false, opacity: 1, depthWrite: true }); m.emissive = new THREE.Color(0xff2a2a); m.emissiveIntensity = .9; m.needsUpdate = true;
+        if (k) k.visible = false;
+      } else if (bt && ctx.has(bt)) { o.material = umfeld; if (k) k.visible = true; }
+      else { o.material = geist; if (k) k.visible = true; }
+    }
+    if (!still) for (const id of ziel) puls.set(id, bauteile.get(id));
+    const box3 = new THREE.Box3();
+    for (const id of ziel) box3.expandByObject(bauteile.get(id).knoten);
+    const z = box3.getCenter(new THREE.Vector3()), r = Math.max(.35 * k, box3.getSize(new THREE.Vector3()).length());
+    const seite = z.z < mitte.z - .05 ? -1 : 1;
+    const richtung = new THREE.Vector3(.9, .75, .95 * seite).normalize();
+    /* Schmales (hohes) Bild wie auf dem Handy: weiter weg, damit das Umfeld erkennbar bleibt */
+    const abstand = Math.max(steuerung.minDistance * 1.6, r * 2.8) * Math.max(1, 1.45 / Math.max(.4, kamera.aspect));
+    const nach = z.clone().add(richtung.multiplyScalar(Math.min(steuerung.maxDistance, abstand)));
+    steuerung.maxPolarAngle = Math.PI * .49;
+    flug = { start: performance.now(), von: kamera.position.clone(), nach, zielVon: steuerung.target.clone(), zielNach: z };
+    if (still) { kamera.position.copy(nach); steuerung.target.copy(z); flug = null; }
+    anstossen();
+    return true;
+  }
 
   /* Kamerafahrt zu einem Bauteil: Technik-Ansicht, Bauteil in der Mitte, nah heran. Bewegung reduziert: sofort. */
   let flug = null;
@@ -200,7 +253,7 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
   groesseAnpassen();
   ansicht("aussen");
   return {
-    bauteile, ansicht, zustand, lage, fokus, get modus() { return modus; },
+    bauteile, ansicht, zustand, lage, fokus, fokusFehler, get fokusIds() { return fokusIds; }, get modus() { return modus; },
     zeichne: anstossen,
     lackfarbe(hex) { for (const o of huelle) if (o.material.name === "lack") { o.material.color.set(hex); } anstossen(); },
     entsorgen() {
