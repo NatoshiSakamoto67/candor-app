@@ -2,7 +2,6 @@
    Der API-Schlüssel geht einmal an den Diagnose-Server und kommt nie zurück, die Seite zeigt nur »sk-ant-…abcd«. */
 import { $, h, icon, mark, toast, storageGet } from "./dom.js";
 import { state, on, emit, logEvent } from "./state.js";
-import { go, openDisplaySettings } from "./shell.js";
 import { icon3d } from "./icons3d.js";
 import { werkhofSektion } from "./werkhof.js";
 
@@ -99,26 +98,15 @@ async function test() {
   try { testResult = await state.src.testKi(); } catch (err) { testResult = { ok: false, meldung: `Test gescheitert: ${err.message}` }; } finally { busy = false; render(); }
 }
 
-function linkRow(title, text, ic, onclick) {
-  return h("button", { class: "tap row set-link", type: "button", onclick }, h("span", { class: "set-ic sm-ic", "aria-hidden": "true" }, icon3d(ic)),
-    h("span", {}, h("span", { class: "t" }, title), h("span", { class: "d" }, text)), h("span"), h("span", { class: "chev", "aria-hidden": "true" }, "›"));
-}
 
 function render() {
   const box = $("einstellungen");
   if (!box || $("view-einstellungen").hidden) return;
   const st = state.status || {}, w = state.werkstatt;
-  const vehicles = (storageGet("kfzdiag-fahrzeuge", []) || []).length, hist = (storageGet("kfzdiag-verlauf", []) || []).length;
   /* Werkhof-Abschnitt kommt nach, sobald der Stand vom Server da ist. */
   werkhofSektion(render).then((el) => { const alt = $("werkhof-einrichten"); if (alt) alt.replaceWith(el); else box.children[0] ? box.children[0].after(el) : box.append(el); });
   box.replaceChildren(
     kiSection(),
-    h("section", { class: "card set-sec" }, h("div", { class: "list set-list" },
-      linkRow("Werkstattdaten", w ? [w.name, w.ort].filter(Boolean).join(", ") : "noch nicht eingetragen", "garage", () => go("werkstatt")),
-      linkRow("Anzeige", "Akzentfarbe, Symbolfarben, hell oder dunkel, Kontrast, Dichte", "palette", openDisplaySettings),
-      linkRow("Fahrzeuge", `${vehicles} auf diesem Gerät`, "car", () => go("fahrzeuge")),
-      linkRow("Verlauf", `${hist} gespeicherte Diagnose${hist === 1 ? "" : "n"}`, "clock", () => go("history")),
-      linkRow("Handbuch", "So funktioniert das Programm, mit Installation und Bluetooth", "book", () => go("handbuch")))),
     section("Verbindung", "plug", "Kommt aus dem Start des Diagnose-Servers; ändern über die Umgebungsvariablen, siehe Handbuch.",
       h("dl", { class: "facts" }, ...[["Quelle", isServer() ? (st.simuliert ? "Diagnose-Server mit Simulator" : "Diagnose-Server mit Adapter") : "Vorschau mit Beispieldaten"],
         ["Profil", st.fahrzeug], ["Version", st.version === "intern" ? "intern" : st.version ? "Markt" : null], ["Schreiben", st.schreiben_an == null ? null : st.schreiben_an ? "an, nur mit Freigabe" : "aus"]]

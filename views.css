@@ -12,8 +12,11 @@
 .topo { position: relative; padding: var(--sp-4); display: grid; gap: var(--sp-3); }
 .topo .sec-head { margin: 0; }
 .topo-tools { display: flex; gap: var(--sp-2); align-items: center; flex-wrap: wrap; }
+.topo-tools .topo-bauart { margin-left: auto; }
+.topo-tools .topo-bauart select { max-width: 150px; }
+/* Handy: Umschalter in voller Breite oben, darunter eine Zeile mit Grafik, Info und Bauart */
+@media (max-width: 599px) { .topo .sec-head > div:first-child { flex: 1 1 100%; } .topo-tools { flex: 1 1 100%; } .topo-tools #topo-view-toggle { flex: 1 1 100%; display: flex; } .topo-tools #topo-view-toggle button { flex: 1; } }
 .topo-stage { display: flex; flex-direction: column; gap: var(--sp-2); }
-.topo-corner { order: -1; display: flex; gap: var(--sp-1); align-items: center; justify-content: flex-end; }
 .topo-bauart select { height: 36px; width: auto; font-size: var(--t-2); }
 .topo-toggle { display: none; }
 .scan-row { display: grid; grid-template-columns: auto 1fr; gap: var(--sp-3); align-items: center; }
@@ -122,7 +125,7 @@
 
 @media (max-width: 599px) {
   .view-car { display: flex; flex-direction: column; }
-  .view-car .stats { order: 1; } .view-car .ecus { order: 2; } .view-car .topo { order: 3; } .view-car .timeline { order: 4; }
+  .view-car .topo { order: 0; } .view-car .stats { order: 1; } .view-car .ecus { order: 2; } .view-car .timeline { order: 4; }
 }
 @media (min-width: 600px) { .view-car { grid-template-columns: 1fr 1fr; } .view-car .span { grid-column: 1 / -1; } }
 @media (min-width: 768px) {
@@ -134,7 +137,6 @@
 @media (min-width: 1280px) { .view-car .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .topo[data-view="bus"] { grid-area: auto; }
 /* 3D ist die Hauptbühne: oben über die volle Breite, auf dem Handy zuerst */
-@media (max-width: 599px) { .view-car .topo[data-view="3d"] { order: 0; } }
 @media (min-width: 768px) {
   .view-car:has(.topo[data-view="3d"]) { grid-template-areas: "topo topo" "stats stats" "ecus timeline"; grid-template-columns: 1fr 1fr; }
   .view-car .topo[data-view="3d"] { grid-area: topo; position: static; }

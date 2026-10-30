@@ -29,10 +29,8 @@ export const BAUM = [
   { id: "geraet", zeilen: [
     { id: "allgemein", label: "Allgemein", icon: "regler", bild: "kennung", farbe: FARBE.grau, ziel: "seite", sub: "allgemein", apple: "Allgemein" },
     { id: "bedienung", label: "Bedienungshilfen", icon: "hand", farbe: FARBE.blau, ziel: "seite", sub: "bedienung", kunde: true, apple: "Bedienungshilfen" },
-    { id: "schnellaktion", label: "Schnellaktion", icon: "blitz", farbe: FARBE.blau, aktion: "vollscan", apple: "Aktionstaste" },
     { id: "anzeige", label: "Anzeige", icon: "sonne", bild: "anzeige", farbe: FARBE.blau, ziel: "seite", sub: "anzeige", kunde: true, apple: "Anzeige & Helligkeit" },
     { id: "ki", label: "KI-Assistent", icon: "stern", bild: "ki", farbe: FARBE.indigo, ziel: "agent", apple: "Apple Intelligence & Siri" },
-    { id: "darstellung", label: "Fahrzeugdarstellung", icon: "bild", bild: "auto", farbe: FARBE.tuerkis, ziel: "car", kunde: true, apple: "Hintergrundbild" },
     { id: "cockpit", label: "Startseite & Cockpit", icon: "raster", farbe: FARBE.blau, aktion: "cockpit", apple: "Home-Bildschirm & App-Mediathek" },
     { id: "kamera", label: "Kamera", icon: "kamera", bild: "freeze", farbe: FARBE.grau, bald: true, apple: "Kamera" },
     { id: "statusleiste", label: "Statusleiste", icon: "schalter", farbe: FARBE.grau, ziel: "seite", sub: "statusleiste", apple: "Kontrollzentrum" },
@@ -43,12 +41,12 @@ export const BAUM = [
     { id: "warnungen", label: "Warnungen", icon: "glocke", farbe: FARBE.rot, bald: true, apple: "Mitteilungen" },
     { id: "toene", label: "Töne & Haptik", icon: "ton", farbe: FARBE.pink, bald: true, apple: "Töne & Haptik" },
     { id: "modus", label: "Modus", icon: "mond", farbe: FARBE.lila, aktion: "modus", apple: "Fokus" },
-    { id: "betriebsbuch", label: "Betriebsbuch", icon: "buch", bild: "verlauf", farbe: FARBE.lila, ziel: "service", apple: "Bildschirmzeit" },
+    { id: "betriebsbuch", label: "Betriebsbuch", icon: "buch", bild: "verlauf", farbe: FARBE.lila, aktion: "betriebsbuch", apple: "Bildschirmzeit" },
   ] },
   { id: "schutz", zeilen: [
     { id: "freigabe", label: "Freigabe", icon: "gesicht", farbe: FARBE.gruen, ziel: "seite", sub: "freigabe", apple: "Face ID & Code" },
-    { id: "panne", label: "Pannenhilfe", icon: "sos", farbe: FARBE.rot, aktion: "panne", kunde: true, apple: "Notruf SOS" },
-    { id: "datenschutz", label: "Datenschutz & Sicherheit", icon: "schild", farbe: FARBE.blau, ziel: "einstellungen", kunde: true, apple: "Datenschutz & Sicherheit" },
+    { id: "panne", label: "Pannenhilfe", icon: "sos", farbe: FARBE.rot, bald: true, kunde: true, apple: "Notruf SOS" },
+    { id: "datenschutz", label: "Datenschutz & Sicherheit", icon: "schild", farbe: FARBE.blau, ziel: "handbuch", sub: "datenschutz", kunde: true, apple: "Datenschutz & Sicherheit" },
   ] },
   { id: "ablage", zeilen: [
     { id: "faelle", label: "Belegte Fälle", icon: "pokal", farbe: FARBE.gelb, ziel: "history", apple: "Game Center" },
@@ -57,7 +55,7 @@ export const BAUM = [
   ] },
   { id: "werkstatt", zeilen: [
     { id: "meinewerkstatt", label: "Meine Werkstatt", icon: "werkstatt", farbe: FARBE.blau, aktion: "portal", kunde: true, nurKunde: true, apple: "Apps (Werkstatt-Portal)" },
-    { id: "werkhof", label: "Werkhof", icon: "werkstatt", farbe: FARBE.orange, ziel: "einstellungen", apple: "Apps (verbundene Dienste)" },
+    { id: "werkhof", label: "Werkhof und KI", icon: "werkstatt", farbe: FARBE.orange, aktion: "werkhof", apple: "Apps (verbundene Dienste)" },
     { id: "werkstattdaten", label: "Werkstatt & Handbuch", icon: "buch", bild: "handbuch", farbe: FARBE.lila, ziel: "werkstatt", apple: "Apps" },
   ] },
 ];
@@ -117,7 +115,7 @@ export const zeilenFuer = (f) => (z) => (f.kunde ? Boolean(z.kunde) : !z.nurKund
 
 /** Titel der Unterseiten (#seite/<id>), Reihenfolge wie im Konzept Abschnitt 8. */
 export const SEITEN_TITEL = Object.freeze({
-  profil: "Fahrzeug", fuhrpark: "Fuhrpark", bluetooth: "Bluetooth-Adapter", wlan: "WLAN-Adapter", bus: "Fahrzeugbus", takt: "Abfrage-Takt",
+  profil: "Fahrzeug", bluetooth: "Bluetooth-Adapter", wlan: "WLAN-Adapter", bus: "Fahrzeugbus", takt: "Abfrage-Takt",
   batteriezustand: "Batteriezustand", allgemein: "Allgemein", info: "Info", einheiten: "Sprache & Einheiten", anzeige: "Anzeige",
   bedienung: "Bedienungshilfen", suche: "Suche", sicherung: "Sicherung", statusleiste: "Statusleiste", freigabe: "Freigabe",
 });

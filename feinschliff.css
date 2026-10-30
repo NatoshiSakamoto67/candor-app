@@ -326,7 +326,7 @@ body::before { background: radial-gradient(1400px 700px at 50% -20%, color-mix(i
 .li-ic.li-bild { background: none; box-shadow: 0 1px 2px rgba(0,0,0,.28); overflow: hidden; }
 .li-ic.li-bild img { display: block; width: 100%; height: 100%; }
 .li-avatar.li-avatar-bild { background: none; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
-.li-avatar.li-avatar-bild img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.18); }
+.li-avatar.li-avatar-bild img { width: 100%; height: 100%; object-fit: contain; padding: 4px; box-sizing: border-box; }
 
 /* ---------- Unterseiten im Apple-Stil (seiten.js) ---------- */
 .sk-block { margin-top: 26px; }
@@ -357,7 +357,7 @@ body::before { background: radial-gradient(1400px 700px at 50% -20%, color-mix(i
 .sk-profil { display: grid; justify-items: center; gap: 4px; margin: 10px 0 24px; text-align: center; }
 .sk-profil.links { justify-items: start; text-align: left; }
 .sk-avatar { width: 96px; height: 96px; border-radius: 50%; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,.35); }
-.sk-avatar img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.18); }
+.sk-avatar img { width: 100%; height: 100%; object-fit: contain; padding: 8px; box-sizing: border-box; }
 .sk-name { margin: 8px 0 0; font: 700 28px/33px var(--font-display); }
 .sk-name.gross { font-size: 34px; line-height: 40px; }
 .sk-fin { margin: 0; color: var(--text-muted); font-size: 17px; }
@@ -392,3 +392,36 @@ body::before { background: radial-gradient(1400px 700px at 50% -20%, color-mix(i
 [data-bewegung="reduziert"] .lk::after { display: none; }
 .li-row.sk-row:has(.li-sw) { grid-template-columns: minmax(0, 1fr) auto; }
 .li-row.sk-row:has(.li-sw):has(.li-ic, .sk-mark) { grid-template-columns: 30px minmax(0, 1fr) auto; }
+
+/* ---------- Unterseiten: runder Zurück-Knopf oben (iOS-Einstellungen) ---------- */
+.sk-nav { display: flex; align-items: center; justify-content: space-between; margin: 0 0 14px; }
+.sk-zurueck { width: 44px; height: 44px; border-radius: 50%; border: 0; display: grid; place-items: center; color: var(--text); cursor: pointer;
+  background: var(--glass-bg); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); box-shadow: 0 0 0 .5px var(--line), 0 2px 8px rgba(0,0,0,.18);
+  transition: transform var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out); }
+.sk-zurueck .ic { width: 20px; height: 20px; }
+.sk-zurueck:active { transform: scale(.94); }
+@media (min-width: 1100px) { .sk-nav { display: none; } }
+
+/* ---------- Suche wie in den iOS-Einstellungen: Vorschläge und Zuletzt, Suchfeld unten mit Mikrofon und Schließen ---------- */
+.pal { display: flex; flex-direction: column; }
+.pal-bar { display: flex; align-items: center; gap: 10px; padding: 10px 12px; order: -1; }
+.pal-bar .pal-in { flex: 1; height: 48px; border-radius: 24px; border: 0; padding: 0 14px; background: color-mix(in oklab, var(--text) 9%, transparent); }
+.pal-bar .pal-in input { font-size: 17px; }
+.pal-mik, .pal-x { flex: none; border: 0; display: grid; place-items: center; color: var(--text); background: none; cursor: pointer; }
+.pal-mik { width: 36px; height: 36px; border-radius: 50%; color: var(--text-muted); }
+.pal-mik[hidden] { display: none; }
+.pal-mik.aktiv { color: var(--accent); animation: pulse 1s ease-in-out infinite; }
+.pal-x { width: 48px; height: 48px; border-radius: 50%; background: color-mix(in oklab, var(--text) 9%, transparent); font-size: 20px; }
+.pal-vor .pal-r { min-height: 56px; }
+.pal-vor .li-ic { width: 30px; height: 30px; border-radius: 7px; }
+.pal-vor .li-ic .ic { width: 18px; height: 18px; }
+@media (max-width: 759px) {
+  .palette { max-width: none; width: 100vw; height: 100dvh; max-height: none; margin: 0; border-radius: 0; background: var(--bg); }
+  .palette::backdrop { background: var(--bg); }
+  .pal { height: 100%; }
+  .palette .results { flex: 1; max-height: none; order: 0; padding-top: 28px; }
+  .pal-bar { order: 1; position: sticky; bottom: 0; padding-bottom: max(12px, env(safe-area-inset-bottom, 0px)); background: linear-gradient(to top, var(--bg) 70%, transparent); }
+  .pal-f { display: none; }
+}
+
+@keyframes pulse { 50% { opacity: .45; } }

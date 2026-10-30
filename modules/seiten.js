@@ -3,7 +3,7 @@
    die Bausteine liefert; Schalter wirken wirklich (Anzeige, Takt, Verbinden, Statusleiste, Export). */
 import { $, h, icon, mark, numFix, storageGet, storageSet, toast, download, clockFull } from "./dom.js";
 import { state, on, emit, firstReadiness, totalFaults, pendingFaults } from "./state.js";
-import { go, currentRoute, anzeige, setzeAnzeige, resolvedDisplay, openDisplaySettings } from "./shell.js";
+import { go, back, currentRoute, anzeige, setzeAnzeige, resolvedDisplay, openDisplaySettings } from "./shell.js";
 import { SEITEN_TITEL, ladezustand, bordnetzTon } from "../kern/einstellungs-baum.js";
 import { vehicles, plate } from "./garage.js";
 import { vehicleName } from "./fahrzeuge.js";
@@ -94,23 +94,14 @@ function exportieren() {
 const SEITEN = {
   profil() {
     const fz = state.fahrzeug;
-    if (!fz) return [kopf({ bild: "auto", titel: "Kein Fahrzeug", text: "Lege ein Fahrzeug an oder wähle eines aus dem Fuhrpark." }), gruppe({ zeilen: [{ label: "Fahrzeug anlegen", ziel: () => go("fahrzeug") }, { label: "Fuhrpark", ziel: zuSeite("fuhrpark") }] })];
+    if (!fz) return [kopf({ bild: "auto", titel: "Kein Fahrzeug", text: "Lege ein Fahrzeug an oder wähle eines aus dem Fuhrpark." }), gruppe({ zeilen: [{ label: "Fahrzeug anlegen", ziel: () => go("fahrzeug") }, { label: "Fuhrpark", ziel: () => go("fahrzeuge") }] })];
     return [
       h("section", { class: "sk-profil" }, h("span", { class: "sk-avatar" }, bild("auto")), h("h2", { class: "sk-name" }, vehicleName(fz)), h("p", { class: "sk-fin mono" }, fz.fin || "FIN noch nicht eingetragen"),
         (fz.kennzeichen || "").trim() ? h("span", { class: "sk-plate" }, plate(fz, true)) : null),
       gruppe({ zeilen: [{ label: "Fahrzeugdaten", unter: "Marke, Modell, Motor, Kennung", ziel: () => go("fahrzeug", { sub: fz.id }) }, { label: "Info", ziel: zuSeite("info") },
         { label: "Fehlerspeicher", wert: verbunden() ? String(totalFaults()) : "–", ton: totalFaults() ? "crit" : null, ziel: () => go("faults") }] }),
-      gruppe({ zeilen: [{ label: "Fahrzeugakte (Verlauf)", ziel: () => go("history") }, { label: "Fuhrpark", wert: String(vehicles().length), ziel: zuSeite("fuhrpark") }, { label: "Sicherung", ziel: zuSeite("sicherung") }] }),
+      gruppe({ zeilen: [{ label: "Fahrzeugakte (Verlauf)", ziel: () => go("history") }, { label: "Fuhrpark", wert: String(vehicles().length), ziel: () => go("fahrzeuge") }, { label: "Sicherung", ziel: zuSeite("sicherung") }] }),
       gruppe({ titel: "Adapter", zeilen: [{ label: verbunden() ? "Verbundener Adapter" : "Kein Adapter verbunden", unter: verbunden() ? (state.status.protokoll || "") : "Bluetooth oder WLAN", bild: "stecker", ziel: zuSeite("bluetooth") }] }),
-    ];
-  },
-  fuhrpark() {
-    const liste = vehicles(), aktiv = state.fahrzeug && state.fahrzeug.id;
-    return [
-      h("section", { class: "sk-profil" }, h("span", { class: "sk-avatar" }, bild("auto")), h("h2", { class: "sk-name" }, "Fuhrpark")),
-      gruppe({ zeilen: liste.map((f) => ({ label: vehicleName(f), unter: f.id === aktiv ? "Gerade gewählt" : f.benutzt ? `zuletzt ${clockFull(new Date(f.benutzt))}` : "noch nicht benutzt", bild: "auto", ziel: () => go("fahrzeug", { sub: f.id }) })),
-        fuss: "Alle Fahrzeuge auf diesem Gerät. Kennzeichen und FIN bleiben hier und gehen nicht an die KI." }),
-      gruppe({ zeilen: [{ typ: "aktion", label: "Fahrzeug hinzufügen", tun: () => go("fahrzeug") }] }),
     ];
   },
   bluetooth() {
@@ -154,6 +145,7 @@ const SEITEN = {
     const ruhe = !laeuft ? jetzt : null, soc = ladezustand(ruhe), min = r.length ? Math.min(...r) : null;
     const zustand = ruhe == null ? "Motor aus nötig" : ruhe >= 12.4 ? "Normal" : ruhe >= 12.2 ? "Schwach" : "Leer";
     return [
+      kopf({ bild: "messgeraet", titel: "Batteriezustand", text: "Wie fit die Starterbatterie ist: Ruhespannung, geschätzter Ladezustand und der tiefste Einbruch beim Anlassen." }),
       gruppe({ zeilen: [{ label: "Batteriezustand", wert: zustand, ton: ruhe == null ? null : bordnetzTon(ruhe, false) }], fuss: "Bewertet wird die Ruhespannung bei abgestelltem Motor. Für einen echten Kapazitätstest braucht es ein Batterietestgerät." }),
       gruppe({ zeilen: [{ label: "Ruhespannung", wert: ruhe == null ? "–" : `${numFix(ruhe, 2)} V` }], fuss: "Ab 12,4 V gut, unter 12,2 V schwach, unter 11,8 V leer. Erst nach zwei Stunden Ruhe aussagekräftig." }),
       gruppe({ zeilen: [{ label: "Ladezustand geschätzt", wert: soc == null ? "–" : `${soc} %` }] }),
@@ -174,6 +166,7 @@ const SEITEN = {
     const fz = state.fahrzeug || {}, st = state.status || {}, r = firstReadiness();
     const w = (label, x, mono) => ({ label, wert: x == null || x === "" ? "–" : String(x), mono });
     return [
+      kopf({ icon: "info", farbe: "#8E8E93", titel: "Info", text: "Fahrzeug, Kennungen und Verbindung auf einen Blick. Alles bleibt auf diesem Gerät." }),
       gruppe({ zeilen: [w("Name", fz.marke ? vehicleName(fz) : st.fahrzeug), w("Marke", fz.marke), w("Modell", fz.modell), w("Baujahr", fz.baujahr), w("Motor", fz.motor), w("Kraftstoff", fz.kraftstoff)] }),
       gruppe({ zeilen: [w("FIN", fz.fin, true), w("Kennzeichen", fz.kennzeichen), w("Kilometerstand", fz.km != null && fz.km !== "" ? `${Number(fz.km).toLocaleString("de-DE")} km` : null)] }),
       gruppe({ zeilen: [w("Protokoll", (st.protokoll || "").replace(/ \(simuliert\)/, "")), w("Steuergeräte", state.ecus.length || null), w("Fehler", verbunden() ? `${totalFaults()} + ${pendingFaults().length} vorläufig` : null),
@@ -184,6 +177,7 @@ const SEITEN = {
   einheiten() {
     const w = (label, x) => ({ label, wert: x });
     return [
+      kopf({ icon: "globus", farbe: "#0A84FF", titel: "Sprache & Einheiten", text: "Programmsprache, Region und die Einheiten der Messwerte." }),
       gruppe({ titel: "Sprache", zeilen: [w("Deutsch", "Programmsprache")], fuss: "Weitere Sprachen folgen." }),
       gruppe({ zeilen: [w("Region", "Deutschland"), w("Temperatur", "°C"), w("Einheitensystem", "Metrisch"), w("Druck", "kPa"), w("Datumsformat", new Date(2026, 7, 19).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "2-digit" })), w("Zahlenformat", (1234567.89).toLocaleString("de-DE"))],
         fuss: "Messwerte erscheinen immer mit fester Zahl Nachkommastellen je Einheit, damit Ziffern beim Wechsel nicht springen." }),
@@ -214,6 +208,7 @@ const SEITEN = {
   },
   suche() {
     return [
+      kopf({ icon: "lupe", farbe: "#8E8E93", titel: "Suche", text: "Was die Suche durchsucht und ob die Herstellerdokumente mitlaufen. Öffnen mit dem Suchfeld unten oder Strg K." }),
       gruppe({ titel: "Suchen und Nachschlagen", zeilen: [{ typ: "schalter", label: "Herstellerdokumente mitsuchen", an: wert("rmi", true), setze: (x) => setze("rmi", x) }],
         fuss: "Durchsucht auch die lokalen Herstellerdokumente (RMI) auf dem Diagnose-Server. Nichts geht ins Internet." }),
       gruppe({ titel: "Was durchsucht wird", zeilen: ["Fehlercodes", "Messwerte", "Steuergeräte", "Service & Anlernen", "Prüfpfade", "Diagnosepfade", "Begriffe", "Verlauf"].map((x) => ({ label: x, wert: "✓" })) }),
@@ -225,7 +220,7 @@ const SEITEN = {
     return [
       h("section", { class: "sk-profil links" }, h("h2", { class: "sk-name gross" }, "Sicherung"), h("p", { class: "sk-fin" }, "Alles liegt auf diesem Gerät")),
       balken(teile, "Gerät", `${bytes(summe)} von etwa 5 MB`),
-      raster([{ bild: "auto", label: "Fahrzeuge", unter: String(vehicles().length), ziel: zuSeite("fuhrpark") }, { bild: "verlauf", label: "Betriebsbuch", unter: `${buchLaenge()} Einträge`, ziel: () => go("service") },
+      raster([{ bild: "auto", label: "Fahrzeuge", unter: String(vehicles().length), ziel: () => go("fahrzeuge") }, { bild: "verlauf", label: "Betriebsbuch", unter: `${buchLaenge()} Einträge`, ziel: () => go("service") },
         { bild: "bericht", label: "Verlauf", unter: `${(storageGet("kfzdiag-verlauf", []) || []).length} Diagnosen`, ziel: () => go("history") }, { bild: "ki", label: "Chats", unter: `${(storageGet("kfzdiag-chats", []) || []).length}`, ziel: () => go("agent") }]),
       gruppe({ zeilen: [{ typ: "aktion", label: "Fahrzeugakte exportieren", tun: exportieren }], fuss: "Speichert Fahrzeuge, Verlauf, Betriebsbuch, Chats und Einstellungen als Datei. API-Schlüssel sind nicht dabei, die liegen nur auf dem Server." }),
     ];
@@ -241,6 +236,7 @@ const SEITEN = {
   },
   freigabe() {
     return [
+      kopf({ icon: "gesicht", farbe: "#30D158", titel: "Freigabe", text: "Jeder Schreibvorgang ins Auto braucht deine Freigabe durch Halten. Vorbedingungen werden direkt davor neu gemessen." }),
       gruppe({ zeilen: [{ typ: "schalter", label: "Halten zum Schreiben", an: true, fest: true, setze: () => {} }], fuss: "Jedes Schreiben ins Auto braucht 2 Sekunden Halten. Das lässt sich nicht abschalten." }),
       gruppe({ zeilen: [{ typ: "schalter", label: "Vorbedingungen direkt davor neu messen", an: true, fest: true, setze: () => {} }], fuss: "Kippt eine Bedingung zwischen Freigabe und Schreiben, wird nichts gesendet." }),
       gruppe({ zeilen: [{ typ: "schalter", label: "Schreibschutz", an: schreibschutzAn(), setze: (x) => { storageSet("kfzdiag-schreibschutz", x); emit("render"); toast(x ? "Schreibschutz an." : "Schreibschutz aus."); } }],
@@ -259,7 +255,9 @@ export function render(neu = false) {
   if (!neu && stand === gezeigt) return;
   gezeigt = stand;
   const fokus = document.activeElement && document.activeElement.id;
-  $("seite").replaceChildren(...(bau ? bau() : [gruppe({ zeilen: [{ label: "Diese Seite gibt es nicht." }] })]).filter(Boolean));
+  /* Runder Zurück-Knopf oben wie in den iOS-Einstellungen, damit man von jeder Unterseite sicher zurückfindet */
+  const nav = h("div", { class: "sk-nav" }, h("button", { class: "sk-zurueck", type: "button", "aria-label": "Zurück", onclick: back }, icon("back")));
+  $("seite").replaceChildren(nav, ...(bau ? bau() : [gruppe({ zeilen: [{ label: "Diese Seite gibt es nicht." }] })]).filter(Boolean));
   if (fokus && $(fokus)) $(fokus).focus();
 }
 

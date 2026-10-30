@@ -16,7 +16,7 @@ export const PAGES = [
   { id: "fahrzeug", label: "Fahrzeug anlegen", icon: "car" },
   { id: "werkstatt", label: "Werkstattdaten", icon: "car" },
   { id: "handbuch", label: "Handbuch", icon: "doc" },
-  { id: "einstellungen", label: "Einstellungen", icon: "display" },
+  { id: "einstellungen", label: "KI und Dienste", icon: "display" },
   { id: "car", label: "Steuergeräte", icon: "ecu" },
   { id: "faults", label: "Fehlerspeicher", icon: "faults" },
   { id: "live", label: "Live-Werte", icon: "live" },

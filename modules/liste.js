@@ -25,7 +25,8 @@ const AKTION = {
   cockpit: () => { go("start"); requestAnimationFrame(() => { const w = $("widgets"); if (w) w.scrollIntoView({ behavior: "smooth", block: "start" }); }); },
   suche: () => emit("open-search"),
   modus: () => { setzeModus(modus() === "einfach" ? "profi" : "einfach"); toast(modus() === "einfach" ? "Einfacher Modus: nur das Wichtigste." : "Profi-Modus: alle Werkzeuge."); },
-  panne: () => go("start"),
+  betriebsbuch: () => { go("service"); requestAnimationFrame(() => { const h2 = [...document.querySelectorAll("#view-service h2")].find((e) => e.textContent === "Betriebsbuch"); if (h2) h2.scrollIntoView({ behavior: "smooth", block: "start" }); }); },
+  werkhof: () => { go("einstellungen"); setTimeout(() => { const w = $("werkhof-einrichten"); if (w) w.scrollIntoView({ behavior: "smooth", block: "start" }); }, 250); },
   portal: () => zumPortal(),
 };
 const einfach = () => document.documentElement.dataset.modus === "einfach";
@@ -84,7 +85,7 @@ function profilkarte(refs) {
       h("span", { class: "li-t" }, h("span", { class: "li-name" }, name), h("span", { class: "li-unter" }, fz ? "Fahrzeugakte, Wartung, Fehler und mehr" : "Fahrzeug anlegen oder wählen")),
       fz && (fz.kennzeichen || "").trim() ? h("span", { class: "li-plate" }, plate(fz, true)) : null,
       h("span", { class: "li-chev", "aria-hidden": "true" }, "›")),
-    h("a", { class: "li-row", href: "#seite/fuhrpark", "data-id": "fuhrpark", onclick: (ev) => { ev.preventDefault(); go("seite", { sub: "fuhrpark" }); } },
+    h("a", { class: "li-row", href: "#fahrzeuge", "data-id": "fuhrpark", onclick: (ev) => { ev.preventDefault(); go("fahrzeuge"); } },
       h("span", { class: "li-ic li-bild", "aria-hidden": "true" }, bildIcon("auto")), h("span", { class: "li-t" }, "Fuhrpark"),
       h("span", { class: "li-v" }, String(vehicles().length)), h("span", { class: "li-chev", "aria-hidden": "true" }, "›")));
   refs.set("profil", { el: karte.firstChild }); refs.set("fuhrpark", { el: karte.lastChild });
@@ -136,7 +137,7 @@ function aktualisiere(refs) {
   /* Markierung: nur die erste Zeile, die zur offenen Seite führt */
   const seite = currentRoute().page;
   const sub = currentRoute().sub;
-  const erste = seite === "seite" ? (sub === "profil" ? "profil" : sub === "fuhrpark" ? "fuhrpark" : ([...refs.values()].find((r) => r.z && r.z.ziel === "seite" && r.z.sub === sub) || {}).z?.id)
+  const erste = seite === "seite" ? (sub === "profil" ? "profil" : ([...refs.values()].find((r) => r.z && r.z.ziel === "seite" && r.z.sub === sub) || {}).z?.id)
     : seite === "fahrzeug" ? "profil" : seite === "fahrzeuge" ? "fuhrpark" : ([...refs.values()].find((r) => r.z && r.z.ziel === seite) || {}).z?.id;
   for (const [id, r] of refs) {
     if (!r.el || id === "naechster") continue;

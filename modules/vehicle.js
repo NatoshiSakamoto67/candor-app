@@ -575,7 +575,7 @@ export function renderVehicle() { renderTopo(); renderStats(); renderEcuList(); 
 export function initVehicle() {
   $("scan-btn").addEventListener("click", runScan);
   const panel = $("topo-panel"), toggle = $("topo-toggle");
-  const setCollapsed = (c) => { panel.dataset.collapsed = String(c); toggle.setAttribute("aria-expanded", String(!c)); toggle.textContent = c ? "Grafik zeigen" : "Grafik ausblenden"; storageSet("kfzdiag-topo", c ? "zu" : "auf"); };
+  const setCollapsed = (c) => { panel.dataset.collapsed = String(c); toggle.setAttribute("aria-expanded", String(!c)); toggle.textContent = c ? "Grafik zeigen" : "Grafik aus"; storageSet("kfzdiag-topo", c ? "zu" : "auf"); };
   /* Mit 3D ist die Grafik auch auf dem Handy der Einstieg, also offen; ohne WebGL wie bisher eingeklappt. */
   setCollapsed(storageGet("kfzdiag-topo", window.matchMedia("(max-width: 599px)").matches && !webglMoeglich() ? "zu" : "auf") === "zu");
   toggle.addEventListener("click", () => { setCollapsed(panel.dataset.collapsed !== "true"); if (panel.dataset.collapsed === "false") renderTopo(); });
