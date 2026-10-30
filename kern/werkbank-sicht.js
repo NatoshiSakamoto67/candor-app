@@ -50,3 +50,28 @@ export function beobachtenEingabe(e) {
   if (!Number.isInteger(anzahl) || anzahl < 60 || anzahl > 300) return { ok: false, meldung: "60 bis 300 Messpunkte, weniger ergibt keine Aussage." };
   return { ok: true, wert: { adresse, did, byte, anzahl } };
 }
+
+/**
+ * @typedef {{ adresse: string, name: string, bus: string, airbag: boolean, kennungen: number, fehler: number | null,
+ *   dids: number, dids_erweitert: number, geschuetzt: number, hinweis: string | null, status: string }} ErkundetesSg
+ */
+const anzahl = (n, eins, viele) => `${n} ${n === 1 ? eins : viele}`;
+
+/** Ergebniszeile der Erkundung für ein Steuergerät. @param {ErkundetesSg} sg */
+export function erkundungZeile(sg) {
+  const titel = sg.name || sg.adresse;
+  const unter = `${sg.adresse} · ${sg.bus}`;
+  if (sg.status === "wartet") return { titel, unter, wert: "wartet", hinweis: "", ton: "" };
+  const dids = sg.dids + sg.dids_erweitert;
+  const teile = [
+    anzahl(sg.kennungen, "Kennung", "Kennungen"),
+    sg.fehler === null ? "Fehler nicht lesbar" : `${sg.fehler} Fehler`,
+    sg.airbag ? "keine Bereichsabfrage" : anzahl(dids, "DID", "DIDs"),
+  ];
+  const extra = [sg.dids_erweitert ? `${anzahl(sg.dids_erweitert, "DID", "DIDs")} nur in der erweiterten Sitzung` : "",
+    sg.geschuetzt ? `${sg.geschuetzt} geschützt` : ""].filter(Boolean).join(", ");
+  return { titel, unter, wert: sg.status === "laeuft" ? `${teile.join(" · ")} …` : teile.join(" · "), hinweis: sg.hinweis || extra, ton: sg.hinweis ? "warn" : "" };
+}
+
+/** Läuft gerade eine Erkundung? @param {{ laeuft?: boolean } | null | undefined} stand */
+export const erkundungLaeuft = (stand) => Boolean(stand && stand.laeuft);

@@ -26,6 +26,7 @@
 <link rel="stylesheet" href="chat.css">
 <link rel="stylesheet" href="motion.css">
 <link rel="stylesheet" href="feinschliff.css">
+<link rel="stylesheet" href="assistent.css">
 
 <div class="app" id="app">
   <header class="statusbar sb gutter" id="statusbar" aria-label="Kopfzeile">
@@ -275,11 +276,11 @@
       <!-- KI-Chat (chat.js) -->
       <section class="view view-agent" id="view-agent" aria-labelledby="page-title" hidden>
         <div class="cx-ambient" aria-hidden="true"></div>
-        <aside class="cx-side" id="cx-side" aria-label="Chat-Verlauf"></aside>
+        <aside class="cx-side" id="cx-side" aria-label="Assistent: Bereiche und Gespräche"></aside>
         <div class="cx-schleier" id="cx-schleier" hidden></div>
         <div class="cx-main">
         <div class="cx-top">
-          <button class="icb cx-verlauf-btn" id="cx-verlauf" type="button" aria-label="Chat-Verlauf öffnen" aria-controls="cx-side" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
+          <button class="icb cx-verlauf-btn" id="cx-verlauf" type="button" aria-label="Bereiche und Gespräche" aria-controls="cx-side" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
           <h2 class="cx-titel" id="cx-titel">Neuer Chat</h2>
           <button class="icb cx-neu-btn" id="cx-clear" type="button" aria-label="Neuer Chat" title="Neuer Chat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6M17.5 3.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button>
         </div>

@@ -6,7 +6,7 @@ import { nutzungText } from "./erststart.js";
 /* Farben der Icon-Kacheln wie bei Apple (Systemfarben, dunkle Variante), nur mit Bedeutung. */
 export const FARBE = { orange: "#FF9F0A", blau: "#0A84FF", gruen: "#30D158", grau: "#8E8E93", rot: "#FF453A", lila: "#5E5CE6", indigo: "#BF5AF2", tuerkis: "#40C8E0", pink: "#FF375F", gelb: "#FFD60A", dunkel: "#3A3A3C" };
 
-/** @typedef {{id: string, label: string, icon: string, farbe: string, ziel?: string, sub?: string, aktion?: string, schalter?: string, bald?: boolean, profi?: boolean, kunde?: boolean, nurKunde?: boolean, bild?: string, apple: string}} Zeile */
+/** @typedef {{id: string, label: string, icon: string, farbe: string, ziel?: string, sub?: string, aktion?: string, schalter?: string, bald?: boolean, profi?: boolean, kunde?: boolean, nurKunde?: boolean, bild?: string, karte?: boolean, apple: string}} Zeile */
 /** @type {{id: string, titel?: string, zeilen: Zeile[]}[]} */
 export const BAUM = [
   { id: "verbindung", zeilen: [
@@ -31,7 +31,7 @@ export const BAUM = [
     { id: "allgemein", label: "Allgemein", icon: "regler", bild: "kennung", farbe: FARBE.grau, ziel: "seite", sub: "allgemein", apple: "Allgemein" },
     { id: "bedienung", label: "Bedienungshilfen", icon: "hand", farbe: FARBE.blau, ziel: "seite", sub: "bedienung", kunde: true, apple: "Bedienungshilfen" },
     { id: "anzeige", label: "Anzeige", icon: "sonne", bild: "anzeige", farbe: FARBE.blau, ziel: "seite", sub: "anzeige", kunde: true, apple: "Anzeige & Helligkeit" },
-    { id: "ki", label: "KI-Assistent", icon: "stern", bild: "ki", farbe: FARBE.indigo, ziel: "agent", apple: "Apple Intelligence & Siri" },
+    { id: "ki", label: "KI-Assistent", icon: "stern", bild: "ki", farbe: FARBE.indigo, ziel: "agent", karte: true, apple: "Apple Intelligence & Siri" },
     { id: "cockpit", label: "Startseite & Cockpit", icon: "raster", farbe: FARBE.blau, aktion: "cockpit", apple: "Home-Bildschirm & App-Mediathek" },
     { id: "kamera", label: "Foto an den Assistenten", icon: "kamera", bild: "freeze", farbe: FARBE.grau, ziel: "agent", sub: "kamera", apple: "Kamera" },
     { id: "statusleiste", label: "Statusleiste", icon: "schalter", farbe: FARBE.grau, ziel: "seite", sub: "statusleiste", apple: "Kontrollzentrum" },

@@ -41,6 +41,8 @@ export const ELM_MELDUNGEN = Object.freeze({
   "?": "Adapter versteht den Befehl nicht. Billige ELM327-Klone können oft nur einen Teil.",
 });
 const RAUSCHEN = ["SEARCHING", "BUSINIT", "OK"];
+/** CAN-Protokoll gleicher Baudrate mit der anderen Kennungsbreite (11 und 29 Bit). @type {Readonly<Record<string, string>>} */
+const GESCHWISTER = Object.freeze({ 6: "7", 7: "6", 8: "9", 9: "8" });
 const istHex = (t) => /^[0-9A-F]+$/.test(t);
 
 /** Antwort (ATH1, ATS0) in Nachrichten je Steuergerät zerlegen. @param {string} roh @param {Protokoll} protokoll @returns {Rahmen[]} */
@@ -57,26 +59,44 @@ export function zerlegeAntwort(roh, protokoll) {
   return protokoll.istCan ? zerlegeCan(daten, protokoll.familie === "can11" ? 3 : 8) : zerlegeKline(daten);
 }
 
-/** ISO-TP: Einzel-, Erst- und Folgerahmen je Absender. @param {string[]} zeilen @param {number} kopf */
+/** Größte ISO-TP-Nachricht (12-Bit-Länge); bis 7 Bytes ist es ein Einzelrahmen. */
+const ISOTP_MAX = 0xfff;
+const ISOTP_EINZEL_MAX = 7;
+/** @param {number} sender @param {string} text */
+const isotpFehler = (sender, text) => new VerbindungsFehler(`Antwort von 0x${sender.toString(16).toUpperCase()} verworfen: ${text}. Nochmal versuchen; tritt das wiederholt auf, Adapter oder Verbindung prüfen.`);
+
+/** ISO-TP: Einzel-, Erst- und Folgerahmen je Absender. Sequenznummer und Länge werden geprüft:
+    lieber keine Antwort als eine falsch zusammengesetzte. @param {string[]} zeilen @param {number} kopf */
 function zerlegeCan(zeilen, kopf) {
-  /** @type {Map<number, { daten: number[], laenge: number }>} */
+  /** @type {Map<number, { daten: number[], laenge: number, sn: number | null }>} */
   const puffer = new Map();
   for (const zeile of zeilen) {
     if (zeile.length <= kopf || (zeile.length - kopf) % 2) continue;
     const sender = parseInt(zeile.slice(0, kopf), 16);
     const body = fromHex(zeile.slice(kopf));
     const art = body[0] >> 4;
+    const alt = puffer.get(sender);
     if (art === 0) {
       const laenge = body[0] & 0x0f;
-      puffer.set(sender, { daten: [...body.slice(1, 1 + laenge)], laenge });
+      puffer.set(sender, { daten: [...body.slice(1, 1 + laenge)], laenge, sn: null });
     } else if (art === 1 && body.length >= 2) {
-      puffer.set(sender, { daten: [...body.slice(2)], laenge: ((body[0] & 0x0f) << 8) | body[1] });
-    } else if (art === 2 && puffer.has(sender)) {
-      const alt = /** @type {{ daten: number[], laenge: number }} */ (puffer.get(sender));
-      puffer.set(sender, { ...alt, daten: [...alt.daten, ...body.slice(1)] });
+      const laenge = ((body[0] & 0x0f) << 8) | body[1];
+      if (laenge <= ISOTP_EINZEL_MAX || laenge > ISOTP_MAX) throw isotpFehler(sender, `Erstrahmen kündigt ${laenge} Bytes an, das passt nicht zu ISO-TP`);
+      puffer.set(sender, { daten: [...body.slice(2)], laenge, sn: 1 });
+    } else if (art === 2 && alt && alt.sn !== null) {
+      const sn = body[0] & 0x0f;
+      if (alt.daten.length >= alt.laenge) throw isotpFehler(sender, `länger als angekündigt (${alt.laenge} Bytes)`);
+      if (sn !== alt.sn) {
+        const was = sn === ((alt.sn - 1) & 0x0f) ? "Folgerahmen wiederholt" : "Folgerahmen übersprungen";
+        throw isotpFehler(sender, `${was} (erwartet ${alt.sn}, erhalten ${sn})`);
+      }
+      puffer.set(sender, { ...alt, daten: [...alt.daten, ...body.slice(1)], sn: (sn + 1) & 0x0f });
     }
   }
-  return [...puffer].filter(([, p]) => p.daten.length >= p.laenge).map(([sender, p]) => ({ sender, data: Uint8Array.from(p.daten.slice(0, p.laenge)) }));
+  for (const [sender, p] of puffer) {
+    if (p.daten.length < p.laenge) throw isotpFehler(sender, `unvollständig (${p.daten.length} von ${p.laenge} Bytes)`);
+  }
+  return [...puffer].map(([sender, p]) => ({ sender, data: Uint8Array.from(p.daten.slice(0, p.laenge)) }));
 }
 
 /** K-Line/J1850: drei Kopfbytes, Daten, Prüfsumme. @param {string[]} zeilen */
@@ -102,6 +122,7 @@ export class Elm327 {
     this.ruhezeit = ruhezeit;
     this.warte = warte;
     /** @type {Protokoll | null} */ this.protokoll = null;
+    /** Protokoll, auf dem gerade gesendet wird (29 Bit an einem 11-Bit-Bus: kurz das Geschwister). @type {Protokoll | null} */ this.aktiv = null;
     this.version = "";
     this.puffer = "";
     /** @type {string[] | null} */ this.kopf = null;
@@ -154,6 +175,7 @@ export class Elm327 {
     const protokoll = PROTOKOLLE[nummer.slice(0, 1)];
     if (!protokoll) throw new VerbindungsFehler(`Adapter meldet unbekanntes Protokoll „${nummer}“`);
     this.protokoll = protokoll;
+    this.aktiv = protokoll;
     this.kopf = null;
     return protokoll;
   }
@@ -163,6 +185,7 @@ export class Elm327 {
   async close(grund = "Verbindung zum Adapter getrennt.") {
     this.offen = false;
     this.protokoll = null;
+    this.aktiv = null;
     this.kopf = null;
     if (this.abbruch) this.abbruch(new VerbindungsFehler(grund));
     try { await this.anschluss.close(); } catch { /* Aufräumen darf nicht werfen */ }
@@ -236,7 +259,14 @@ export class Elm327 {
   async waehle(kopf) {
     if (this.kopf && this.kopf.join() === kopf.join()) return;
     this.kopf = null;
-    for (const at of kopf) await this.at(at, /^AT(FC|CRA|AR)/.test(at));
+    const tp = kopf.find((at) => at.startsWith("ATTP"));
+    const soll = tp ? tp.slice(4) : this.brauche().nummer;
+    if (!this.aktiv || this.aktiv.nummer !== soll) {
+      // ATTP statt ATSP: ATSP schreibt jedes Mal das EEPROM des Adapters (ELM327-Datenblatt, »SP h«)
+      await this.at(`ATTP${soll}`);
+      this.aktiv = PROTOKOLLE[soll];
+    }
+    for (const at of kopf) if (!at.startsWith("ATTP")) await this.at(at, /^AT(FC|CRA|AR)/.test(at));
     this.kopf = kopf;
   }
 
@@ -255,12 +285,20 @@ export class Elm327 {
     return p.nummer === "1" ? ["ATSH616AF1"] : ["ATSH686AF1"];
   }
 
-  /** Gezielte Anfrage an ein Steuergerät, bisher nur CAN. @param {number} anfrage @param {number} antwort @returns {string[]} */
+  /** Gezielte Anfrage an ein Steuergerät, bisher nur CAN. Die Kennungsbreite folgt der Adresse (bis 0x7FF 11 Bit);
+      passt sie nicht zum erkannten Protokoll, sendet der Adapter versuchsweise (ATTP) auf dem Geschwister gleicher
+      Baudrate. Flusskontrolle in beiden Breiten selbst gesetzt (ATFCSH, ELM327 ab v1.1 laut Datenblatt).
+   * @param {number} anfrage @param {number} antwort @returns {string[]} */
   zielKopf(anfrage, antwort) {
     const p = this.brauche();
     const h = (n, l) => n.toString(16).toUpperCase().padStart(l, "0");
-    if (p.familie === "can11") return [`ATSH${h(anfrage, 3)}`, `ATCRA${h(antwort, 3)}`, `ATFCSH${h(anfrage, 3)}`, "ATFCSD300000", "ATFCSM1"];
-    if (p.familie === "can29") return [`ATCP${h((anfrage >>> 24) & 0x1f, 2)}`, `ATSH${h(anfrage & 0xffffff, 6)}`, `ATCRA${h(antwort, 8)}`];
+    const fluss = ["ATFCSD300000", "ATFCSM1"];
+    if (p.istCan && anfrage <= 0x7ff && antwort <= 0x7ff) {
+      return [`ATTP${p.familie === "can11" ? p.nummer : GESCHWISTER[p.nummer]}`, `ATSH${h(anfrage, 3)}`, `ATCRA${h(antwort, 3)}`, `ATFCSH${h(anfrage, 3)}`, ...fluss];
+    }
+    if (p.istCan) {
+      return [`ATTP${p.familie === "can29" ? p.nummer : GESCHWISTER[p.nummer]}`, `ATCP${h((anfrage >>> 24) & 0x1f, 2)}`, `ATSH${h(anfrage & 0xffffff, 6)}`, `ATCRA${h(antwort, 8)}`, `ATFCSH${h(anfrage, 8)}`, ...fluss];
+    }
     throw new EinstellungsFehler("Gezielte Steuergeräte-Anfragen über K-Line/J1850 sind noch nicht gebaut. Generisches OBD funktioniert trotzdem.");
   }
 
@@ -268,9 +306,10 @@ export class Elm327 {
    * @param {Uint8Array} payload @param {string[]} [kopf] @param {number} [zeit] @returns {Promise<Rahmen[]>} */
   async frage(payload, kopf, zeit) {
     pruefeAusgehend(payload);
-    const protokoll = this.brauche();
+    this.brauche();
     return this.exklusiv(async () => {
       await this.waehle(kopf || this.rundrufKopf());
+      const protokoll = this.aktiv || this.brauche();
       return zerlegeAntwort(await this.sende(toHex(payload), zeit), protokoll);
     });
   }

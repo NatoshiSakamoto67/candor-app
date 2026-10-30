@@ -540,3 +540,9 @@ button.sk-mehr { border: 0; background: none; padding: 0; margin: 0; font: inher
 .sk-wahl + .sk-wahl::before { left: 78px; }
 .li-row.sk-wahl[aria-checked="true"] { background: color-mix(in oklab, var(--accent) 9%, transparent); }
 .brand-hero .sk-titel { margin: 0; }
+
+/* Werkbank: Fahrzeug erkunden (E1) */
+.wb-fortschritt { flex-wrap: wrap; gap: 8px; }
+.wb-fortschritt progress { flex: 1 1 100%; height: 6px; accent-color: var(--accent); }
+.wb-sg .wb-zahlen { color: var(--text); }
+.wb-sg.t-warn .wb-hinweis { color: var(--warn); }

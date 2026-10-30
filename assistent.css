@@ -1,0 +1,61 @@
+/* Karte »Assistent« auf der Startseite (modules/assistent-karte.js, 30.10.2026): eigene Fläche mit Leuchtrand in der
+   Akzentfarbe, Eingabefeld wie eine Suche, Vorschläge als Kapseln, Statuszeile klein. Nur Werte aus tokens.css. */
+.ak { position: relative; margin: 14px 0 0; padding: 12px 14px 10px; border: 1px solid transparent; border-radius: var(--li-radius); color: var(--text);
+  background:
+    radial-gradient(130% 100% at 0% 0%, var(--accent-soft), transparent 58%) padding-box,
+    linear-gradient(var(--li-flaeche), var(--li-flaeche)) padding-box,
+    linear-gradient(150deg, color-mix(in oklab, var(--accent) 70%, transparent), color-mix(in oklab, var(--accent) 10%, transparent) 38%, color-mix(in oklab, var(--accent) 6%, transparent) 70%, color-mix(in oklab, var(--accent) 34%, transparent)) border-box;
+  box-shadow: 0 14px 34px -22px var(--accent-glow), inset 0 .5px 0 var(--kante-2); }
+.ak-kopf { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto auto; align-items: center; column-gap: 10px; min-height: 36px; margin: 0 -4px; padding: 0 4px; border-radius: 12px; color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+.ak-kopf:active { background: color-mix(in oklab, var(--text) 7%, transparent); }
+.ak-kopf:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--accent); }
+.ak-zeichen { display: block; width: 30px; height: 30px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.25)); }
+.ak-titel { margin: 0; font: 600 20px/24px var(--font-display); letter-spacing: -.01em; }
+.ak-verlauf { font: 400 15px/20px var(--font-text); color: var(--text-muted); }
+.ak-kopf[aria-current="page"] .ak-titel { color: var(--accent); }
+/* Eingabe: 17 px, damit iOS beim Fokus nicht zoomt */
+.ak-feld { display: grid; grid-template-columns: minmax(0, 1fr) 34px; align-items: center; column-gap: 6px; margin-top: 12px; height: 48px; padding: 0 7px 0 16px; border-radius: var(--r-pill);
+  background: color-mix(in oklab, var(--text) 6%, var(--li-flaeche)); box-shadow: inset 0 0 0 .5px var(--hairline); transition: box-shadow var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out); }
+.ak-feld:focus-within { background: var(--li-flaeche); box-shadow: inset 0 0 0 1.5px var(--accent), 0 0 0 4px var(--accent-soft); }
+.ak-eingabe { min-width: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; background: none; color: var(--text); font: 400 17px/22px var(--font-text); letter-spacing: -.01em; outline: none; }
+.ak-eingabe::placeholder { color: var(--text-muted); opacity: 1; }
+.ak-senden { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%; background: var(--accent-fill, var(--accent)); color: var(--on-accent-fill, var(--on-accent)); cursor: pointer;
+  transition: transform var(--dur) var(--ease-spring), opacity var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out); }
+.ak-senden .ic { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.4; fill: none; }
+.ak-senden:disabled { background: color-mix(in oklab, var(--text) 14%, transparent); color: var(--text-muted); cursor: default; transform: scale(.88); }
+.ak-senden:not(:disabled):active { transform: scale(.92); }
+.ak-senden:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--li-flaeche), 0 0 0 4px var(--accent); }
+/* Vorschläge: Kapseln mit einem Hauch Akzent, beim Drücken leicht kleiner */
+/* Eine Zeile, seitlich wischbar wie die Vorschläge in iOS; läuft bis an den Kartenrand */
+.ak-chips { display: flex; gap: 8px; margin: 10px -14px 0; padding: 0 14px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scroll-padding: 0 14px; scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 22px), transparent); mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 22px), transparent); }
+.ak-chips::-webkit-scrollbar { display: none; }
+.ak-chips:empty { display: none; }
+.ak-chip { flex: none; scroll-snap-align: start; white-space: nowrap; min-height: 34px; padding: 0 13px; border: 0; border-radius: var(--r-pill); background: color-mix(in oklab, var(--accent) 11%, transparent); color: var(--text);
+  box-shadow: inset 0 0 0 .5px color-mix(in oklab, var(--accent) 30%, transparent); font: 500 15px/20px var(--font-text); letter-spacing: -.01em; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: transform var(--dur-fast) var(--ease-out), background-color var(--dur) var(--ease-out); }
+.ak-chip:hover { background: color-mix(in oklab, var(--accent) 18%, transparent); }
+.ak-chip:active { transform: scale(.96); }
+.ak-chip:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--li-flaeche), 0 0 0 4px var(--accent); }
+/* Statuszeile: Punkt (bereit grün, einrichten gelb, Vorschau grau), Modell, Stufe */
+.ak-fuss { display: flex; margin-top: 10px; }
+.ak-status { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; margin-left: -4px; padding: 0 6px; border: 0; border-radius: 8px; background: none; color: var(--text-muted); font: 400 13px/17px var(--font-text); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ak-status:disabled { cursor: default; }
+.ak-status:not(:disabled):active { background: color-mix(in oklab, var(--text) 7%, transparent); }
+.ak-status:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--accent); }
+.ak-status .li-chev { font-size: 15px; }
+.ak-punkt { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); }
+.ak-punkt.t-bereit { background: var(--ok); box-shadow: 0 0 6px color-mix(in oklab, var(--ok) 60%, transparent); }
+.ak-punkt.t-einrichten { background: var(--warn); }
+.ak-stufe { padding: 1px 7px; border-radius: var(--r-pill); background: color-mix(in oklab, var(--text) 8%, transparent); font-size: 12px; }
+.ak-status:has(.t-einrichten) { color: var(--accent); }
+/* Linke Spalte am großen Bildschirm: kompakter */
+@media (min-width: 1100px) {
+  .tb-liste .ak { margin-top: 12px; padding: 10px 12px 8px; }
+  .tb-liste .ak-titel { font-size: 17px; line-height: 22px; }
+  .tb-liste .ak-kopf { grid-template-columns: 26px minmax(0, 1fr) auto auto; } .tb-liste .ak-zeichen { width: 26px; height: 26px; }
+  .tb-liste .ak-feld { height: 40px; margin-top: 8px; } .tb-liste .ak-eingabe { font-size: 15px; }
+  .tb-liste .ak-senden { width: 30px; height: 30px; }
+  .tb-liste .ak-chips { margin-inline: -12px; padding-inline: 12px; } .tb-liste .ak-chip { min-height: 30px; padding: 0 11px; font-size: 13.5px; }
+  .tb-liste .ak-verlauf { display: none; }
+}

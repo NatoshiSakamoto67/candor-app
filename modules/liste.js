@@ -13,6 +13,8 @@ import { erledigtHeute, buchLaenge } from "./service.js";
 import { vehicleName } from "./fahrzeuge.js";
 import { plate, vehicles } from "./garage.js";
 import { setzeModus, modus } from "./einfach.js";
+import { assistentKarte, aktualisiereKarte } from "./assistent-karte.js";
+import { karteSichtbar } from "../kern/assistent-start.js";
 
 /* Schreibschutz wie der Flugmodus: an heißt, CANdor schreibt nichts ins Auto. Gilt in approval.js vor jeder Freigabe. */
 export const schreibschutzAn = () => storageGet("kfzdiag-schreibschutz", false) === true;
@@ -116,8 +118,10 @@ export function zeichneListe(containerId, { kompakt = false } = {}) {
       kompakt ? null : h("h1", { class: "li-titel" }, kundenfassung() && MANDANT() ? MANDANT().titel : "CANdor"),
       profilkarte(refs),
       naechster(refs),
+      /* Der KI-Assistent steht als eigene Karte oben statt als Zeile in der Liste (gleiche Sichtbarkeit wie die Zeile). */
+      karteSichtbar({ kunde: kundenfassung(), einfach: einfach() }) ? (refs.set("assistent", assistentKarte()), refs.get("assistent").el) : null,
       ...BAUM.map((g) => {
-        const zeilen = g.zeilen.filter(zeilenFuer({ kunde: kundenfassung(), einfach: einfach(), bald: true }));
+        const zeilen = g.zeilen.filter(zeilenFuer({ kunde: kundenfassung(), einfach: einfach(), bald: true })).filter((z) => !z.karte);
         if (!zeilen.length) return null;
         return h("section", { class: "li-block", "aria-label": g.titel || null }, g.titel ? h("h2", { class: "li-k" }, g.titel) : null, h("div", { class: "li-gruppe" }, ...zeilen.map((z) => zeile(z, refs))));
       })].filter(Boolean));
@@ -125,6 +129,7 @@ export function zeichneListe(containerId, { kompakt = false } = {}) {
     listen.set(containerId, l);
   }
   aktualisiere(l.refs);
+  aktualisiereKarte(l.refs.get("assistent"), aktualisiereListen);
 }
 
 function aktualisiere(refs) {
@@ -142,9 +147,9 @@ function aktualisiere(refs) {
   const seite = currentRoute().page;
   const sub = currentRoute().sub;
   const erste = seite === "seite" ? (sub === "profil" ? "profil" : ([...refs.values()].find((r) => r.z && r.z.ziel === "seite" && r.z.sub === sub) || {}).z?.id)
-    : seite === "fahrzeug" ? "profil" : seite === "fahrzeuge" ? "fuhrpark" : ([...refs.values()].find((r) => r.z && r.z.ziel === seite) || {}).z?.id;
+    : seite === "fahrzeug" ? "profil" : seite === "fahrzeuge" ? "fuhrpark" : seite === "agent" && sub !== "kamera" ? null : ([...refs.values()].find((r) => r.z && r.z.ziel === seite) || {}).z?.id;
   for (const [id, r] of refs) {
-    if (!r.el || id === "naechster") continue;
+    if (!r.el || id === "naechster" || id === "assistent") continue;
     if (id === erste) r.el.setAttribute("aria-current", "page"); else r.el.removeAttribute("aria-current");
   }
   /* Nächster Schritt */

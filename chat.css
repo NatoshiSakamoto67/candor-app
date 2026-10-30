@@ -179,12 +179,6 @@
 .cx-titel { margin: 0; min-width: 0; flex: 1; font: 600 var(--t-5)/var(--t-5-lh) var(--font-display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cx-verlauf-btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .cx-hinweis { margin: 0 auto; max-width: 860px; text-align: center; font: 500 var(--t-1)/var(--t-1-lh) var(--font-text); color: var(--text-muted); }
-.cx-side { display: grid; gap: var(--sp-3); align-content: start; padding: var(--sp-3); border-radius: var(--r-3); background: color-mix(in oklab, var(--surface-1) 72%, transparent);
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid color-mix(in oklab, var(--text) 10%, transparent); }
-.cx-side-kopf { display: flex; gap: var(--sp-2); align-items: center; }
-.cx-neu { flex: 1; justify-content: center; }
-.cx-side-zu { display: none; }
-.cx-suche .inp { width: 100%; height: 38px; }
 .cx-gruppe { display: grid; gap: 2px; }
 .cx-gruppe + .cx-gruppe { margin-top: var(--sp-2); }
 .cx-gruppe-t { margin: 0 0 4px; padding: 0 6px; font: 600 var(--t-1)/var(--t-1-lh) var(--font-display); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--text-muted); }
@@ -204,21 +198,6 @@
 .cx-chat.bearbeiten { padding: 4px; } .cx-chat.bearbeiten .inp { width: 100%; height: 34px; }
 .cx-chat.frage { gap: 6px; padding: 6px 8px; flex-wrap: wrap; font: 500 var(--t-2)/16px var(--font-text); }
 .cx-chat.frage span { flex: 1 1 100%; }
-.cx-leer { padding: 0 6px; margin: 0; }
-.cx-schleier { position: fixed; inset: 0; z-index: 30; background: rgba(5, 8, 12, .45); }
-@media (min-width: 900px) {
-  .view-agent { grid-template-columns: 272px minmax(0, 1fr); gap: var(--sp-4); }
-  .cx-side { position: sticky; top: calc(var(--status-h, 64px) + 12px); max-height: calc(100dvh - var(--status-h, 64px) - 32px); overflow-y: auto; }
-  .cx-verlauf-btn { display: none; }
-  .cx-schleier { display: none; }
-}
-@media (max-width: 899px) {
-  .cx-side { position: fixed; z-index: 31; top: 0; bottom: 0; left: 0; width: min(86vw, 330px); border-radius: 0 var(--r-3) var(--r-3) 0; overflow-y: auto;
-    padding-top: max(var(--sp-4), env(safe-area-inset-top, 0px)); background: var(--surface-1); transform: translateX(-104%); transition: transform 260ms var(--ease-out); visibility: hidden; }
-  .view-agent.side-auf .cx-side { transform: none; visibility: visible; }
-  .cx-side-zu { display: grid; }
-}
-@media (prefers-reduced-motion: reduce) { .cx-side { transition: none; } }
 
 /* Hintergrund ruhig: kein Raster, nur ein sehr dezenter Schein hinter der Eingabe (David, 29.10.) */
 .cx-ambient { background: radial-gradient(46vmax 18vmax at 58% 100%, color-mix(in oklab, var(--ki-a) 9%, transparent), transparent 70%), var(--surface-0); }
@@ -246,13 +225,7 @@
 #cx-plus { position: relative; }
 #cx-plus.web-an::after { content: ""; position: absolute; right: 7px; top: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--ki-c); }
 .cx-hinweis { font-size: 11px; opacity: .8; }
-/* Seitenleiste ruhig: kein Kasten, »Neuer Chat« als schlichte Zeile */
-.cx-side .cx-neu { justify-content: flex-start; gap: 8px; background: none; color: var(--text); border: 1px solid var(--line); box-shadow: none; font-weight: 600; }
-.cx-side .cx-neu:hover { background: color-mix(in oklab, var(--ki-a) 12%, transparent); }
-@media (min-width: 900px) {
-  .cx-side { background: none; border: 0; border-right: 1px solid var(--line); border-radius: 0; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 0 var(--sp-3) 0 0; }
-  .view-agent.leer .cx-top { visibility: hidden; }
-}
+@media (min-width: 900px) { .view-agent.leer .cx-top { visibility: hidden; } }
 @media (max-width: 599px) {
   body:has(#view-agent:not([hidden])) .status-chips, body:has(#view-agent:not([hidden])) .sim-band { display: none; }
   .view-agent.leer .cx-main { padding-bottom: 10vh; }
@@ -344,3 +317,79 @@ label.kb-zeile { grid-template-columns: 24px minmax(0, 1fr) auto; }
 }
 /* Ruhige Fläche ohne Schein: die Spalte zeichnete sich sonst als Kasten ab. */
 .cx-ambient { display: none; }
+
+/* Seitenpanel wie in Assistenten-Apps (David, 30.10.): großer Titel und runder Such-Knopf, Einträge mit Liniensymbol,
+   Trennlinie, »Zuletzt« nur mit Titeln, unten Pillen-Knopf »Neues Gespräch« und rundes Zahnrad. Am Handy schiebt es
+   von links herein und lässt rechts ein Stück Chat sichtbar; am großen Bildschirm steht es fest links. */
+.cx-side { --cxp-rund: 44px; display: flex; flex-direction: column; min-height: 0; color: var(--text); }
+.cxp-kopf { flex: none; display: flex; align-items: center; gap: 10px; padding: 4px 0 10px; }
+.cxp-titel-h { flex: 1; min-width: 0; margin: 0; font: 600 28px/1.15 var(--font-display); letter-spacing: -.015em; outline: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cxp-titel-h.klein { font-size: 20px; font-weight: 600; }
+.cxp-rund { flex: none; display: grid; place-items: center; width: var(--cxp-rund); height: var(--cxp-rund); padding: 0; border-radius: 50%; border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--text); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+.cxp-rund:hover { background: var(--surface-3); }
+.cxp-rund:active, .cxp-neu:active { transform: scale(.95); }
+.cxp-sym { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.cxp-rumpf { flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; grid-template-columns: minmax(0, 1fr); overscroll-behavior: contain; display: grid; align-content: start; gap: 2px; margin: 0 -8px; padding: 0 8px 12px; }
+.cxp-liste { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+.cxp-liste > li, .cxp-zuletzt, .cxp-fz, .cxp-treffer { min-width: 0; }
+.cxp-eintrag, .cxp-gespraech, .cxp-alle, .cxp-ziel { width: 100%; display: flex; align-items: center; gap: 14px; border: 0; background: none; color: var(--text); text-align: left; cursor: pointer;
+  border-radius: 12px; transition: background-color var(--dur-fast) var(--ease-out); }
+.cxp-eintrag { min-height: 50px; padding: 0 10px; font: 500 18px/24px var(--font-text); }
+.cxp-eintrag .cxp-sym { width: 24px; height: 24px; }
+.cxp-eintrag:hover, .cxp-gespraech:hover, .cxp-alle:hover, .cxp-ziel:hover { background: var(--surface-2); }
+.cxp-linie { margin: 10px 10px 8px; border: 0; border-top: 1px solid var(--line); }
+.cxp-k { display: flex; align-items: baseline; gap: 8px; margin: 10px 10px 4px; font: 600 var(--t-2)/18px var(--font-text); color: var(--text-muted); }
+.cxp-zahl { font-weight: 500; font-variant-numeric: tabular-nums; }
+.cxp-gespraech { flex-direction: column; align-items: stretch; gap: 1px; min-height: 46px; padding: 11px 10px; }
+.cxp-g-t { font: 400 17px/22px var(--font-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cxp-g-u { font: 400 var(--t-2)/17px var(--font-text); color: var(--text-muted); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.cxp-gespraech.aktiv { background: color-mix(in oklab, var(--accent) 14%, transparent); }
+.cxp-gespraech.aktiv .cxp-g-t { font-weight: 600; }
+.cxp-alle { min-height: 44px; padding: 0 10px; font: 400 17px/22px var(--font-text); color: var(--text-muted); }
+.cxp-ziel { justify-content: space-between; min-height: 60px; padding: 8px 10px; }
+.cxp-ziel-t { display: grid; gap: 2px; font: 500 17px/22px var(--font-text); }
+.cxp-ziel-t small { font: 400 var(--t-2)/17px var(--font-text); color: var(--text-muted); }
+.cxp-ziel .li-chev { color: var(--text-muted); font-size: 22px; }
+.cxp-leer, .cxp-fuss-hinweis { margin: 6px 10px; font: 400 var(--t-3)/20px var(--font-text); color: var(--text-muted); }
+.cxp-fuss-hinweis { font-size: var(--t-1); line-height: var(--t-1-lh); margin-top: 14px; }
+.cxp-fz + .cxp-fz { margin-top: 6px; }
+.cxp-suchfeld { display: flex; align-items: center; gap: 8px; height: 44px; margin: 0 0 8px; padding: 0 14px; border-radius: 22px; background: var(--surface-2); border: 1px solid var(--line); color: var(--text-muted); }
+.cxp-suchfeld .cxp-sym { width: 18px; height: 18px; }
+.cxp-suchfeld:focus-within { border-color: var(--accent); }
+.cxp-feld { flex: 1; min-width: 0; height: 100%; border: 0; background: none; color: var(--text); font: 400 17px/22px var(--font-text); outline: none; }
+.cxp-fuss { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0 max(12px, env(safe-area-inset-bottom, 0px)); }
+.cxp-neu { display: inline-flex; align-items: center; gap: 10px; height: 48px; padding: 0 22px 0 18px; border: 0; border-radius: var(--r-pill); background: var(--accent); color: var(--on-accent);
+  font: 600 17px/22px var(--font-text); cursor: pointer; box-shadow: 0 6px 18px color-mix(in oklab, var(--accent) 30%, transparent); transition: filter var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+.cxp-neu:hover { filter: brightness(1.08); }
+.cxp-fuss .cxp-rund { --cxp-rund: 48px; }
+.cxp-eintrag:focus-visible, .cxp-gespraech:focus-visible, .cxp-alle:focus-visible, .cxp-ziel:focus-visible { outline: none; border-radius: 12px; box-shadow: inset 0 0 0 2px var(--accent); }
+.cxp-rund:focus-visible, .cxp-neu:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface-0), 0 0 0 4px var(--accent); }
+.cxp-rund:focus-visible { border-radius: 50%; }
+.cxp-neu:focus-visible { border-radius: var(--r-pill); }
+.cxp-titel-h:focus-visible { outline: none; }
+[data-contrast="hoch"] .cxp-eintrag, [data-contrast="hoch"] .cxp-gespraech { text-decoration: none; }
+.cx-side .cx-gruppe .cxp-k { margin-top: 12px; }
+.cx-schleier { position: fixed; inset: 0; z-index: 30; background: rgba(0, 0, 0, .42); }
+.cx-schleier:not([hidden]) { animation: cxp-schleier 280ms var(--ease-out) both; }
+@keyframes cxp-schleier { from { opacity: 0; } }
+@media (min-width: 900px) {
+  .view-agent { grid-template-columns: 284px minmax(0, 1fr); gap: var(--sp-4); }
+  .cx-side { position: sticky; top: calc(var(--status-h, 64px) + 12px); height: calc(100dvh - var(--status-h, 64px) - 32px); padding-right: var(--sp-3); border-right: 1px solid var(--line); }
+  .cxp-titel-h { font-size: 24px; }
+  .cx-verlauf-btn, .cx-schleier { display: none; }
+}
+@media (max-width: 899px) {
+  .cx-side { position: fixed; z-index: 31; top: 0; bottom: 0; left: 0; width: min(78vw, 360px); padding: max(14px, env(safe-area-inset-top, 0px)) 18px 0 max(18px, env(safe-area-inset-left, 0px));
+    background: var(--surface-0); box-shadow: 1px 0 0 var(--line), 24px 0 48px rgba(0, 0, 0, .35); transform: translateX(-104%); visibility: hidden; touch-action: pan-y;
+    transition: transform 320ms cubic-bezier(.32, .72, 0, 1), visibility 0s linear 320ms; }
+  .cx-side.auf { transform: none; visibility: visible; transition: transform 320ms cubic-bezier(.32, .72, 0, 1), visibility 0s; }
+  .cx-side.zieht { transition: none; }
+  .cx-side * { touch-action: pan-y; }
+  [data-theme="hell"] .cx-side { background: var(--surface-1); box-shadow: 1px 0 0 var(--line), 24px 0 48px rgba(0, 0, 0, .12); }
+  [data-theme="hell"] .cxp-rund { background: var(--surface-0); }
+}
+@media (prefers-reduced-motion: reduce) { .cx-side, .cx-side.auf { transition: none; } .cx-schleier:not([hidden]) { animation: none; } }
+.cx-side .cx-chat:hover, .cx-side .cx-chat.aktiv { background: color-mix(in oklab, var(--accent) 14%, transparent); }
+.cx-side .cx-chat.aktiv { box-shadow: none; }
+.cxp-feld:focus-visible { outline: none; }

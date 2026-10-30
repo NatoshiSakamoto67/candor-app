@@ -4,12 +4,12 @@
 import { $, h, mark, toast, download, storageGet, storageSet, numFix } from "./dom.js";
 import { state, on, logEvent, vehicleKey } from "./state.js";
 import { kundenfassung } from "./mandant.js";
-import { letzteWerte, nachSteuergeraet, dbcDateiPruefen, zustimmungAn, mitZustimmung, beobachtenEingabe } from "../kern/werkbank-sicht.js";
+import { letzteWerte, nachSteuergeraet, dbcDateiPruefen, zustimmungAn, mitZustimmung, beobachtenEingabe, erkundungZeile, erkundungLaeuft } from "../kern/werkbank-sicht.js";
 import { FARBE } from "../kern/einstellungs-baum.js";
 import { zurueckZeile, kopfkarte } from "./bausteine.js";
 
 const KEY = "kfzdiag-werkbank-eigen";
-const LEER = { mitschnitt: null, dbc: null, dekodiert: null, wissen: null, abgleich: null, laeuft: "", eingabe: { adresse: "7E0", did: "F18C", byte: "0", anzahl: "60" } };
+const LEER = { mitschnitt: null, dbc: null, dekodiert: null, wissen: null, abgleich: null, erkundung: null, erweitert: false, laeuft: "", eingabe: { adresse: "7E0", did: "F18C", byte: "0", anzahl: "60" } };
 let daten = LEER;
 /* Jede Antwort gehört zu dem Fahrzeug, bei dem sie angefragt wurde; nach einem Wechsel wird sie verworfen. */
 let generation = 0;
@@ -65,12 +65,66 @@ function mitschnittBlock() {
   const m = daten.mitschnitt || { aktiv: false, eintraege: [] }, n = m.eintraege.length;
   const letzte = m.eintraege.slice(-6).reverse();
   return block("Mitschnitt", [
-    zustimmungZeile(),
     zeile("Status", m.aktiv ? "läuft" : n ? `${n} Einträge` : "aus"),
     m.aktiv ? aktion("Mitschnitt beenden", stoppen, "rot") : aktion("Mitschnitt starten", starten, "blau", !eigen() || Boolean(daten.laeuft)),
     n && !m.aktiv ? aktion("Als CSV sichern", exportieren) : null,
     ...letzte.map((e) => zeile(`${numFix(e.t, 3)} s · ${e.richtung === "aus" ? "→" : "←"} ${e.adresse}`, e.hex, true)),
   ], "Zeichnet die Anfragen und Antworten auf, die CANdor mit dem Auto austauscht, mit Zeit und Adresse. Die FIN wird nie aufgezeichnet. Rohes Mithören des ganzen Busses ist das nicht.");
+}
+
+/* ---------- Fahrzeug erkunden (E1, nur lesend) ---------- */
+const STAND_TAKT_MS = 1000;
+let standUhr = 0;
+function standAbfragen() {
+  clearTimeout(standUhr);
+  const g = generation;
+  standUhr = setTimeout(async () => {
+    if (g !== generation || !api()) return;
+    try {
+      const r = await api().erkundung();
+      if (g !== generation || !r || !r.ok) return;
+      setzeDaten({ erkundung: r }, g);
+      if (erkundungLaeuft(r)) standAbfragen();
+      else { logEvent(`Erkundung: ${r.meldung}`, r.phase === "fertig" ? "info" : "warn"); await wissen(); }
+    } catch (err) { toast(`Erkundung: ${err.message}`); }
+  }, STAND_TAKT_MS);
+}
+async function erkundungStarten() {
+  if (erkundungLaeuft(daten.erkundung)) return;
+  const r = await mit("Erkundung", () => api().erkundungStart({ eigenes_fahrzeug: eigen(), erweitert: daten.erweitert }));
+  if (!meldeFehler(r)) return;
+  setzeDaten({ erkundung: r });
+  logEvent(`Erkundung gestartet${daten.erweitert ? " (mit erweiterter Sitzung)" : ""}`, "info");
+  standAbfragen();
+}
+async function erkundungAbbrechen() {
+  const r = await api().erkundungAbbrechen();
+  if (meldeFehler(r)) toast("Erkundung wird abgebrochen …");
+}
+function erweitertZeile(aus) {
+  const id = "wb-erweitert";
+  const inp = h("input", { type: "checkbox", role: "switch", class: "li-sw", id, checked: daten.erweitert || null, disabled: aus || null });
+  inp.addEventListener("change", () => { daten = { ...daten, erweitert: inp.checked }; });
+  return h("label", { class: "li-row sk-row", for: id }, h("span", { class: "li-t" }, "Auch erweiterte Sitzung abfragen", h("span", { class: "li-unter" }, "Sitzung 03, nur lesen; danach zurück in die Standardsitzung")), inp);
+}
+function sgZeile(sg) {
+  const z = erkundungZeile(sg);
+  return h("div", { class: `li-row sk-row wb-sg${z.ton ? ` t-${z.ton}` : ""}` },
+    h("span", { class: "li-t" }, z.titel, h("span", { class: "li-unter mono" }, z.unter), h("span", { class: "li-unter wb-zahlen" }, z.wert),
+      z.hinweis ? h("span", { class: "li-unter wb-hinweis" }, z.hinweis) : null));
+}
+function erkundungBlock() {
+  const st = daten.erkundung, laeuft = erkundungLaeuft(st);
+  const sgs = (st && st.steuergeraete) || [];
+  return block("Fahrzeug erkunden", [
+    laeuft ? null : erweitertZeile(!eigen()),
+    laeuft ? null : aktion("Erkundung starten", erkundungStarten, "blau", !eigen() || Boolean(daten.laeuft)),
+    st && st.phase !== "bereit" ? h("div", { class: "li-row sk-row wb-fortschritt", role: "status" },
+      h("span", { class: "li-t" }, laeuft ? "Läuft" : st.phase === "fertig" ? "Fertig" : "Abgebrochen", h("span", { class: "li-unter" }, st.meldung || "")),
+      h("progress", { max: "100", value: String(st.prozent || 0), "aria-label": "Fortschritt der Erkundung" })) : null,
+    laeuft ? aktion("Abbrechen", erkundungAbbrechen, "rot") : null,
+    ...sgs.map(sgZeile),
+  ], "Fragt alle Steuergeräte ab (11 und 29 Bit): Kennungen, Fehlerspeicher und lesbare DIDs in den Bereichen 0100 bis 01FF, F400 bis F4FF und FD00 bis FDFF. Nur lesend, nur am eigenen Fahrzeug, nur im Stand, gedrosselt. Airbag-Steuergeräte nur Kennungen und Fehler. Funde landen mit Status »unbekannt« im Fahrzeugwissen.");
 }
 
 /* ---------- Eigene DBC ---------- */
@@ -156,12 +210,19 @@ export function zeichnen() {
   if (kundenfassung()) { $("werkbank").replaceChildren(...kopf("Die Werkbank gibt es in dieser Fassung nicht.")); return; }
   if (!api()) { $("werkbank").replaceChildren(...kopf("Erst ein Fahrzeug verbinden oder den Simulator im Server starten.")); return; }
   $("werkbank").replaceChildren(...[
-    ...kopf("Werkzeuge für das eigene Fahrzeug: mitschneiden, mit einer eigenen DBC-Datei lesen, Kennungen der Steuergeräte sammeln und die Bedeutung unbekannter Werte abgleichen. Alles nur lesend."),
+    ...kopf("Werkzeuge für das eigene Fahrzeug: erkunden, mitschneiden, mit einer eigenen DBC-Datei lesen, Kennungen der Steuergeräte sammeln und die Bedeutung unbekannter Werte abgleichen. Alles nur lesend."),
     daten.laeuft ? h("p", { class: "sm wb-laeuft", role: "status" }, mark("pending"), ` ${daten.laeuft} läuft …`) : null,
-    mitschnittBlock(), dbcBlock(), erkunderBlock(), abgleichBlock()].filter(Boolean));
+    block("Eigenes Fahrzeug", [zustimmungZeile()]),
+    erkundungBlock(), mitschnittBlock(), dbcBlock(), erkunderBlock(), abgleichBlock()].filter(Boolean));
+}
+
+async function erkundungLesen() {
+  if (!api().erkundung) return;
+  const g = generation, r = await api().erkundung();
+  if (r && r.ok) { setzeDaten({ erkundung: r }, g); if (erkundungLaeuft(r)) standAbfragen(); }
 }
 
 export function initWerkbank() {
-  on("tab", (id) => { if (id === "werkbank") { zeichnen(); if (api()) { lesen(); wissen(); } } });
-  on("fahrzeug-aktiv", () => { generation += 1; daten = LEER; zeichnen(); });
+  on("tab", (id) => { if (id === "werkbank") { zeichnen(); if (api()) { lesen(); wissen(); erkundungLesen(); } } });
+  on("fahrzeug-aktiv", () => { generation += 1; clearTimeout(standUhr); daten = LEER; zeichnen(); });
 }
