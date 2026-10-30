@@ -379,11 +379,13 @@ body::before { background: radial-gradient(1400px 700px at 50% -20%, color-mix(i
 .sk-erscheinung { padding-top: 18px; }
 .sk-karten { display: grid; grid-template-columns: 1fr 1fr; justify-items: center; padding: 0 20px 14px; border-bottom: .5px solid var(--hairline); }
 .sk-erschein { display: grid; justify-items: center; gap: 8px; border: 0; background: none; color: var(--text); font: 400 17px/1 var(--font-text); cursor: pointer; }
-.sk-vorschau { position: relative; display: grid; align-content: start; gap: 4px; width: 62px; height: 128px; padding: 14px 6px; border-radius: 12px; box-shadow: 0 0 0 .5px var(--hairline); }
-.sk-vorschau.hell { background: linear-gradient(160deg, #dff3f1, #6cc0d6 60%, #2f6fd6); }
-.sk-vorschau.dunkel { background: linear-gradient(160deg, #1b3a7a, #0d7f8c 60%, #0a2f86); }
-.sk-vorschau b { font: 600 12px/1 var(--font-text); color: #fff; text-align: center; }
-.sk-vorschau i { display: block; height: 12px; border-radius: 4px; background: rgba(255,255,255,.35); }
+/* Vorschau Hell/Dunkel als CANdor-Kachel: Messwert und zwei Listenzeilen, kein Gerätebild */
+.sk-vorschau { position: relative; display: grid; align-content: start; gap: 6px; width: 96px; height: 72px; padding: 10px 10px 8px; border-radius: 14px; box-shadow: 0 0 0 .5px var(--hairline), 0 4px 12px rgba(0,0,0,.18); }
+.sk-vorschau.hell { background: #f2f2f7; color: #111; }
+.sk-vorschau.dunkel { background: #1c1c1e; color: #fff; }
+.sk-vorschau b { font: 600 15px/1 var(--font-num); font-variant-numeric: tabular-nums; text-align: left; color: inherit; }
+.sk-vorschau i { display: block; height: 7px; border-radius: 4px; background: currentColor; opacity: .18; }
+.sk-vorschau i:last-child { width: 60%; }
 .sk-radio { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line-strong); font: 700 13px/1 var(--font-text); color: #fff; }
 .sk-erschein.an .sk-radio { background: var(--accent); box-shadow: none; }
 /* Wirkung der Schalter */
@@ -488,3 +490,18 @@ button.sk-mehr { border: 0; background: none; padding: 0; margin: 0; font: inher
   .fcard-wrap { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
   .fcard-wrap .fall-btn { margin: 0; }
 }
+
+/* ---------- Schmale Kopfzeile auf Funktionsseiten (Handy): Logo links, Titel klein, Bericht und Einstellungen rechts ---------- */
+@media (max-width: 1099px) {
+  :root[data-seite="unter"] { --status-h: 44px; }
+  [data-seite="unter"] .statusbar.sb { height: calc(44px + env(safe-area-inset-top, 0px)); min-height: 0; padding-block: 0; padding-top: env(safe-area-inset-top, 0px); flex-wrap: nowrap; gap: 8px; align-items: center; }
+  [data-seite="unter"] #nav-back, [data-seite="unter"] .status-chips, [data-seite="unter"] .statusbar .veh, [data-seite="unter"] #task-chip { display: none; }
+  [data-seite="unter"] .statusbar .who { flex: 1 1 auto; }
+  [data-seite="unter"] .statusbar h1 { font: 600 15px/20px var(--font-display); }
+  [data-seite="unter"] .brand-btn { padding: 0 6px 0 2px; }
+  [data-seite="unter"] .brand-btn .brand-mark { width: 24px; height: 24px; }
+  [data-seite="unter"] .statusbar .icb { min-height: 36px; min-width: 36px; height: 36px; }
+}
+
+.sk-nav-shell { margin: 0 0 12px; }
+#view-agent > .sk-nav-shell { margin-bottom: 4px; }

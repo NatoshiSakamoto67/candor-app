@@ -142,7 +142,7 @@ const SEITEN = {
   anzeige() {
     const p = anzeige(), d = resolvedDisplay(), auto = p.theme === "auto";
     const karte = (id, label) => h("button", { class: `sk-erschein${d.theme === id ? " an" : ""}`, type: "button", "aria-pressed": String(d.theme === id), onclick: () => { setzeAnzeige("theme", id); render(true); } },
-      h("span", { class: `sk-vorschau ${id}` }, h("b", {}, "09:41"), h("i"), h("i")), h("span", {}, label), h("span", { class: "sk-radio", "aria-hidden": "true" }, d.theme === id ? "✓" : ""));
+      h("span", { class: `sk-vorschau ${id}`, "aria-hidden": "true" }, h("b", {}, "14,2 V"), h("i"), h("i")), h("span", {}, label), h("span", { class: "sk-radio", "aria-hidden": "true" }, d.theme === id ? "✓" : ""));
     return [
       h("h3", { class: "li-k" }, "Erscheinungsbild"),
       h("section", { class: "li-gruppe sk-erscheinung" }, h("div", { class: "sk-karten" }, karte("hell", "Hell"), karte("dunkel", "Dunkel")),

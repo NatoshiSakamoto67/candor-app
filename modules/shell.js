@@ -42,6 +42,8 @@ export const CHECK_SUBS = [
   { id: "rmi", label: "Herstellerdokumente", icon: "book", text: "Suche in den lokalen RMI-PDFs" },
 ];
 
+/* Seiten, die den runden Zurück-Knopf selbst zeichnen (seiten.js, fall.js, bausteine.js) */
+const EIGENER_ZURUECK = new Set(["start", "seite", "fall", "werkstatt", "handbuch", "report", "history", "connect", "fahrzeuge", "fahrzeug", "einstellungen", "werkbank"]);
 let route = { page: "start", sub: null, spec: null };
 export const currentTab = () => route.page;
 export const currentRoute = () => ({ ...route });
@@ -77,6 +79,13 @@ function render(r, scrollY = 0) {
     if (r.page === "check") for (const sec of document.querySelectorAll("#view-check [data-sub]")) sec.hidden = sec.dataset.sub !== r.sub;
     $("check-tiles").hidden = !(r.page === "check" && !r.sub);
     $("nav-back").hidden = r.page === "start";
+    /* Funktionsseiten am Handy: schmale Kopfzeile ohne Zurück-Pfeil und Chips, der runde Zurück-Knopf steht im Inhalt */
+    document.documentElement.dataset.seite = r.page === "start" ? "start" : "unter";
+    /* Seiten ohne eigenen runden Zurück-Knopf bekommen ihn von der Shell (die Unterseiten und die umgebauten Seiten zeichnen ihn selbst) */
+    if (!EIGENER_ZURUECK.has(r.page)) {
+      const view = $(`view-${r.page}`);
+      if (view && !view.querySelector(":scope > .sk-nav")) view.prepend(h("div", { class: "sk-nav sk-nav-shell" }, h("button", { class: "sk-zurueck", type: "button", "aria-label": "Zurück", onclick: back }, icon("back"))));
+    }
     document.title = `${titleFor(r)} · CANdor`;
     $("page-title").textContent = titleFor(r);
     const view = $(`view-${r.page}`);
