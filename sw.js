@@ -1,5 +1,5 @@
 const PRAEFIX = "candor|" + self.registration.scope + "|";
-const CACHE = PRAEFIX + "20261030102312";
+const CACHE = PRAEFIX + "20261030105816";
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) => e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => (k.startsWith(PRAEFIX) && k !== CACHE) || /^candor-[0-9]+$/.test(k)).map((k) => caches.delete(k)))).then(() => self.clients.claim())));
 self.addEventListener("fetch", (e) => {

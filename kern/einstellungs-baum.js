@@ -110,8 +110,12 @@ export function werte(s) {
   };
 }
 
-/** Zeilen für die Fassung: Kundenfassung nur Zeilen mit kunde, sonst alle außer nurKunde; einfach ohne profi. @param {{kunde?: boolean, einfach?: boolean}} f */
-export const zeilenFuer = (f) => (z) => (f.kunde ? Boolean(z.kunde) : !z.nurKunde) && !(f.einfach && z.profi);
+/**
+ * Zeilen für die Fassung: Kundenfassung nur Zeilen mit kunde, sonst alle außer nurKunde; einfach ohne profi.
+ * Zeilen mit bald (»kommt später«) nur mit bald: true, und das auch nur im Profi-Modus und nicht in der Kundenfassung.
+ * @param {{kunde?: boolean, einfach?: boolean, bald?: boolean}} f
+ */
+export const zeilenFuer = (f) => (z) => (f.kunde ? Boolean(z.kunde) : !z.nurKunde) && !(f.einfach && z.profi) && (!z.bald || (Boolean(f.bald) && !f.kunde && !f.einfach));
 
 /** Titel der Unterseiten (#seite/<id>), Reihenfolge wie im Konzept Abschnitt 8. */
 export const SEITEN_TITEL = Object.freeze({

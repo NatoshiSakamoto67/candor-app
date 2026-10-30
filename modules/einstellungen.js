@@ -2,8 +2,8 @@
    Der API-Schlüssel geht einmal an den Diagnose-Server und kommt nie zurück, die Seite zeigt nur »sk-ant-…abcd«. */
 import { $, h, icon, mark, toast, storageGet } from "./dom.js";
 import { state, on, emit, logEvent } from "./state.js";
-import { icon3d } from "./icons3d.js";
 import { werkhofSektion } from "./werkhof.js";
+import { zurueckZeile, kopfkarte, gruppe, formBlock } from "./bausteine.js";
 
 const ANBIETER = [["aus", "Aus"], ["anthropic", "Claude (Anthropic)"], ["ollama", "Ollama, lokal"]];
 let data = null, choice = null, errors = {}, busy = false, testResult = null;
@@ -16,9 +16,9 @@ async function load() {
   render();
 }
 
+/* Abschnitt als Gruppe: graue Überschrift, Karte mit dem Formular, der Untertitel steht als Fußnote darunter. */
 function section(title, ic, sub, ...body) {
-  return h("section", { class: "card set-sec" }, h("div", { class: "set-head" }, h("span", { class: "set-ic", "aria-hidden": "true" }, icon3d(ic)),
-    h("div", {}, h("h2", { class: "h3" }, title), sub ? h("p", { class: "sm" }, sub) : null)), ...body);
+  return gruppe({ titel: title, id: `set-${ic}`, zeilen: [formBlock(...body)], fuss: sub });
 }
 const fieldErr = (k) => (errors[k] ? h("span", { class: "fld-err", id: `set-${k}-err` }, mark("crit"), errors[k]) : null);
 
@@ -104,8 +104,10 @@ function render() {
   if (!box || $("view-einstellungen").hidden) return;
   const st = state.status || {}, w = state.werkstatt;
   /* Werkhof-Abschnitt kommt nach, sobald der Stand vom Server da ist. */
-  werkhofSektion(render).then((el) => { const alt = $("werkhof-einrichten"); if (alt) alt.replaceWith(el); else box.children[0] ? box.children[0].after(el) : box.append(el); });
+  werkhofSektion(render).then((el) => { const alt = $("werkhof-einrichten"); if (alt) alt.replaceWith(el); else { const ki = $("set-robot"); if (ki) ki.after(el); else box.append(el); } });
   box.replaceChildren(
+    zurueckZeile(),
+    kopfkarte({ bild: "ki", titel: "KI und Dienste", text: "KI-Anbieter und Schlüssel, die Anbindung an Werkhof und die Verbindung des Diagnose-Servers. Schlüssel bleiben auf dem Server und kommen nie in den Browser." }),
     kiSection(),
     section("Verbindung", "plug", "Kommt aus dem Start des Diagnose-Servers; ändern über die Umgebungsvariablen, siehe Handbuch.",
       h("dl", { class: "facts" }, ...[["Quelle", isServer() ? (st.simuliert ? "Diagnose-Server mit Simulator" : "Diagnose-Server mit Adapter") : "Vorschau mit Beispieldaten"],

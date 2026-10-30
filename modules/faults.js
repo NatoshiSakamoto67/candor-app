@@ -6,6 +6,8 @@ import { state, DTC_REG, sev, obdList, senderName, logEvent, on, emit, faultSet,
 import { belegSpec } from "./info.js";
 import { startAction } from "./approval.js";
 import { busy, withTimeout } from "./vorgang.js";
+import { go } from "./shell.js";
+import { hatPfad } from "./fall.js";
 
 /* Vorher/Nachher direkt an der Karte: neu seit Sitzungsbeginn oder weiter bestehend (obd-diff). */
 function diffOf(diffKey, kind) {
@@ -15,11 +17,15 @@ function diffOf(diffKey, kind) {
 }
 function faultCard({ dtc, where, key, diffKey, kind }) {
   const diff = diffOf(diffKey, kind);
-  return h("button", { class: `tap fcard ${sev(dtc)}`, type: "button", "data-info": `dtc:${key}` },
+  const card = h("button", { class: `tap fcard ${sev(dtc)}`, type: "button", "data-info": `dtc:${key}` },
     h("span", { class: "stripe", "aria-hidden": "true" }),
     h("span", { class: "body" },
       h("span", { class: "top" }, h("span", { class: "code" }, dtc.code), diff === "neu" ? h("span", { class: "cs t-crit diff", "data-diff": "neu" }, "neu") : null, h("span", { class: "where" }, where)),
       h("span", { class: "desc" + (dtc.bekannt === false ? " unknown" : "") }, dtc.bekannt === false ? "Herstellerspezifisch, keine Beschreibung hinterlegt" : dtc.beschreibung)), chev());
+  /* Fall-Seite nur, wenn es zum Code einen geführten Pfad gibt */
+  if (!hatPfad(dtc.code)) return card;
+  return h("div", { class: "fcard-wrap" }, card,
+    h("button", { class: "btn sec small fall-btn", type: "button", "aria-label": `Fall ${dtc.code} öffnen`, onclick: () => go("fall", { sub: dtc.code }) }, icon("route"), "Fall öffnen"));
 }
 
 /* Alle Fehler aus OBD und Vollscan in einer Liste, je Fehler einmal, mit Herkunft für die Detailseite. */

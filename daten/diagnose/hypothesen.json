@@ -1,0 +1,138 @@
+{
+ "falschluft": {
+  "klartext": "Falschluft im Ansaugtrakt",
+  "massnahme": "Undichte Schläuche, Dichtungen oder Kurbelgehäuseentlüftung ersetzen, danach Gemisch-Lernwerte zurücksetzen",
+  "service": "gemisch"
+ },
+ "luftmassenmesser": {
+  "klartext": "Luftmassenmesser misst falsch",
+  "massnahme": "Luftmassenmesser reinigen oder ersetzen, danach Gemisch-Lernwerte zurücksetzen",
+  "service": "gemisch"
+ },
+ "kraftstoffdruck": {
+  "klartext": "Kraftstoffversorgung oder Einspritzung",
+  "massnahme": "Kraftstoffdruck messen, Filter, Pumpe und Einspritzventile prüfen"
+ },
+ "gemisch_fett": {
+  "klartext": "Gemisch zu fett: Einspritzung, Druckregler oder Tankentlüftung",
+  "massnahme": "Kraftstoffdruck, Einspritzventile und Tankentlüftungsventil prüfen, danach Gemisch-Lernwerte zurücksetzen",
+  "service": "gemisch"
+ },
+ "sporadisch": {
+  "klartext": "Sporadischer Fehler, Stecker oder Leitung",
+  "massnahme": "Stecker und Leitung unter Bewegung prüfen, Probefahrt mit Aufzeichnung"
+ },
+ "messung_offen": {
+  "klartext": "Messung steht noch aus",
+  "massnahme": "Motor starten oder Zündung einschalten und Live-Werte lesen",
+  "art": "hinweis"
+ },
+ "stromkreis_sensor": {
+  "klartext": "Stromkreis des Sensors: Stecker, Leitung, Masse, Versorgung",
+  "massnahme": "Stecker, Leitung, Masse und Versorgung am Sensor prüfen und instand setzen"
+ },
+ "sensor_defekt": {
+  "klartext": "Sensor selbst defekt",
+  "massnahme": "Versorgung und Signal am Sensor messen, Sensor ersetzen"
+ },
+ "thermostat": {
+  "klartext": "Thermostat öffnet zu früh oder Kühlmittelsensor meldet zu kalt",
+  "massnahme": "Thermostat prüfen, Sensorwiderstand gegen Temperatur messen",
+  "service": "kuehlmittel"
+ },
+ "kuehlsystem": {
+  "klartext": "Kühlsystem: Kühlmittelstand, Lüfter, Überhitzung",
+  "massnahme": "Kühlmittelstand, Lüfter und Thermostat prüfen, System entlüften",
+  "service": "kuehlmittel"
+ },
+ "kuehlmittelsensor": {
+  "klartext": "Kühlmitteltemperatursensor defekt",
+  "massnahme": "Sensorwiderstand gegen Temperatur messen, Sensor ersetzen",
+  "service": "kuehlmittel"
+ },
+ "drosselklappe": {
+  "klartext": "Drosselklappe verschmutzt oder Stellungsgeber gestört",
+  "massnahme": "Drosselklappe reinigen, Stecker prüfen, danach anlernen",
+  "service": "drosselklappe"
+ },
+ "stellungsgeber": {
+  "klartext": "Stellungsgeber oder Stellmotor der Drosselklappe defekt",
+  "massnahme": "Signalspannung messen, Drosselklappeneinheit ersetzen, danach anlernen",
+  "service": "drosselklappe"
+ },
+ "lambdasonde": {
+  "klartext": "Lambdasonde vor Kat gealtert oder Signal gestört",
+  "massnahme": "Sondensignal mit Oszilloskop prüfen, Sonde ersetzen"
+ },
+ "sondenheizung": {
+  "klartext": "Heizung der Lambdasonde",
+  "massnahme": "Sicherung und Heizwiderstand der Sonde messen, Sonde ersetzen"
+ },
+ "abgasleck": {
+  "klartext": "Abgasanlage undicht vor der Sonde",
+  "massnahme": "Abgasanlage abdichten, Sonden danach neu bewerten"
+ },
+ "bordnetz": {
+  "klartext": "Bordnetz oder Batterie schwach",
+  "massnahme": "Batterie testen, Massepunkte und Ladung prüfen, neue Batterie anmelden",
+  "service": "batterie"
+ },
+ "laderegler": {
+  "klartext": "Laderegler der Lichtmaschine",
+  "massnahme": "Ladespannung messen, Regler oder Lichtmaschine ersetzen"
+ },
+ "lichtmaschine": {
+  "klartext": "Lichtmaschine, Regler oder Riemen",
+  "massnahme": "Ladespannung messen, Riemen und Lichtmaschine prüfen"
+ },
+ "ruhestrom": {
+  "klartext": "Ruhestrom zu hoch, ein Verbraucher entlädt",
+  "massnahme": "Ruhestrom messen, Verbraucher über Sicherungen eingrenzen"
+ },
+ "zuendung": {
+  "klartext": "Zündung: Kerze oder Zündspule",
+  "massnahme": "Zündkerze und Zündspule prüfen, Spule tauschen und beobachten, ob der Fehler wandert"
+ },
+ "injektor": {
+  "klartext": "Einspritzventil tropft oder spritzt zu wenig",
+  "massnahme": "Einspritzventil prüfen oder tauschen, Kompression messen",
+  "service": "injektor"
+ },
+ "geber": {
+  "klartext": "Drehzahlgeber, Geberrad oder Leitung",
+  "massnahme": "Sensor, Stecker und Geberrad prüfen, Signal mit Oszilloskop messen, Sensor ersetzen",
+  "service": "geberrad"
+ },
+ "steuerzeiten": {
+  "klartext": "Steuerzeiten verstellt",
+  "massnahme": "Steuerzeiten prüfen (Zahnriemen oder Kette), Markierungen kontrollieren"
+ },
+ "steuergeraet_leitung": {
+  "klartext": "Leitung oder Signalweg zum Steuergerät",
+  "massnahme": "Leitung zum Steuergerät durchmessen, Stecker am Steuergerät prüfen"
+ },
+ "agr_verkokt": {
+  "klartext": "AGR-Ventil oder Kanäle verkokt",
+  "massnahme": "AGR-Ventil ausbauen, reinigen oder ersetzen, Kanäle reinigen"
+ },
+ "agr_ansteuerung": {
+  "klartext": "Ansteuerung oder Stellungsgeber des AGR-Ventils",
+  "massnahme": "Ansteuerung, Stecker und Stellungsgeber des AGR-Ventils prüfen"
+ },
+ "kat": {
+  "klartext": "Katalysator gealtert oder Sonde nach Kat träge",
+  "massnahme": "Kat-Wirkung über beide Lambdasonden prüfen, Kat oder Sonde ersetzen"
+ },
+ "tankentlueftung_ventil": {
+  "klartext": "Tankentlüftungsventil oder Schläuche",
+  "massnahme": "Tankentlüftungsventil und Schläuche prüfen, Ventil ersetzen"
+ },
+ "tankdeckel": {
+  "klartext": "Tankdeckel oder Schlauch der Tankentlüftung undicht",
+  "massnahme": "Tankdeckel und Dichtung prüfen, Schläuche abdichten"
+ },
+ "raddrehzahl": {
+  "klartext": "Raddrehzahlsensor oder dessen Leitung",
+  "massnahme": "ABS auslesen, Raddrehzahlsensoren und Stecker prüfen, Sensor ersetzen"
+ }
+}

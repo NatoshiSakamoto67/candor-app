@@ -1,4 +1,5 @@
 /* Gemeinsamer Zustand und ein kleiner Ereignisbus, damit sich die Bereiche nicht gegenseitig importieren müssen. */
+import { liveWerte } from "../kern/fall.js";
 export const state = {
   src: null, status: null, vehicle: null, obd: null, ecus: [], live: {}, readiness: null, freeze: null, analysis: null,
   functions: null, ki: null, kiChecked: new Set(), events: [], scanning: false, scanned: false,
@@ -56,10 +57,11 @@ export function faultSet(obd = state.obd, ecus = state.ecus) {
   return out;
 }
 
-/* Befund: Fehler, Readiness und Steuergeräte zu einem Zeitpunkt. ecus zählt die gescannten Steuergeräte (0 = ohne Vollscan). */
+/* Befund: Fehler, Readiness, Steuergeräte und Messwerte zu einem Zeitpunkt. ecus zählt die gescannten Steuergeräte (0 = ohne Vollscan).
+   live hält die Zahlen je Signal, damit der Fall vorher und nachher je Messwert nachweisen kann. */
 export function captureBefund() {
   return { at: new Date(), faults: faultSet(), readiness: structuredClone(firstReadiness() || null), ecus: state.ecus.length,
-    ecuList: state.ecus.map((e) => ({ name: e.name, adresse: e.adresse, fehler: e.fehler.length })), km: state.sitzung.km };
+    ecuList: state.ecus.map((e) => ({ name: e.name, adresse: e.adresse, fehler: e.fehler.length })), km: state.sitzung.km, live: liveWerte(state.live) };
 }
 
 /* Eingangsbefund (Pre-Scan): der erste gelesene Stand der Sitzung. */

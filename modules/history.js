@@ -1,9 +1,10 @@
 /* Verlauf: jede Diagnose bleibt mit Datum, Fahrzeug, Zahl der Steuergeräte und Fehlercodes auf diesem Gerät,
    nach Monaten gruppiert. Gespeichert wird nur die maskierte FIN, nichts verlässt den Rechner. */
-import { $, h, mark, chev, clockFull, storageGet, storageSet } from "./dom.js";
+import { $, h, mark, clockFull, storageGet, storageSet } from "./dom.js";
 import { state, on, emit, faultSet } from "./state.js";
 import { befundSummary } from "./befund.js";
 import { openPane, back } from "./shell.js";
+import { zurueckZeile, kopfkarte, gruppe } from "./bausteine.js";
 
 const KEY = "kfzdiag-verlauf";
 const MAX = 200;
@@ -65,19 +66,23 @@ function openEntry(e) {
 
 export function renderHistory() {
   const list = load();
-  $("history-count").textContent = list.length ? `${list.length} ${list.length === 1 ? "Eintrag" : "Einträge"}, nur auf diesem Gerät` : "";
+  const anzahl = list.length ? `${list.length} ${list.length === 1 ? "Eintrag" : "Einträge"}, nur auf diesem Gerät.` : "Noch keine Diagnose gespeichert.";
+  $("history-kopf").replaceChildren(zurueckZeile(), kopfkarte({ bild: "verlauf", titel: "Verlauf", text: `Frühere Diagnosen mit Datum, Fahrzeug, Steuergeräten und Fehlercodes, nach Monaten. ${anzahl}` }));
   if (!list.length) {
-    $("history").replaceChildren(h("p", { class: "empty" }, "Noch keine Diagnose gespeichert. Nach dem Verbinden legt das Programm hier automatisch einen Eintrag an."));
+    $("history").replaceChildren(gruppe({ zeilen: [{ label: "Noch kein Eintrag", unter: "Nach dem Verbinden legt das Programm hier automatisch einen Eintrag an." }] }));
     return;
   }
   const groups = new Map();
   for (const e of list) groups.set(monthKey(e.at), [...(groups.get(monthKey(e.at)) || []), e]);
-  $("history").replaceChildren(...[...groups].map(([key, entries]) => h("section", { class: "hist-month" },
-    h("h3", { class: "hist-h" }, monthName(key), h("span", { class: "sm" }, ` (${entries.length})`)),
-    h("div", { class: "list" }, ...entries.map((e) => h("button", { class: "tap row", type: "button", onclick: () => openEntry(e) },
-      mark(e.fehler.some((f) => f.art === "gespeichert") ? "crit" : e.fehler.length ? "warn" : "ok"),
-      h("span", {}, h("span", { class: "t" }, [e.kennzeichen, [e.marke, e.fahrzeug].filter(Boolean).join(" ")].filter(Boolean).join(" · ")), h("span", { class: "d" }, `${e.fin ? `FIN ${e.fin} · ` : ""}${summary(e)}`)),
-      h("span", { class: "sm mono" }, clockFull(new Date(e.at))), chev()))))));
+  $("history").replaceChildren(...[...groups].map(([key, entries]) => gruppe({
+    titel: h("span", {}, monthName(key), h("span", { class: "sm" }, `(${entries.length})`)),
+    zeilen: entries.map((e) => ({
+      mark: e.fehler.some((f) => f.art === "gespeichert") ? "crit" : e.fehler.length ? "warn" : "ok",
+      label: [e.kennzeichen, [e.marke, e.fahrzeug].filter(Boolean).join(" ")].filter(Boolean).join(" · "),
+      unter: `${clockFull(new Date(e.at))} · ${e.fin ? `FIN ${e.fin} · ` : ""}${summary(e)}`,
+      ziel: () => openEntry(e),
+    })),
+  })));
 }
 
 export function openHistoryEntry(id) { const e = load().find((x) => x.id === id); if (e) openEntry(e); }

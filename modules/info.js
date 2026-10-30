@@ -1,5 +1,5 @@
 /* Infoblätter: Jedes antippbare Element öffnet hier seine Erklärung mit Werten, Quelle und Sprungmarken. */
-import { $, h, num, cssVar, jump, mark, storageGet } from "./dom.js";
+import { $, h, num, cssVar, jump, mark, storageGet, icon } from "./dom.js";
 import { state, WISSEN, DTC_REG, signalTitle, sollFor, on, emit } from "./state.js";
 import { openPane, go } from "./shell.js";
 import { openHistoryEntry } from "./history.js";
@@ -8,6 +8,7 @@ import { similar } from "./faelle.js";
 import { startAction } from "./approval.js";
 import { renderDiagnosepfad } from "./diagnosepfad.js";
 import { historyOf } from "./live.js";
+import { hatPfad } from "./fall.js";
 
 export const facts = (pairs) => h("dl", { class: "facts" }, ...pairs.filter(([, v]) => v != null && v !== "").flatMap(([k, v]) => [h("dt", {}, k), h("dd", {}, v)]));
 
@@ -74,6 +75,8 @@ function diagnosepfadBox(code) {
   renderDiagnosepfad(box, code);
   return box;
 }
+/* Fall-Seite: Hypothesen mit stützt/widerspricht/fehlt, Messen, Maßnahme, Nachweis. Nur mit Pfad. */
+const fallKnopf = (code) => (hatPfad(code) ? h("div", { class: "row-actions" }, h("button", { class: "btn pri", type: "button", onclick: () => go("fall", { sub: code }) }, icon("route"), `Fall ${code} öffnen`)) : null);
 const ERGEBNIS = { behoben: ["ok", "behoben"], teilweise: ["warn", "teilweise"], offen: ["crit", "nicht behoben"] };
 function casesBox(code) {
   const fz = state.fahrzeug || {};
@@ -95,7 +98,7 @@ function infoDtc(key) {
     /* Aus der Suche: Code steht nicht im Speicher, Erklärung und Diagnosepfad trotzdem zeigen */
     const code = /^[PCBU][0-3][0-9A-F]{3}$/i.test(key) ? key.toUpperCase() : null;
     return [h("p", { class: "eyebrow" }, "Fehlercode"), h("h2", { class: "mono" }, key), h("p", { class: "lead" }, "Dieser Code steht gerade nicht im Fehlerspeicher."),
-      code ? wissenBox(code) : null, code ? diagnosepfadBox(code) : null];
+      code ? fallKnopf(code) : null, code ? wissenBox(code) : null, code ? diagnosepfadBox(code) : null];
   }
   const { dtc, where, kind, ecu } = entry;
   const c = dtc.code;
@@ -112,6 +115,7 @@ function infoDtc(key) {
       jump({ "data-info": dtc.bestaetigt ? "begriff:gespeichert" : "begriff:vorlaeufig" }, dtc.bestaetigt ? "gespeichert?" : "vorläufig?"),
       dtc.aktiv ? jump({ "data-info": "begriff:aktiv" }, "aktiv?") : null,
       dtc.bekannt === false ? h("button", { class: "chip warn", type: "button", "data-info": "begriff:unbekannt" }, "keine Quelle, warum?") : null),
+    fallKnopf(c),
     wissenBox(c),
     diagnosepfadBox(c),
     casesBox(c),

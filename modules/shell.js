@@ -19,6 +19,7 @@ export const PAGES = [
   { id: "einstellungen", label: "KI und Dienste", icon: "display" },
   { id: "car", label: "Steuergeräte", icon: "ecu" },
   { id: "faults", label: "Fehlerspeicher", icon: "faults" },
+  { id: "fall", label: "Fall", icon: "faults" },
   { id: "live", label: "Live-Werte", icon: "live" },
   { id: "check", label: "Prüfungen", icon: "check" },
   { id: "service", label: "Service und Anlernen", icon: "wrench" },
@@ -31,7 +32,7 @@ export const PAGES = [
   { id: "detail", label: "Details", icon: "info" },
 ];
 /* Bereiche für die Suche (ohne Start, Verbinden und Detailseite) */
-export const TABS = PAGES.filter((p) => !["start", "connect", "detail", "fahrzeug"].includes(p.id));
+export const TABS = PAGES.filter((p) => !["start", "connect", "detail", "fahrzeug", "fall"].includes(p.id));
 export const CHECK_SUBS = [
   { id: "pfade", label: "Geführte Prüfpfade", icon: "route", text: "Schritt für Schritt bis Pass oder Fail" },
   { id: "soll", label: "Ist gegen Soll", icon: "gauge", text: "Messwerte mit Richtwerten vergleichen" },
@@ -52,7 +53,7 @@ function parseHash() {
   const tail = decodeURIComponent(rest.join("/"));
   if (page === "info" && tail) return { page: "detail", sub: null, spec: tail };
   if (!PAGES.some((p) => p.id === page) || page === "detail") return null;
-  const sub = page === "check" ? (CHECK_SUBS.some((c) => c.id === tail) ? tail : null) : ["fahrzeug", "handbuch", "service", "seite"].includes(page) ? tail || null : null;
+  const sub = page === "check" ? (CHECK_SUBS.some((c) => c.id === tail) ? tail : null) : ["fahrzeug", "handbuch", "service", "seite", "fall"].includes(page) ? tail || null : null;
   return { page, sub, spec: null };
 }
 const depth = () => (history.state && history.state.depth) || 0;
@@ -62,6 +63,7 @@ function titleFor(r) {
   if (r.page === "check" && r.sub) return CHECK_SUBS.find((c) => c.id === r.sub).label;
   if (r.page === "seite" && r.sub) return SEITEN_TITEL[r.sub] || "Einstellungen";
   if (r.page === "fahrzeug") return r.sub ? "Fahrzeug bearbeiten" : "Fahrzeug anlegen";
+  if (r.page === "fall") return r.sub ? `Fall ${r.sub.toUpperCase()}` : "Fall";
   if (r.page === "handbuch" && r.sub) return `Handbuch · ${(KAPITEL.find((k) => k.id === r.sub) || { titel: "Kapitel" }).titel}`;
   return PAGES.find((p) => p.id === r.page).label;
 }
@@ -83,6 +85,7 @@ function render(r, scrollY = 0) {
     if (r.page === "check") emit("check-sub", r.sub);
     if (r.page === "service") emit("service-sub", r.sub);
     if (r.page === "seite") emit("seite", r.sub);
+    if (r.page === "fall") emit("fall", r.sub);
     if (r.page === "detail" && r.spec && $("pane-body").dataset.spec !== r.spec) emit("open-info", r.spec);
   };
   if (changed && document.startViewTransition && !reducedMotion()) {
@@ -109,7 +112,7 @@ export const showTab = (id, options = {}) => go(id, options);
 /* Zurück: im Verlauf, sonst eine Ebene höher (Unterseite zur Prüfen-Übersicht, alles andere zum Start). */
 export function back() {
   if (depth() > 0) { history.back(); return; }
-  go(route.sub && ["check", "service"].includes(route.page) ? route.page : "start", { replace: true });
+  go(route.sub && ["check", "service"].includes(route.page) ? route.page : route.page === "fall" ? "faults" : "start", { replace: true });
 }
 
 /* ---------- Detailseite statt Seitenpanel: Infos, Erklärungen, Einstellungen ---------- */

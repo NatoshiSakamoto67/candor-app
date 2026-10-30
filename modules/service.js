@@ -46,9 +46,9 @@ export function erledigtHeute() {
 }
 const TYP_TEXT = {
   angefordert: "Freigabe angefordert", abgelehnt: "Abgelehnt, nichts geschrieben", gestoppt: "Gestoppt vor dem Schreiben",
-  gescheitert: "Nicht bestätigt", ausgefuehrt: "Ausgeführt", anleitung: "Handablauf erledigt",
+  gescheitert: "Nicht bestätigt", ausgefuehrt: "Ausgeführt", anleitung: "Handablauf erledigt", massnahme: "Maßnahme am Fahrzeug (Fall)",
 };
-const TYP_TON = { angefordert: "pending", abgelehnt: "silent", gestoppt: "warn", gescheitert: "crit", ausgefuehrt: "ok", anleitung: "ok" };
+const TYP_TON = { angefordert: "pending", abgelehnt: "silent", gestoppt: "warn", gescheitert: "crit", ausgefuehrt: "ok", anleitung: "ok", massnahme: "ok" };
 function renderBuch() {
   const box = $("sv-buch");
   if (!box) return;
@@ -64,7 +64,7 @@ function renderBuch() {
         h("time", { class: "ch-t num", datetime: g.zeit }, `${zeit.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })} ${clockTime(zeit)}`),
         h("span", { class: "ch-p", "aria-hidden": "true" }),
         h("span", { class: "ch-x" }, h("strong", {}, d.funktion || d.operation || "Aktion"), h("span", {}, ` · ${TYP_TEXT[g.typ] || g.typ}`),
-          d.antwort ? h("span", { class: "mono sm" }, ` · Antwort ${d.antwort}`) : null, d.grund || d.meldung ? h("span", { class: "sm" }, ` · ${d.grund || d.meldung}`) : null,
+          d.antwort ? h("span", { class: "mono sm" }, ` · Antwort ${d.antwort}`) : null, d.grund || d.meldung || d.massnahme ? h("span", { class: "sm" }, ` · ${d.grund || d.meldung || d.massnahme}`) : null,
           d.fahrzeug ? h("span", { class: "ch-fz sm" }, d.fahrzeug) : null),
         h("span", { class: "ch-h mono", title: `prev ${g.prev}\nhash ${g.hash}` }, g.hash.slice(0, 8)));
     })) : h("p", { class: "hint" }, "Noch nichts geschrieben. Jede Freigabe und jedes Ergebnis landet hier, verkettet und prüfbar."));

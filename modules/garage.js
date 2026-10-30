@@ -2,9 +2,9 @@
    Der Bestand bleibt auf diesem Gerät (localStorage); das zuletzt gewählte Fahrzeug ist nach dem Neustart wieder aktiv.
    Seiten: »fahrzeuge« (Liste mit Suche und Sortierung), »fahrzeug« (Formular, Unterseite = id zum Bearbeiten). */
 import { $, h, icon, mark, chev, clockFull, storageGet, storageSet, toast } from "./dom.js";
+import { zurueckZeile, kopfkarte, gruppe, zeile, aktionsZeile, formBlock } from "./bausteine.js";
 import { state, on, emit, logEvent, resetDiagnosis } from "./state.js";
 import { go, back, openPane, currentRoute } from "./shell.js";
-import { icon3d } from "./icons3d.js";
 import { connect } from "./connect.js";
 import { fahrzeugAusWerkhof } from "./werkhof.js";
 import { kundenfassung } from "./mandant.js";
@@ -60,20 +60,24 @@ export function setVehicleKm(id, km) {
 function renderList() {
   const box = $("garage");
   const active = state.fahrzeug && state.fahrzeug.id;
-  $("garage-count").textContent = list.length ? `${list.length} Fahrzeug${list.length === 1 ? "" : "e"}, nur auf diesem Gerät` : "";
+  const anzahl = list.length ? `${list.length} Fahrzeug${list.length === 1 ? "" : "e"}, nur auf diesem Gerät.` : "Noch kein Fahrzeug angelegt.";
+  $("garage-kopf").replaceChildren(zurueckZeile(), kopfkarte({ bild: "auto", titel: "Fahrzeuge", text: `Jede Diagnose gehört zu einem Fahrzeug. ${anzahl}` }));
   $("garage-sort").replaceChildren(...SORTIERUNG.map(([id, label]) => h("button", { type: "button", "aria-pressed": String(sortMode === id), onclick: () => { sortMode = id; storageSet(SORT, id); renderList(); } }, label)));
   if (!list.length) {
-    box.replaceChildren(h("div", { class: "empty garage-empty" }, h("span", { class: "hero-ic", "aria-hidden": "true" }, icon3d("garage")),
-      h("p", { class: "h3" }, "Noch kein Fahrzeug angelegt"), h("p", { class: "sm" }, "Lege das erste Fahrzeug an. Danach findest du es hier mit allen Diagnosen wieder."),
-      h("button", { class: "btn pri", type: "button", onclick: () => go("fahrzeug") }, "Fahrzeug anlegen")));
+    box.replaceChildren(gruppe({ zeilen: [
+      { icon3d: "garage", label: "Noch kein Fahrzeug angelegt", unter: "Lege das erste Fahrzeug an. Danach findest du es hier mit allen Diagnosen wieder." },
+      aktionsZeile("Fahrzeug anlegen", () => go("fahrzeug"))] }));
     return;
   }
   const shown = sortVehicles(searchVehicles(list, query), sortMode);
-  if (!shown.length) { box.replaceChildren(h("p", { class: "empty" }, `Kein Fahrzeug passt zu »${query}«.`)); return; }
-  box.replaceChildren(h("div", { class: "list garage-list" }, ...shown.map((v) => h("button", { class: `tap row grow${v.id === active ? " is-active" : ""}`, type: "button", "data-info": `fahrzeug:${v.id}` },
-    plate(v, true),
-    h("span", {}, h("span", { class: "t" }, vehicleName(v), v.id === active ? h("span", { class: "cs t-running" }, "aktiv") : null), h("span", { class: "d" }, [vehicleFacts(v), lastDiagnosis(v)].filter(Boolean).join(" · "))),
-    h("span", { class: "sm" }, sortMode === "angelegt" ? `angelegt ${clockFull(new Date(v.angelegt))}` : `benutzt ${clockFull(new Date(v.benutzt))}`), chev()))));
+  if (!shown.length) { box.replaceChildren(gruppe({ zeilen: [{ label: `Kein Fahrzeug passt zu »${query}«.` }] })); return; }
+  const stempel = (v) => (sortMode === "angelegt" ? `angelegt ${clockFull(new Date(v.angelegt))}` : `benutzt ${clockFull(new Date(v.benutzt))}`);
+  box.replaceChildren(gruppe({ titel: SORTIERUNG.find(([id]) => id === sortMode)[1], klasse: "garage-list", zeilen: shown.map((v) => zeile({
+    bild: "auto", info: `fahrzeug:${v.id}`,
+    label: [vehicleName(v), v.id === active ? h("span", { class: "cs t-running" }, "aktiv") : null],
+    unter: [vehicleFacts(v), lastDiagnosis(v), stempel(v)].filter(Boolean).join(" · "),
+    rechts: plate(v, true),
+  })) }));
 }
 
 /* Detailseite je Fahrzeug: Daten, Diagnosen, Wählen, Bearbeiten, Löschen mit zweitem Tippen. */
@@ -150,28 +154,29 @@ function renderForm(errors = {}) {
   const first = !list.length;
   const found = detected();
   const count = Object.keys(errors).length;
+  const uebernehmen = () => { draft = { ...readForm(), marke: found.marke || readForm().marke, modell: found.modell || readForm().modell }; renderForm(); };
+  const erkennen = () => { draft = readForm(); connect({ ziel: "fahrzeug", ble: Boolean(state.src && state.src.mode === "direkt") }); };
+  const ausWerkhof = async () => {
+    const r = await fahrzeugAusWerkhof(readForm().kennzeichen);
+    if (!r.ok) { toast(r.meldung); return; }
+    draft = { ...readForm(), ...Object.fromEntries(Object.entries(r.werte).filter(([, v]) => v)) }; renderForm(); toast("Aus Werkhof übernommen. Bitte prüfen und speichern.");
+  };
+  const titel = editing ? "Fahrzeug bearbeiten" : first ? "Zuerst das Fahrzeug anlegen" : "Fahrzeug anlegen";
+  const text = first ? `${kundenfassung() ? "Willkommen." : "Willkommen, Schritt 2 von 2."} So wie in der Werkstatt: Jede Diagnose gehört zu einem Fahrzeug. Trag das Nötigste ein, den Rest kannst du später ergänzen. Die Daten bleiben auf diesem Gerät.`
+    : editing ? "Kennzeichen, FIN und Notiz bleiben auf diesem Gerät und gehen nicht an die KI." : "Marke und Modell, dazu Kennzeichen oder FIN, damit du das Fahrzeug wiederfindest. Alles bleibt auf diesem Gerät.";
   $("garage-form").replaceChildren(...[
-    first ? h("div", { class: "card welcome" }, h("span", { class: "hero-ic", "aria-hidden": "true" }, icon3d("carplus")),
-      h("div", {}, h("p", { class: "eyebrow" }, kundenfassung() ? "Willkommen" : "Willkommen · Schritt 2 von 2"), h("h2", { class: "h2" }, "Zuerst das Fahrzeug anlegen"),
-        h("p", { class: "p" }, "So wie in der Werkstatt: Jede Diagnose gehört zu einem Fahrzeug. Trag das Nötigste ein, den Rest kannst du später ergänzen. Die Daten bleiben auf diesem Gerät."),
-        h("div", { class: "row-actions" }, h("button", { class: "btn sec", type: "button", onclick: tryDemo }, icon("play"), "Mit Beispielfahrzeug ausprobieren"),
-          h("span", { class: "sm" }, "legt ein Beispiel an und verbindet mit dem Simulator")))) : null,
-    editing ? null : h("div", { class: "card detect" },
-      h("div", {}, h("p", { class: "eyebrow" }, "Schneller"), h("h3", { class: "h3" }, "Mit dem Adapter erkennen"),
-        h("p", { class: "sm" }, found ? `Erkannt: ${[found.marke, found.modell].filter(Boolean).join(" ")}${found.wmi ? `, Herstellercode ${found.wmi}` : ""}${found.simuliert ? " (Simulator)" : ""}.` : "Adapter einstecken, Zündung an. Das Programm liest Marke und Modell aus und trägt sie ein.")),
-      found ? h("button", { class: "btn sec", type: "button", onclick: () => { draft = { ...readForm(), marke: found.marke || readForm().marke, modell: found.modell || readForm().modell }; renderForm(); } }, icon("tick"), "Übernehmen")
-        : h("button", { class: "btn sec", type: "button", onclick: () => { draft = readForm(); connect({ ziel: "fahrzeug", ble: Boolean(state.src && state.src.mode === "direkt") }); } }, icon("gateway"), "Erkennen"),
-      !kundenfassung() && !(state.src && state.src.mode !== "server") ? h("button", { class: "btn qt", type: "button", onclick: async () => {
-        const r = await fahrzeugAusWerkhof(readForm().kennzeichen);
-        if (!r.ok) { toast(r.meldung); return; }
-        draft = { ...readForm(), ...Object.fromEntries(Object.entries(r.werte).filter(([, v]) => v)) }; renderForm(); toast("Aus Werkhof übernommen. Bitte prüfen und speichern.");
-      } }, icon("download"), "Aus Werkhof holen") : null),
-    count ? h("div", { class: "form-sum t-crit", role: "alert" }, mark("crit"), `${count} Angabe${count === 1 ? "" : "n"} fehlen oder passen nicht. Bitte unten prüfen.`) : null,
-    h("form", { class: "card vform", id: "fz-form", novalidate: true, onsubmit: (ev) => { ev.preventDefault(); submit(editing, ev.submitter && ev.submitter.dataset.connect === "1"); } },
+    first ? null : zurueckZeile(),
+    kopfkarte({ bild: "auto", titel, text }),
+    first ? gruppe({ zeilen: [aktionsZeile("Mit Beispielfahrzeug ausprobieren", tryDemo)], fuss: "Legt ein klar gekennzeichnetes Beispiel an und verbindet mit dem Simulator." }) : null,
+    editing ? null : gruppe({ titel: "Schneller", zeilen: [
+      { icon: "adapter", farbe: "#0A84FF", label: "Mit dem Adapter erkennen", unter: found ? `Erkannt: ${[found.marke, found.modell].filter(Boolean).join(" ")}${found.wmi ? `, Herstellercode ${found.wmi}` : ""}${found.simuliert ? " (Simulator)" : ""}.` : "Adapter einstecken, Zündung an. Das Programm liest Marke und Modell aus und trägt sie ein." },
+      found ? aktionsZeile("Erkanntes übernehmen", uebernehmen) : aktionsZeile("Jetzt erkennen", erkennen),
+      !kundenfassung() && !(state.src && state.src.mode !== "server") ? aktionsZeile("Aus Werkhof holen", ausWerkhof) : null] }),
+    h("form", { class: "sk-block", id: "fz-form", novalidate: true, onsubmit: (ev) => { ev.preventDefault(); submit(editing, ev.submitter && ev.submitter.dataset.connect === "1"); } },
       h("datalist", { id: "marken" }, ...MARKEN.map((m) => h("option", { value: m }))),
-      ...FIELDS.map((g) => h("fieldset", { class: "fgroup" }, h("legend", { class: "eyebrow" }, g.group), g.note ? h("p", { class: "sm" }, g.note) : null,
-        h("div", { class: "fgrid" }, ...g.items.map((f) => field(f, values, errors))))),
-      h("p", { class: "sm" }, h("span", { "aria-hidden": "true" }, "* "), "Pflichtfeld. Kennzeichen, FIN und Notiz bleiben auf diesem Gerät und gehen nicht an die KI."),
+      count ? h("div", { class: "form-sum t-crit", role: "alert" }, mark("crit"), `${count} Angabe${count === 1 ? "" : "n"} fehlen oder passen nicht. Bitte unten prüfen.`) : null,
+      ...FIELDS.map((g) => gruppe({ titel: g.group, fuss: g.note, zeilen: [formBlock(h("fieldset", { class: "fgroup" }, h("legend", { class: "sr" }, g.group), h("div", { class: "fgrid" }, ...g.items.map((f) => field(f, values, errors)))))] })),
+      h("p", { class: "li-fuss" }, h("span", { "aria-hidden": "true" }, "* "), "Pflichtfeld. Kennzeichen, FIN und Notiz bleiben auf diesem Gerät und gehen nicht an die KI."),
       h("div", { class: "form-actions" },
         h("button", { class: "btn pri", type: "submit", "data-connect": "1" }, icon("gateway"), editing ? "Speichern und verbinden" : "Anlegen und verbinden"),
         h("button", { class: "btn sec", type: "submit", "data-connect": "0" }, editing ? "Speichern" : "Nur anlegen"),

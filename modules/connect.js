@@ -9,6 +9,7 @@ import { appBluetoothVerfuegbar, sucheAdapter, appAnschluss } from "../kern/ble-
 import { withTimeout, busy, HILFE } from "./vorgang.js";
 import { icon3d } from "./icons3d.js";
 import { go, currentTab } from "./shell.js";
+import { zurueckZeile, kopfkarte, zeile } from "./bausteine.js";
 
 const STEPS = [
   { titel: "Diagnose-Server verbinden", laeuft: "Suche das Programm auf diesem Rechner …" },
@@ -20,6 +21,8 @@ const flow = { states: STEPS.map(() => "pending"), details: STEPS.map(() => ""),
 function render() {
   const box = $("connect-steps");
   if (!box) return;
+  $("connect-kopf").replaceChildren(zurueckZeile(), kopfkarte({ bild: "stecker", titel: "Verbinden",
+    text: "Diagnose-Server finden, Fahrzeug erkennen, Fehlerspeicher und Bereitschaft lesen. Jeder Schritt zeigt seinen Stand; bei einem Fehler stehen hier Vorschläge." }));
   box.replaceChildren(...STEPS.map((s, i) => h("li", { class: `cstep ${flow.states[i]}`, "aria-current": flow.states[i] === "running" ? "step" : null },
     h("span", { class: "cstep-n" }, flow.states[i] === "pending" ? String(i + 1) : mark(flow.states[i])),
     h("span", { class: "cstep-b" }, h("span", { class: "t" }, i === 0 && flow.ble ? "Bluetooth-Adapter verbinden" : s.titel), h("span", { class: "d" }, flow.details[i] || (flow.states[i] === "pending" ? "wartet" : ""))))));
@@ -29,8 +32,7 @@ function render() {
   $("connect-help").classList.toggle("is-wahl", Boolean(w));
   if (w) {
     $("connect-help").replaceChildren(h("p", { class: "eyebrow" }, "Adapter wählen"),
-      ...w.funde.map((fund) => h("button", { class: "tap row", type: "button", onclick: () => w.resolve(fund) },
-        mark("muted"), h("span", {}, h("div", { class: "t" }, fund.name), h("div", { class: "d" }, `Signal ${fund.rssi} dBm`)))));
+      h("div", { class: "li-gruppe" }, ...w.funde.map((fund) => zeile({ mark: "muted", label: fund.name, unter: `Signal ${fund.rssi} dBm`, ziel: () => w.resolve(fund) }))));
   } else if (f) {
     $("connect-help").replaceChildren(
       h("div", { class: "vg-head t-crit" }, mark("crit"), h("h2", { class: "h2" }, f.titel)),
@@ -160,6 +162,5 @@ export async function connect({ demo = false, ble = appBluetoothVerfuegbar() && 
 export const connected = () => Boolean(state.status) && !flow.active;
 
 export function initConnect() {
-  $("connect-ic").replaceChildren(icon3d("plug"));
   on("tab", (id) => { if (id === "connect") render(); });
 }

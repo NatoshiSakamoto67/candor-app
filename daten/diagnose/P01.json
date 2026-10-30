@@ -40,22 +40,26 @@
      {
       "wenn": "unter",
       "ursache": "Signal zu klein: Stromkreis unterbrochen oder gestört, Masse oder Versorgung des Luftmassenmessers prüfen",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "ueber",
       "ursache": "Signal zu groß: Stromkreis unterbrochen oder gestört oder Sensor defekt",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -69,12 +73,14 @@
      {
       "wenn": "ja",
       "ursache": "Korrosion, lockerer Stecker oder beschädigte Leitung gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "nein",
       "ursache": "Nichts sichtbar: Versorgung und Masse am Stecker mit dem Multimeter messen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sensor_defekt"
      }
     ]
    }
@@ -131,22 +137,26 @@
      {
       "wenn": "unter",
       "ursache": "Zu wenig gemessene Luft: Falschluft hinter dem Sensor oder verschmutztes Messelement",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "ueber",
       "ursache": "Zu viel gemessene Luft: Sensor liefert falsches Signal, selten Ansaugtrakt verändert",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "luftmassenmesser"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Wert jetzt unauffällig: Fehler sporadisch, Kabel und Stecker prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -160,12 +170,14 @@
      {
       "wenn": "ja",
       "ursache": "Riss oder loser Schlauch gefunden: Falschluft",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "nein",
       "ursache": "Keine sichtbare Undichtigkeit: weiter mit Rauchtest oder Sensor reinigen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "luftmassenmesser"
      }
     ]
    }
@@ -222,22 +234,26 @@
      {
       "wenn": "unter",
       "ursache": "Signal zu klein: Unterbrechung oder Kurzschluss nach Masse, Masse oder Versorgung des Luftmassenmessers prüfen",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "ueber",
       "ursache": "Signal zu groß: Unterbrechung oder Kurzschluss nach Masse oder Sensor defekt",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -251,12 +267,14 @@
      {
       "wenn": "ja",
       "ursache": "Korrosion, lockerer Stecker oder beschädigte Leitung gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "nein",
       "ursache": "Nichts sichtbar: Versorgung und Masse am Stecker mit dem Multimeter messen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sensor_defekt"
      }
     ]
    }
@@ -313,22 +331,26 @@
      {
       "wenn": "unter",
       "ursache": "Signal zu klein: Kurzschluss nach Plus, Masse oder Versorgung des Luftmassenmessers prüfen",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "ueber",
       "ursache": "Signal zu groß: Kurzschluss nach Plus oder Sensor defekt",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -342,12 +364,14 @@
      {
       "wenn": "ja",
       "ursache": "Korrosion, lockerer Stecker oder beschädigte Leitung gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "nein",
       "ursache": "Nichts sichtbar: Versorgung und Masse am Stecker mit dem Multimeter messen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sensor_defekt"
      }
     ]
    }
@@ -388,22 +412,26 @@
      {
       "wenn": "unter",
       "ursache": "Wert sehr kalt (oft −40 °C): Unterbrechung im Sensorkreis",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "ueber",
       "ursache": "Wert unplausibel heiß: Kurzschluss im Sensorkreis",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Wert plausibel: Fehler sporadisch, Stecker am Luftmassenmesser prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Zündung einschalten und Live-Werte lesen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -417,12 +445,14 @@
      {
       "wenn": "ja",
       "ursache": "Schaden am Stecker oder an der Leitung gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "nein",
       "ursache": "Nichts sichtbar: Widerstand des Fühlers messen und mit der Temperatur vergleichen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sensor_defekt"
      }
     ]
    }
@@ -462,22 +492,26 @@
      {
       "wenn": "unter",
       "ursache": "Wert sehr kalt (oft −40 °C): Unterbrechung im Sensorkreis",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "ueber",
       "ursache": "Wert unplausibel heiß: Kurzschluss im Sensorkreis",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Wert plausibel: Fehler sporadisch, Stecker am Luftmassenmesser prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Zündung einschalten und Live-Werte lesen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -491,12 +525,14 @@
      {
       "wenn": "ja",
       "ursache": "Schaden am Stecker oder an der Leitung gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "nein",
       "ursache": "Nichts sichtbar: Widerstand des Fühlers messen und mit der Temperatur vergleichen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sensor_defekt"
      }
     ]
    }
@@ -544,22 +580,26 @@
      {
       "wenn": "unter",
       "ursache": "Zu kalt für warmen Motor: Sensor, Leitung oder Thermostat öffnet zu früh",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "thermostat"
      },
      {
       "wenn": "ueber",
       "ursache": "Zu heiß oder unplausibel: Sensorkreis gestört oder echte Überhitzung, Kühlsystem prüfen",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "kuehlsystem"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -573,12 +613,14 @@
      {
       "wenn": "ja",
       "ursache": "Zu wenig Kühlmittel oder Steckerschaden gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "kuehlsystem"
      },
      {
       "wenn": "nein",
       "ursache": "In Ordnung: Sensorwiderstand messen, Thermostat prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "kuehlmittelsensor"
      }
     ]
    }
@@ -626,22 +668,26 @@
      {
       "wenn": "unter",
       "ursache": "Wert passt nicht zu einem Kurzschluss nach Masse: Fehler sporadisch",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "ueber",
       "ursache": "Unplausibel hoher Wert: Kurzschluss nach Masse im Sensorkreis",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -655,12 +701,14 @@
      {
       "wenn": "ja",
       "ursache": "Zu wenig Kühlmittel oder Steckerschaden gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "kuehlsystem"
      },
      {
       "wenn": "nein",
       "ursache": "In Ordnung: Sensorwiderstand messen, Thermostat prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "kuehlmittelsensor"
      }
     ]
    }
@@ -708,22 +756,26 @@
      {
       "wenn": "unter",
       "ursache": "Unplausibel niedriger Wert (oft −40 °C): Unterbrechung im Sensorkreis",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "ueber",
       "ursache": "Hoher Wert: echte Überhitzung ausschließen, dann Sensor prüfen",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "kuehlsystem"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -737,12 +789,14 @@
      {
       "wenn": "ja",
       "ursache": "Zu wenig Kühlmittel oder Steckerschaden gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "kuehlsystem"
      },
      {
       "wenn": "nein",
       "ursache": "In Ordnung: Sensorwiderstand messen, Thermostat prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "kuehlmittelsensor"
      }
     ]
    }
@@ -790,22 +844,26 @@
      {
       "wenn": "unter",
       "ursache": "Stellung zu klein: Stromkreis des Stellungsgebers gestört",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "ueber",
       "ursache": "Stellung zu groß ohne Gas: Stromkreis des Stellungsgebers gestört oder Klappe verschmutzt",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "drosselklappe"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -819,12 +877,14 @@
      {
       "wenn": "ja",
       "ursache": "Starke Ablagerungen oder Steckerschaden gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "drosselklappe"
      },
      {
       "wenn": "nein",
       "ursache": "Sauber und fest: Signalspannung am Potentiometer messen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "stellungsgeber"
      }
     ]
    }
@@ -872,22 +932,26 @@
      {
       "wenn": "unter",
       "ursache": "Stellung zu klein: Signal passt nicht zu Last und Luftmasse",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "ueber",
       "ursache": "Stellung zu groß ohne Gas: Signal passt nicht zu Last und Luftmasse oder Klappe verschmutzt",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "drosselklappe"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -901,12 +965,14 @@
      {
       "wenn": "ja",
       "ursache": "Starke Ablagerungen oder Steckerschaden gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "drosselklappe"
      },
      {
       "wenn": "nein",
       "ursache": "Sauber und fest: Signalspannung am Potentiometer messen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "stellungsgeber"
      }
     ]
    }
@@ -954,22 +1020,26 @@
      {
       "wenn": "unter",
       "ursache": "Stellung zu klein: Kurzschluss nach Masse oder Unterbrechung",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "ueber",
       "ursache": "Stellung zu groß ohne Gas: Kurzschluss nach Masse oder Unterbrechung oder Klappe verschmutzt",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "drosselklappe"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -983,12 +1053,14 @@
      {
       "wenn": "ja",
       "ursache": "Starke Ablagerungen oder Steckerschaden gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "drosselklappe"
      },
      {
       "wenn": "nein",
       "ursache": "Sauber und fest: Signalspannung am Potentiometer messen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "stellungsgeber"
      }
     ]
    }
@@ -1044,22 +1116,26 @@
      {
       "wenn": "unter",
       "ursache": "Regelung stark negativ: Sonde meldet fett oder Signal gestört",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "lambdasonde"
      },
      {
       "wenn": "ueber",
       "ursache": "Regelung stark positiv: Sonde meldet mager, Falschluft vor der Sonde möglich",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Regelung pendelt normal: Sonde arbeitet jetzt, Heizung und Stecker prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -1073,12 +1149,14 @@
      {
       "wenn": "ja",
       "ursache": "Beschädigte Leitung, Steckerschaden oder Abgasleck vor der Sonde gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "nein",
       "ursache": "Nichts sichtbar: Sondensignal mit Oszilloskop prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "lambdasonde"
      }
     ]
    }
@@ -1135,22 +1213,26 @@
      {
       "wenn": "unter",
       "ursache": "Regelung negativ trotz niedriger Sondenspannung: Signal unplausibel, Leitung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "ueber",
       "ursache": "Regelung stark positiv: Sonde meldet dauerhaft mager (niedrige Spannung)",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "lambdasonde"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Regelung pendelt normal: Sonde arbeitet jetzt, Heizung und Stecker prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -1164,12 +1246,14 @@
      {
       "wenn": "ja",
       "ursache": "Beschädigte Leitung, Steckerschaden oder Abgasleck vor der Sonde gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "nein",
       "ursache": "Nichts sichtbar: Sondensignal mit Oszilloskop prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "lambdasonde"
      }
     ]
    }
@@ -1226,22 +1310,26 @@
      {
       "wenn": "unter",
       "ursache": "Regelung weit außerhalb: träge Sonde regelt nach, Sonde gealtert",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "lambdasonde"
      },
      {
       "wenn": "ueber",
       "ursache": "Regelung weit außerhalb: träge Sonde regelt nach, Sonde gealtert",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "lambdasonde"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Regelung pendelt normal: Sonde arbeitet jetzt, Heizung und Stecker prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -1255,12 +1343,14 @@
      {
       "wenn": "ja",
       "ursache": "Beschädigte Leitung, Steckerschaden oder Abgasleck vor der Sonde gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "stromkreis_sensor"
      },
      {
       "wenn": "nein",
       "ursache": "Nichts sichtbar: Sondensignal mit Oszilloskop prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "lambdasonde"
      }
     ]
    }
@@ -1309,22 +1399,26 @@
      {
       "wenn": "unter",
       "ursache": "Bordnetzspannung zu niedrig: Ladung prüfen, dann Heizkreis",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "bordnetz"
      },
      {
       "wenn": "ueber",
       "ursache": "Bordnetzspannung zu hoch: Regler prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "laderegler"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Spannung in Ordnung: Heizkreis der Sonde (Sicherung, Widerstand) prüfen",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "sondenheizung"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -1338,12 +1432,14 @@
      {
       "wenn": "ja",
       "ursache": "Sicherung defekt oder Heizwiderstand unterbrochen",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "sondenheizung"
      },
      {
       "wenn": "nein",
       "ursache": "Heizung in Ordnung: Leitung zum Steuergerät prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "stromkreis_sensor"
      }
     ]
    }
@@ -1400,22 +1496,26 @@
      {
       "wenn": "unter",
       "ursache": "Stark negativ: Gemisch wird abgemagert, passt zu zu fett",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "gemisch_fett"
      },
      {
       "wenn": "ueber",
       "ursache": "Stark positiv: Falschluft, zu wenig Kraftstoff oder Luftmassenmesser misst zu wenig",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Jetzt im Bereich: Fehler unter Last oder sporadisch, Probefahrt mit Aufzeichnung",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -1428,22 +1528,26 @@
      {
       "wenn": "unter",
       "ursache": "Luftmasse zu klein: Luftmassenmesser misst zu wenig oder Falschluft hinter dem Sensor",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "luftmassenmesser"
      },
      {
       "wenn": "ueber",
       "ursache": "Luftmasse zu groß: Sensor misst zu viel",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "luftmassenmesser"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Luftmasse plausibel: Ursache eher Kraftstoffseite oder Falschluft, mager",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "kraftstoffdruck"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -1457,12 +1561,14 @@
      {
       "wenn": "ja",
       "ursache": "Undichtigkeit gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "nein",
       "ursache": "Dicht: Kraftstoffdruck und Einspritzung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "kraftstoffdruck"
      }
     ]
    }
@@ -1520,22 +1626,26 @@
      {
       "wenn": "unter",
       "ursache": "Stark negativ: Gemisch zu fett, Einspritzung oder Kraftstoffdruck zu hoch, Aktivkohlefilter-Ventil",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "gemisch_fett"
      },
      {
       "wenn": "ueber",
       "ursache": "Stark positiv: passt nicht zu zu fett, Lambdasonde prüfen",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "lambdasonde"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Jetzt im Bereich: Fehler unter Last oder sporadisch, Probefahrt mit Aufzeichnung",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -1548,22 +1658,26 @@
      {
       "wenn": "unter",
       "ursache": "Luftmasse zu klein: Luftmassenmesser misst zu wenig oder Falschluft hinter dem Sensor",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "luftmassenmesser"
      },
      {
       "wenn": "ueber",
       "ursache": "Luftmasse zu groß: Sensor misst zu viel",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "luftmassenmesser"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Luftmasse plausibel: Ursache eher Kraftstoffseite oder Falschluft, fett",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "gemisch_fett"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -1577,12 +1691,14 @@
      {
       "wenn": "ja",
       "ursache": "Undichtigkeit gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "nein",
       "ursache": "Dicht: Kraftstoffdruck und Einspritzung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "kraftstoffdruck"
      }
     ]
    }
@@ -1640,22 +1756,26 @@
      {
       "wenn": "unter",
       "ursache": "Stark negativ: Gemisch wird abgemagert, passt zu zu fett",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "gemisch_fett"
      },
      {
       "wenn": "ueber",
       "ursache": "Stark positiv: Falschluft, zu wenig Kraftstoff oder Luftmassenmesser misst zu wenig",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Jetzt im Bereich: Fehler unter Last oder sporadisch, Probefahrt mit Aufzeichnung",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -1668,22 +1788,26 @@
      {
       "wenn": "unter",
       "ursache": "Luftmasse zu klein: Luftmassenmesser misst zu wenig oder Falschluft hinter dem Sensor",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "luftmassenmesser"
      },
      {
       "wenn": "ueber",
       "ursache": "Luftmasse zu groß: Sensor misst zu viel",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "luftmassenmesser"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Luftmasse plausibel: Ursache eher Kraftstoffseite oder Falschluft, mager",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "kraftstoffdruck"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -1697,12 +1821,14 @@
      {
       "wenn": "ja",
       "ursache": "Undichtigkeit gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "nein",
       "ursache": "Dicht: Kraftstoffdruck und Einspritzung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "kraftstoffdruck"
      }
     ]
    }

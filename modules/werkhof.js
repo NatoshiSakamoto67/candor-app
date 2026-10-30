@@ -22,7 +22,7 @@ const nurServer = { ok: false, meldung: "Werkhof geht nur mit dem Diagnose-Serve
 let stand = null, fehler = {}, laeuft = false;
 export async function werkhofSektion(neuZeichnen) {
   const src = await quelle();
-  if (!src) return h("section", { class: "card set-sec", id: "werkhof-einrichten" }, h("h2", { class: "h3" }, "Werkhof"), h("p", { class: "sm" }, nurServer.meldung));
+  if (!src) return h("section", { class: "sk-block", id: "werkhof-einrichten" }, h("h3", { class: "li-k" }, "Werkhof"), h("div", { class: "li-gruppe" }, h("div", { class: "sk-form" }, h("p", { class: "sm" }, nurServer.meldung))));
   if (!stand) { stand = await src.werkhof().catch(() => ({ ok: false })); }
   const url = h("input", { class: "inp", id: "wh-url", value: stand.url || "", placeholder: "http://100.x.y.z:8200", autocomplete: "off", spellcheck: "false" });
   const mandant = h("input", { class: "inp", id: "wh-mandant", value: stand.mandant || "", placeholder: "kfz-gorski", autocomplete: "off", spellcheck: "false" });
@@ -36,12 +36,12 @@ export async function werkhofSektion(neuZeichnen) {
     else { fehler = r.fehler || {}; if (r.meldung) toast(r.meldung); }
     neuZeichnen();
   } }, icon("tick"), "Speichern");
-  return h("section", { class: "card set-sec", id: "werkhof-einrichten" },
-    h("div", { class: "sec-head" }, h("div", {}, h("p", { class: "eyebrow" }, "Werkstatt-Betriebssystem"), h("h2", { class: "h3" }, "Werkhof")),
-      h("span", { class: `cs t-${stand.eingerichtet ? "ok" : "neutral"}` }, stand.eingerichtet ? "eingerichtet" : "aus")),
-    h("p", { class: "sm" }, "Holt Fahrzeuge aus der Werkstattsoftware (tmERIK) und legt Befunde im Auftrag ab. CANdor spricht nur mit Werkhof; nur Adressen im eigenen Netz oder Tailnet."),
-    h("div", { class: "fgrid" }, feld("wh-url", "Adresse", url), feld("wh-mandant", "Mandant", mandant), feld("wh-key", "Schlüssel", key, "Bleibt auf dem Diagnose-Server, nur die letzten vier Zeichen werden gezeigt.")),
-    h("div", { class: "row-actions" }, speichern));
+  return h("section", { class: "sk-block", id: "werkhof-einrichten" },
+    h("h3", { class: "li-k" }, "Werkhof", h("span", { class: `cs t-${stand.eingerichtet ? "ok" : "neutral"} li-k-rechts` }, stand.eingerichtet ? "eingerichtet" : "aus")),
+    h("div", { class: "li-gruppe" }, h("div", { class: "sk-form" },
+      h("div", { class: "fgrid" }, feld("wh-url", "Adresse", url), feld("wh-mandant", "Mandant", mandant), feld("wh-key", "Schlüssel", key, "Bleibt auf dem Diagnose-Server, nur die letzten vier Zeichen werden gezeigt.")),
+      h("div", { class: "row-actions" }, speichern))),
+    h("p", { class: "li-fuss" }, "Werkstatt-Betriebssystem: holt Fahrzeuge aus der Werkstattsoftware (tmERIK) und legt Befunde im Auftrag ab. CANdor spricht nur mit Werkhof; nur Adressen im eigenen Netz oder Tailnet."));
 }
 
 /* ---------- Fahrzeug holen (Formular) ---------- */

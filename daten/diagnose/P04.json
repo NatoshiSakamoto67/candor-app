@@ -32,22 +32,26 @@
      {
       "wenn": "unter",
       "ursache": "Unterdruck normal bis hoch: kein Hinweis auf offenes Ventil, AGR-Kanäle auf Verkokung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "agr_verkokt"
      },
      {
       "wenn": "ueber",
       "ursache": "Druck zu hoch: Falschluft oder Ventil hängt offen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Druck normal: AGR-Ventil und Kanäle auf Verkokung prüfen",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "agr_verkokt"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -61,12 +65,14 @@
      {
       "wenn": "ja",
       "ursache": "Starke Verkokung oder klemmendes Ventil gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "agr_verkokt"
      },
      {
       "wenn": "nein",
       "ursache": "Sauber und beweglich: Ansteuerung und Stellungsgeber prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "agr_ansteuerung"
      }
     ]
    }
@@ -122,22 +128,26 @@
      {
       "wenn": "unter",
       "ursache": "Gemisch zu fett: belastet den Kat, erst Gemisch klären",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "gemisch_fett"
      },
      {
       "wenn": "ueber",
       "ursache": "Gemisch zu mager: Falschluft vor der Sonde kann Kat-Fehler vortäuschen",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Gemisch in Ordnung: Kat gealtert oder Sonde nach Kat träge",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "kat"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -151,12 +161,14 @@
      {
       "wenn": "ja",
       "ursache": "Abgasleck gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "abgasleck"
      },
      {
       "wenn": "nein",
       "ursache": "Dicht: Kat-Wirkung über beide Lambdasonden bei der AU prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "kat"
      }
     ]
    }
@@ -205,22 +217,26 @@
      {
       "wenn": "unter",
       "ursache": "Regelung negativ: Tankentlüftung spült, Ventil öffnet",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "tankentlueftung_ventil"
      },
      {
       "wenn": "ueber",
       "ursache": "Regelung positiv: Ventil hängt offen und zieht Falschluft",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "tankentlueftung_ventil"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Regelung ruhig: Spülfluss gering, Ventil und Schläuche prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "tankentlueftung_ventil"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -234,12 +250,14 @@
      {
       "wenn": "ja",
       "ursache": "Ventil hängt oder Schlauch lose",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "tankentlueftung_ventil"
      },
      {
       "wenn": "nein",
       "ursache": "Ventil schaltet und Schläuche dicht: Ansteuerung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "steuergeraet_leitung"
      }
     ]
    }
@@ -287,22 +305,26 @@
      {
       "wenn": "unter",
       "ursache": "Regelung negativ: Tankentlüftung spült, System grundsätzlich aktiv",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "tankdeckel"
      },
      {
       "wenn": "ueber",
       "ursache": "Regelung positiv: Ventil hängt offen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "tankentlueftung_ventil"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Regelung ruhig: großes Leck möglich, Tankdeckel zuerst",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "tankdeckel"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -316,12 +338,14 @@
      {
       "wenn": "ja",
       "ursache": "Tankdeckel undicht oder Schlauch lose",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "tankdeckel"
      },
      {
       "wenn": "nein",
       "ursache": "Dicht: Rauchtest am gesamten System",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "tankentlueftung_ventil"
      }
     ]
    }

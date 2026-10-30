@@ -3,10 +3,11 @@
 import { $, h, icon, mark, storageGet, storageSet, toast } from "./dom.js";
 import { state, emit, on, logEvent } from "./state.js";
 import { go, back, currentRoute } from "./shell.js";
-import { icon3d } from "./icons3d.js";
 import { formField } from "./formular.js";
 import { lockup } from "./marke.js";
 import { checkWorkshop } from "./befund.js";
+import { zurueckZeile, kopfkarte, gruppe, formBlock } from "./bausteine.js";
+import { FARBE } from "../kern/einstellungs-baum.js";
 
 const KEY = "kfzdiag-werkstatt";
 const PREFIX = "ws";
@@ -44,15 +45,17 @@ function render(errors = {}, values = null) {
   const first = !record;
   const v = values || workshop() || {};
   const count = Object.keys(errors).length;
+  /* Kopf wie die Einstellungs-Unterseiten; beim ersten Start ohne Zurück, davor steht die Begrüßung mit der Marke. */
   $("werkstatt-form").replaceChildren(...[
+    first ? null : zurueckZeile(),
     first ? h("div", { class: "card brand-hero" }, lockup(76, "big"), h("p", { class: "p" }, "Willkommen bei CANdor. Fehler lesen, verstehen und belegt beheben: vom Fahrzeug anlegen bis zum Bericht.")) : null,
-    h("div", { class: "card welcome" }, h("span", { class: "hero-ic", "aria-hidden": "true" }, icon3d("garage")),
-      h("div", {}, h("p", { class: "eyebrow" }, first ? "Schritt 1 von 2" : "Einstellungen"), h("h2", { class: "h2" }, first ? "Deine Werkstatt" : "Werkstattdaten"),
-        h("p", { class: "p" }, first ? "Diese Angaben stehen später oben im Diagnosebericht. Du kannst sie überspringen und jederzeit nachtragen. Danach legst du das erste Fahrzeug an."
-          : "Stehen im Briefkopf jedes Berichts. Sie bleiben nur auf diesem Gerät."))),
-    count ? h("div", { class: "form-sum t-crit", role: "alert" }, mark("crit"), `${count} Angabe${count === 1 ? "" : "n"} fehlen oder passen nicht.`) : null,
-    h("form", { class: "card vform", id: "ws-form", novalidate: true, onsubmit: (ev) => { ev.preventDefault(); submit(first); } },
-      h("div", { class: "fgrid ws-grid" }, ...FIELDS.map((f) => formField(f, v, errors, PREFIX))),
+    kopfkarte({ icon: "werkstatt", farbe: FARBE.blau, titel: first ? "Deine Werkstatt" : "Werkstattdaten",
+      text: first ? "Schritt 1 von 2. Diese Angaben stehen später oben im Diagnosebericht. Du kannst sie überspringen und jederzeit nachtragen. Danach legst du das erste Fahrzeug an."
+        : "Stehen im Briefkopf jedes Berichts. Sie bleiben nur auf diesem Gerät." }),
+    h("form", { class: "sk-block", id: "ws-form", novalidate: true, onsubmit: (ev) => { ev.preventDefault(); submit(first); } },
+      count ? h("div", { class: "form-sum t-crit", role: "alert" }, mark("crit"), `${count} Angabe${count === 1 ? "" : "n"} fehlen oder passen nicht.`) : null,
+      gruppe({ titel: "Angaben", zeilen: [formBlock(h("div", { class: "fgrid ws-grid" }, ...FIELDS.map((f) => formField(f, v, errors, PREFIX))))],
+        fuss: "Pflicht ist nur der Name. Die Angaben stehen im Briefkopf, der Mechaniker oder die Mechanikerin an der Unterschrift." }),
       h("div", { class: "form-actions" },
         h("button", { class: "btn pri", type: "submit" }, icon("tick"), first ? "Speichern und weiter" : "Speichern"),
         first ? h("button", { class: "btn qt", type: "button", onclick: skip }, "Überspringen") : h("button", { class: "btn qt", type: "button", onclick: back }, "Abbrechen"))),

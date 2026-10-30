@@ -113,7 +113,7 @@ export function zeichneListe(containerId, { kompakt = false } = {}) {
       profilkarte(refs),
       naechster(refs),
       ...BAUM.map((g) => {
-        const zeilen = g.zeilen.filter(zeilenFuer({ kunde: kundenfassung(), einfach: einfach() }));
+        const zeilen = g.zeilen.filter(zeilenFuer({ kunde: kundenfassung(), einfach: einfach(), bald: true }));
         if (!zeilen.length) return null;
         return h("section", { class: "li-block", "aria-label": g.titel || null }, g.titel ? h("h2", { class: "li-k" }, g.titel) : null, h("div", { class: "li-gruppe" }, ...zeilen.map((z) => zeile(z, refs))));
       })].filter(Boolean));

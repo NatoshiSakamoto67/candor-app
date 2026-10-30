@@ -47,22 +47,26 @@
      {
       "wenn": "unter",
       "ursache": "Drehzahl zu niedrig, Motor läuft unrund: Aussetzer im Leerlauf aktiv",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "ueber",
       "ursache": "Drehzahl erhöht: Steuergerät gleicht aus, Falschluft oder Leerlaufregelung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Drehzahl normal: Aussetzer eher unter Last, Probefahrt mit Aussetzerzählern",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -75,22 +79,26 @@
      {
       "wenn": "unter",
       "ursache": "Stark negativ: Gemisch zu fett, Injektor tropft möglich",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "injektor"
      },
      {
       "wenn": "ueber",
       "ursache": "Stark positiv: Gemisch zu mager, Falschluft oder Einspritzung",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Gemisch in Ordnung: Ursache eher Zündung (Kerze, Spule)",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -104,12 +112,14 @@
      {
       "wenn": "ja",
       "ursache": "Kerze verschlissen, Spule beschädigt oder Fehler wandert mit der Spule",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "nein",
       "ursache": "Fehler bleibt am Zylinder: Injektor und Kompression prüfen",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "injektor"
      }
     ]
    }
@@ -167,22 +177,26 @@
      {
       "wenn": "unter",
       "ursache": "Drehzahl zu niedrig, Motor läuft unrund: Aussetzer im Leerlauf aktiv",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "ueber",
       "ursache": "Drehzahl erhöht: Steuergerät gleicht aus, Falschluft oder Leerlaufregelung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Drehzahl normal: Aussetzer eher unter Last, Probefahrt mit Aussetzerzählern",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -195,22 +209,26 @@
      {
       "wenn": "unter",
       "ursache": "Stark negativ: Gemisch zu fett, Injektor tropft möglich",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "injektor"
      },
      {
       "wenn": "ueber",
       "ursache": "Stark positiv: Gemisch zu mager, Falschluft oder Einspritzung",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Gemisch in Ordnung: Ursache eher Zündung (Kerze, Spule)",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -224,12 +242,14 @@
      {
       "wenn": "ja",
       "ursache": "Kerze verschlissen, Spule beschädigt oder Fehler wandert mit der Spule",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "nein",
       "ursache": "Fehler bleibt am Zylinder: Injektor und Kompression prüfen",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "injektor"
      }
     ]
    }
@@ -286,22 +306,26 @@
      {
       "wenn": "unter",
       "ursache": "Drehzahl zu niedrig, Motor läuft unrund: Aussetzer im Leerlauf aktiv",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "ueber",
       "ursache": "Drehzahl erhöht: Steuergerät gleicht aus, Falschluft oder Leerlaufregelung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Drehzahl normal: Aussetzer eher unter Last, Probefahrt mit Aussetzerzählern",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -314,22 +338,26 @@
      {
       "wenn": "unter",
       "ursache": "Stark negativ: Gemisch zu fett, Injektor tropft möglich",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "injektor"
      },
      {
       "wenn": "ueber",
       "ursache": "Stark positiv: Gemisch zu mager, Falschluft oder Einspritzung",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Gemisch in Ordnung: Ursache eher Zündung (Kerze, Spule)",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -343,12 +371,14 @@
      {
       "wenn": "ja",
       "ursache": "Kerze verschlissen, Spule beschädigt oder Fehler wandert mit der Spule",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "nein",
       "ursache": "Fehler bleibt am Zylinder: Injektor und Kompression prüfen",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "injektor"
      }
     ]
    }
@@ -405,22 +435,26 @@
      {
       "wenn": "unter",
       "ursache": "Drehzahl zu niedrig, Motor läuft unrund: Aussetzer im Leerlauf aktiv",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "ueber",
       "ursache": "Drehzahl erhöht: Steuergerät gleicht aus, Falschluft oder Leerlaufregelung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Drehzahl normal: Aussetzer eher unter Last, Probefahrt mit Aussetzerzählern",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -433,22 +467,26 @@
      {
       "wenn": "unter",
       "ursache": "Stark negativ: Gemisch zu fett, Injektor tropft möglich",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "injektor"
      },
      {
       "wenn": "ueber",
       "ursache": "Stark positiv: Gemisch zu mager, Falschluft oder Einspritzung",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Gemisch in Ordnung: Ursache eher Zündung (Kerze, Spule)",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -462,12 +500,14 @@
      {
       "wenn": "ja",
       "ursache": "Kerze verschlissen, Spule beschädigt oder Fehler wandert mit der Spule",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "nein",
       "ursache": "Fehler bleibt am Zylinder: Injektor und Kompression prüfen",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "injektor"
      }
     ]
    }
@@ -524,22 +564,26 @@
      {
       "wenn": "unter",
       "ursache": "Drehzahl zu niedrig, Motor läuft unrund: Aussetzer im Leerlauf aktiv",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "ueber",
       "ursache": "Drehzahl erhöht: Steuergerät gleicht aus, Falschluft oder Leerlaufregelung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Drehzahl normal: Aussetzer eher unter Last, Probefahrt mit Aussetzerzählern",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -552,22 +596,26 @@
      {
       "wenn": "unter",
       "ursache": "Stark negativ: Gemisch zu fett, Injektor tropft möglich",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "injektor"
      },
      {
       "wenn": "ueber",
       "ursache": "Stark positiv: Gemisch zu mager, Falschluft oder Einspritzung",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Gemisch in Ordnung: Ursache eher Zündung (Kerze, Spule)",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -581,12 +629,14 @@
      {
       "wenn": "ja",
       "ursache": "Kerze verschlissen, Spule beschädigt oder Fehler wandert mit der Spule",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "nein",
       "ursache": "Fehler bleibt am Zylinder: Injektor und Kompression prüfen",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "injektor"
      }
     ]
    }
@@ -634,22 +684,26 @@
      {
       "wenn": "unter",
       "ursache": "Batterie schwach: beim Starten bricht die Spannung ein, erst laden",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "bordnetz"
      },
      {
       "wenn": "ueber",
       "ursache": "Spannung ungewöhnlich hoch: Messung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "laderegler"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Batterie in Ordnung: Geberkreis prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "geber"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Zündung einschalten",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -663,12 +717,14 @@
      {
       "wenn": "ja",
       "ursache": "Steckerschaden, Späne am Sensor oder beschädigtes Geberrad gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "geber"
      },
      {
       "wenn": "nein",
       "ursache": "Sichtbar in Ordnung: Signal beim Anlassen mit Oszilloskop prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "steuergeraet_leitung"
      }
     ]
    }
@@ -716,22 +772,26 @@
      {
       "wenn": "unter",
       "ursache": "Batterie schwach: Startprobleme verfälschen das Bild, erst laden",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "bordnetz"
      },
      {
       "wenn": "ueber",
       "ursache": "Spannung ungewöhnlich hoch: Messung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "laderegler"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Batterie in Ordnung: Geberkreis Nockenwelle prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "geber"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Zündung einschalten",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -745,12 +805,14 @@
      {
       "wenn": "ja",
       "ursache": "Steckerschaden oder falsche Steuerzeiten gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "geber"
      },
      {
       "wenn": "nein",
       "ursache": "In Ordnung: Signal mit Oszilloskop gegen Kurbelwelle prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "steuerzeiten"
      }
     ]
    }
@@ -799,22 +861,26 @@
      {
       "wenn": "unter",
       "ursache": "Drehzahl zu niedrig, Motor läuft unrund: Zylinder 1 fällt aus",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "ueber",
       "ursache": "Drehzahl erhöht: Steuergerät gleicht aus",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Motor läuft rund: Fehler sporadisch, Stecker an Zündspule 1 prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -828,12 +894,14 @@
      {
       "wenn": "ja",
       "ursache": "Steckerschaden gefunden oder Fehler wandert mit der Spule",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "zuendung"
      },
      {
       "wenn": "nein",
       "ursache": "Fehler bleibt: Ansteuerleitung zum Steuergerät messen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "steuergeraet_leitung"
      }
     ]
    }

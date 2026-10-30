@@ -69,6 +69,8 @@ h2 { font: 600 var(--t-6)/var(--t-6-lh) var(--font-display); }
 @keyframes kfz-spin { to { transform: rotate(360deg); } }
 .status-tools { display: flex; gap: var(--sp-1); flex: none; align-items: center; }
 .status-tools .search-btn .lbl, .status-tools .search-btn .kbd { display: none; }
+/* Handy: das schwebende Suchfeld unten öffnet dieselbe Suche, die Lupe in der Kopfzeile entfällt dort. */
+@media (max-width: 759px) { .status-tools .search-btn { display: none; } }
 .icb:hover { background: var(--surface-3); }
 .icb:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface-1), 0 0 0 4px var(--accent); }
 @media (min-width: 600px) {
@@ -297,8 +299,16 @@ dialog::backdrop { background: rgba(0, 0, 0, .45); }
   .schip .mark, .schip .mark svg { width: 16px; height: 16px; }
   .sim-band { padding: 6px 10px; font-size: 10px; line-height: 13px; }
 }
-/* Zustandschips auf dem Handy wischbar: weicher Rand rechts zeigt, dass es weitergeht, statt hart abgeschnitten */
-@media (max-width: 599px) { .status-chips { -webkit-mask-image: linear-gradient(to right, #000 82%, transparent); mask-image: linear-gradient(to right, #000 82%, transparent); padding-right: 24px; } }
+/* Zustandschips auf dem Handy wischbar: weicher Rand rechts zeigt, dass es weitergeht, statt hart abgeschnitten.
+   Der Verlauf ist eine Maske von 56 px; wo der Browser Scroll-Zeitachsen kann, verschwindet er am Ende der Zeile. */
+@property --chips-fade { syntax: "<length>"; inherits: false; initial-value: 56px; }
+@media (max-width: 599px) {
+  .status-chips { --chips-fade: 56px; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - var(--chips-fade)), transparent); mask-image: linear-gradient(to right, #000 calc(100% - var(--chips-fade)), transparent); padding-right: 40px; }
+  @supports (animation-timeline: scroll()) {
+    .status-chips { animation: chips-ende linear both; animation-timeline: scroll(self inline); }
+  }
+}
+@keyframes chips-ende { 0%, 80% { --chips-fade: 56px; } 100% { --chips-fade: 0px; } }
 
 /* Diagnosepfad: Kette als senkrechte Linie mit Punkten, Deutung mit Sicherheitsstufe (.lvl) */
 .diagnosepfad { gap: 10px; }

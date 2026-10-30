@@ -5,6 +5,8 @@ import { $, h, mark, toast, download, storageGet, storageSet, numFix } from "./d
 import { state, on, logEvent, vehicleKey } from "./state.js";
 import { kundenfassung } from "./mandant.js";
 import { letzteWerte, nachSteuergeraet, dbcDateiPruefen, zustimmungAn, mitZustimmung, beobachtenEingabe } from "../kern/werkbank-sicht.js";
+import { FARBE } from "../kern/einstellungs-baum.js";
+import { zurueckZeile, kopfkarte } from "./bausteine.js";
 
 const KEY = "kfzdiag-werkbank-eigen";
 const LEER = { mitschnitt: null, dbc: null, dekodiert: null, wissen: null, abgleich: null, laeuft: "", eingabe: { adresse: "7E0", did: "F18C", byte: "0", anzahl: "60" } };
@@ -16,8 +18,8 @@ const api = () => state.src && state.src.werkbank;
 const eigen = () => zustimmungAn(storageGet(KEY, {}), vehicleKey());
 const setzeDaten = (teil, g = generation) => { if (g !== generation) return; daten = { ...daten, ...teil }; zeichnen(); };
 
-/* ---------- Bausteine wie in seiten.js ---------- */
-const kopf = (titel, text) => h("section", { class: "li-gruppe sk-kopf" }, h("h2", { class: "sk-titel" }, titel), h("p", { class: "sk-text" }, text));
+/* ---------- Bausteine: Kopf aus bausteine.js, Gruppen wie in seiten.js ---------- */
+const kopf = (text) => [zurueckZeile(), kopfkarte({ icon: "bus", farbe: FARBE.dunkel, titel: "CAN-Werkbank", text })];
 const block = (titel, inhalt, fuss) => h("section", { class: "sk-block" }, h("h3", { class: "li-k" }, titel), h("div", { class: "li-gruppe" }, ...inhalt.filter(Boolean)), fuss ? h("p", { class: "li-fuss" }, fuss) : null);
 const zeile = (label, wert, mono) => h("div", { class: "li-row sk-row" }, h("span", { class: "li-t" }, label), h("span", { class: `li-v${mono ? " mono" : ""}` }, wert));
 /* Langer Wert unter der Beschriftung, damit am Handy nichts gequetscht wird */
@@ -151,10 +153,10 @@ function abgleichBlock() {
 /* ---------- Zeichnen ---------- */
 export function zeichnen() {
   if ($("view-werkbank").hidden) return;
-  if (kundenfassung()) { $("werkbank").replaceChildren(kopf("CAN-Werkbank", "Die Werkbank gibt es in dieser Fassung nicht.")); return; }
-  if (!api()) { $("werkbank").replaceChildren(kopf("CAN-Werkbank", "Erst ein Fahrzeug verbinden oder den Simulator im Server starten.")); return; }
+  if (kundenfassung()) { $("werkbank").replaceChildren(...kopf("Die Werkbank gibt es in dieser Fassung nicht.")); return; }
+  if (!api()) { $("werkbank").replaceChildren(...kopf("Erst ein Fahrzeug verbinden oder den Simulator im Server starten.")); return; }
   $("werkbank").replaceChildren(...[
-    kopf("CAN-Werkbank", "Werkzeuge für das eigene Fahrzeug: mitschneiden, mit einer eigenen DBC-Datei lesen, Kennungen der Steuergeräte sammeln und die Bedeutung unbekannter Werte abgleichen. Alles nur lesend."),
+    ...kopf("Werkzeuge für das eigene Fahrzeug: mitschneiden, mit einer eigenen DBC-Datei lesen, Kennungen der Steuergeräte sammeln und die Bedeutung unbekannter Werte abgleichen. Alles nur lesend."),
     daten.laeuft ? h("p", { class: "sm wb-laeuft", role: "status" }, mark("pending"), ` ${daten.laeuft} läuft …`) : null,
     mitschnittBlock(), dbcBlock(), erkunderBlock(), abgleichBlock()].filter(Boolean));
 }

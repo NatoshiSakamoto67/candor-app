@@ -106,7 +106,7 @@ function renderResults() {
 
 /* Ohne Eingabe wie in den iOS-Einstellungen: Vorschläge aus der Liste, darunter Zuletzt */
 function startseite() {
-  const sichtbar = ZEILEN.filter(zeilenFuer({ kunde: kundenfassung(), einfach: document.documentElement.dataset.modus === "einfach" }));
+  const sichtbar = ZEILEN.filter(zeilenFuer({ kunde: kundenfassung(), einfach: document.documentElement.dataset.modus === "einfach", bald: true }));
   const vor = vorschlaege(sichtbar.filter((z) => z.ziel)).map((z) => h("button", { class: "pal-r", type: "button", onclick: () => { $("palette").close(); go(z.ziel, z.sub ? { sub: z.sub } : {}); } },
     h("span", { class: `li-ic${z.bild ? " li-bild" : ""}`, style: z.bild ? null : `--c:${z.farbe}`, "aria-hidden": "true" }, z.bild ? h("img", { src: `icons/liste/${z.bild}.png`, alt: "", width: 30, height: 30 }) : icon(z.icon)),
     h("span", { class: "pr-main" }, h("span", { class: "pr-t" }, z.label)), h("span", { class: "chev", "aria-hidden": "true" }, "›")));

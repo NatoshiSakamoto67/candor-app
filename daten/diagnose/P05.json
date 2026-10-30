@@ -27,22 +27,26 @@
      {
       "wenn": "unter",
       "ursache": "Spannung zu niedrig: Unterspannung kann Sensoren und ABS stören",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "bordnetz"
      },
      {
       "wenn": "ueber",
       "ursache": "Spannung zu hoch: Regler prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "laderegler"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Spannung in Ordnung: ABS-Fehlerspeicher und Raddrehzahlsensoren prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "raddrehzahl"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -56,12 +60,14 @@
      {
       "wenn": "ja",
       "ursache": "ABS meldet einen Raddrehzahlsensor oder Steckerschaden gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "raddrehzahl"
      },
      {
       "wenn": "nein",
       "ursache": "Keine Auffälligkeit: Signalweg zum Motorsteuergerät (CAN) prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "steuergeraet_leitung"
      }
     ]
    }
@@ -110,22 +116,26 @@
      {
       "wenn": "unter",
       "ursache": "Drehzahl zu niedrig: Drosselklappe verschmutzt oder Leerlaufregelung erreicht Grenze",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "drosselklappe"
      },
      {
       "wenn": "ueber",
       "ursache": "Drehzahl zu hoch: Falschluft oder Klappe schließt nicht",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "falschluft"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Drehzahl normal: Fehler sporadisch, Klappe reinigen und anlernen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "sporadisch"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -139,12 +149,14 @@
      {
       "wenn": "ja",
       "ursache": "Ablagerungen oder Undichtigkeit gefunden",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "drosselklappe"
      },
      {
       "wenn": "nein",
       "ursache": "Sauber und dicht: Stellmotor und Ansteuerung prüfen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "stellungsgeber"
      }
     ]
    }
@@ -194,22 +206,26 @@
      {
       "wenn": "unter",
       "ursache": "Ladespannung zu niedrig: Lichtmaschine, Regler, Riemen oder Leitung prüfen",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "lichtmaschine"
      },
      {
       "wenn": "ueber",
       "ursache": "Ladespannung zu hoch: Regler defekt",
-      "sicherheit": "plausibel"
+      "sicherheit": "plausibel",
+      "hypothese": "laderegler"
      },
      {
       "wenn": "im_bereich",
       "ursache": "Ladespannung in Ordnung: Batterie und Massepunkte prüfen, Fehler sporadisch",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "bordnetz"
      },
      {
       "wenn": "fehlt",
       "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "messung_offen"
      }
     ]
    },
@@ -223,12 +239,14 @@
      {
       "wenn": "ja",
       "ursache": "Batterie schwach, Masseband korrodiert oder Riemen rutscht",
-      "sicherheit": "belegt"
+      "sicherheit": "belegt",
+      "hypothese": "bordnetz"
      },
      {
       "wenn": "nein",
       "ursache": "In Ordnung: Ruhestrom messen",
-      "sicherheit": "vermutung"
+      "sicherheit": "vermutung",
+      "hypothese": "ruhestrom"
      }
     ]
    }

@@ -2,10 +2,12 @@
 /* Diagnosepfad im Browser (Direktmodus, Vorschau): dieselben Regeln wie kfzdiag/diagnosepfad.py.
    Pakete aus daten/diagnose/, Codebedeutung aus OBDex (dtcwissen.js), Messwerte aus state.live. */
 import { lookup, normCode } from "./dtcwissen.js";
+import { bewerteSignal } from "../kern/fall.js";
+
+/* Bewertung der Signale lebt jetzt in kern/fall.js (gleich für Pfad und Fall); hier weiter exportiert. */
+export { bewerteSignal };
 
 const CODE_RE = /^[PCBU][0-3][0-9A-F]{3}$/;
-/* Drehzahl, ab der der Motor als laufend gilt (wie MOTOR_LAEUFT_AB im Server) */
-const MOTOR_LAEUFT_AB = 100;
 const HINWEIS = "Richtwerte sind allgemein, keine Herstellerwerte. Deutungen sind Hilfen, keine Diagnose.";
 
 /* Vorhandene Pakete unter daten/diagnose/ (Test prüft, dass die Liste zum Ordner passt) */
@@ -13,17 +15,6 @@ export const PAKETE = ["P01", "P03", "P04", "P05"];
 
 const holenStandard = (url) => fetch(url).then((r) => { if (!r.ok) throw new Error(`${url}: ${r.status}`); return r.json(); });
 const pakete = new Map();
-
-/** @param {any} soll @param {Record<string, number>} werte */
-export function bewerteSignal(soll, werte) {
-  const aus = { signal: soll.signal, min: soll.min, max: soll.max, einheit: soll.einheit, quelle: soll.quelle, zustand: soll.zustand };
-  const wert = werte[soll.signal];
-  if (typeof wert !== "number") return { ...aus, wert: null, status: "fehlt" };
-  const drehzahl = werte.DREHZAHL;
-  const laeuft = typeof drehzahl === "number" && drehzahl > MOTOR_LAEUFT_AB;
-  if ((soll.zustand === "motor_laeuft" && !laeuft) || (soll.zustand === "motor_aus" && laeuft)) return { ...aus, wert, status: "zustand" };
-  return { ...aus, wert, status: wert < soll.min ? "unter" : wert > soll.max ? "ueber" : "im_bereich" };
-}
 
 /** Erste automatische Messung außerhalb des Bereichs oder ohne Wert, sonst die erste manuelle. @param {any[]} messungen @param {Record<string, string>} status */
 function naechste(messungen, status) {

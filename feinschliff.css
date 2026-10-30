@@ -425,3 +425,66 @@ body::before { background: radial-gradient(1400px 700px at 50% -20%, color-mix(i
 }
 
 @keyframes pulse { 50% { opacity: .45; } }
+
+/* ---------- Bausteine (bausteine.js) für die älteren Seiten: Kopfkarte, Gruppen, Formulare auf Karten ---------- */
+.li-seite.li-breit { max-width: 1000px; }
+button.sk-mehr { border: 0; background: none; padding: 0; margin: 0; font: inherit; color: var(--accent); cursor: pointer; }
+.li-ic.li-3d, .sk-ic.li-3d { background: none; box-shadow: none; }
+.li-ic.li-3d .i3 { width: 30px; height: 30px; } .sk-ic.li-3d .i3 { width: 64px; height: 64px; }
+.sk-form { display: grid; gap: var(--sp-3); padding: 14px 16px 18px; min-width: 0; }
+.sk-form .fgroup { padding: 0; border: 0; margin: 0; }
+.sk-form > .sm, .sk-form > .p { margin: 0; }
+.sk-block > .form-actions { border-top: 0; padding-top: 0; margin-top: 18px; }
+.sk-block > .form-sum { margin: 14px 4px 0; }
+.sk-row:disabled { opacity: .5; cursor: default; }
+.sk-row .li-t .cs { display: inline-flex; margin-left: 8px; vertical-align: middle; }
+.sk-row .plate.sm { align-self: center; }
+.li-k .sm { font-weight: 400; margin-left: 6px; }
+.li-k .li-k-rechts { float: right; font-weight: 400; }
+.li-seite > .brand-hero { margin-bottom: 26px; }
+.li-gruppe.connect { padding: 18px 16px 16px; display: grid; gap: var(--sp-4); }
+.li-gruppe.connect .cstep:last-child { padding-bottom: 0; }
+.li-gruppe.hb-article { padding: 18px 20px 22px; }
+.li-seite .hb-toc .li-k { margin: 22px 0 7px; }
+.li-seite .hb-layout { margin-top: 0; }
+.li-seite .garage-tools { margin: 20px 0 0; }
+.li-seite .report-tools { margin: 22px 0 0; }
+.li-seite .paper { margin-top: 22px; }
+.sk-block .facts { margin: 0; }
+.wb-laeuft { margin-top: 14px; }
+
+/* ---------- Fall-Seite (fall.js): Handy eine Spalte, Desktop zwei (links Kopf, Ursachen, Messen; rechts 3D, Maßnahme, Nachweis) ---------- */
+.fall-spalten { display: grid; gap: 0; grid-template-columns: minmax(0, 1fr); }
+.fall-spalte, .fall-hyp, .fall-listen, .fall-row { min-width: 0; overflow-wrap: anywhere; }
+.fall-spalte > :first-child { margin-top: 0; }
+.fall-kopf .sk-titel .mono { font-family: var(--font-num); letter-spacing: .02em; }
+.fall-kopf .cs { vertical-align: middle; margin-left: 4px; }
+.fall-hyp { padding: 12px 16px 10px; display: grid; gap: 6px; }
+.fall-hyp + .fall-hyp { border-top: .5px solid var(--hairline); }
+.fall-hyp-kopf { display: flex; align-items: center; gap: 8px; }
+.fall-hyp-name { flex: 1; min-width: 0; font: 600 17px/22px var(--font-text); }
+.fall-listen { margin: 0; padding: 0 0 0 24px; list-style: none; display: grid; gap: 3px; font: 400 14px/19px var(--font-text); color: var(--text-muted); }
+.fall-listen li b { font-weight: 600; color: var(--text); }
+.fall-listen .fall-stützt b { color: var(--ok); } .fall-listen .fall-widerspricht b { color: var(--crit); } .fall-listen .fall-fehlt b { color: var(--warn); }
+.fall-quelle { margin: 0 0 0 24px; }
+.fall-row { min-height: var(--li-zeile); padding-block: 8px; }
+.fall-row .li-t { white-space: normal; display: grid; gap: 2px; }
+.fall-row .li-v { white-space: normal; text-align: right; max-width: 45%; }
+.fall-row .li-v.mono { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+.fall-row .li-v.t-ok { color: var(--ok); }
+.fall-naechste { box-shadow: inset 3px 0 0 var(--accent); }
+.fall-manuell + .fall-manuell { border-top: .5px solid var(--hairline); }
+.fall-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 16px 14px; }
+.fall-knoepfe .btn[aria-pressed="true"] { background: var(--accent-fill, var(--accent)); color: var(--on-accent-fill, #fff); border-color: transparent; }
+.fall-feld { padding: 12px 16px 4px; }
+.fall-text { width: 100%; box-sizing: border-box; }
+.fall-fuss { margin: 0; padding: 0 16px 12px; }
+.fall-agent .sk-aktion .li-t { text-align: center; font-weight: 600; }
+.fcard-wrap { display: grid; gap: 8px; }
+.fcard-wrap .fall-btn { justify-self: start; margin: 0 0 4px 18px; }
+@media (min-width: 1100px) {
+  #fall { max-width: 1120px; }
+  .fall-spalten { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 28px; align-items: start; }
+  .fcard-wrap { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .fcard-wrap .fall-btn { margin: 0; }
+}

@@ -13,6 +13,7 @@ import { busy, withTimeout } from "./vorgang.js";
 import { recordings, stats } from "./recorder.js";
 import { pfadResults } from "./pfade.js";
 import { befundSenden } from "./werkhof.js";
+import { zurueckZeile, kopfkarte } from "./bausteine.js";
 
 const opts = { auftrag: "", vin: true, fassung: "werkstatt", art: "vergleich", abschnitte: null, ...storageGet("kfzdiag-bericht", {}) };
 const ARTEN = [["vorher", "Eingangsbefund", "vor der Reparatur"], ["nachher", "Ausgangsbefund", "nach der Reparatur"], ["vergleich", "Vergleich", "vorher und nachher"]];
@@ -217,6 +218,8 @@ function renderTools() {
       h("span", { class: "chk" }, icon("tick")), h("span", { class: "cr-t" }, label))));
   const arten = h("div", { class: "seg", id: "report-art", role: "group", "aria-label": "Berichtsart" }, ...ARTEN.map(([id, label]) =>
     h("button", { type: "button", "aria-pressed": String(opts.art === id), onclick: () => set({ art: id }) }, label)));
+  $("report-kopf").replaceChildren(zurueckZeile(), kopfkarte({ bild: "bericht", titel: "Bericht",
+    text: "Eingangsbefund, Ausgangsbefund oder Vergleich, mit Readiness, Ist gegen Soll und KI-Belegen. Lokal gedruckt oder geteilt, ohne Hersteller-Cloud.", mehr: { info: "begriff:bericht" } }));
   $("report-tools").replaceChildren(
     h("div", { class: "rt-row" }, arten),
     h("div", { class: "rt-row scan-state", id: "scan-state" }),
@@ -254,7 +257,7 @@ const TOOL_ACTIONS = () => h("div", { class: "rt-row" },
   h("button", { class: "btn qt", type: "button", onclick: () => { renderReport(); download(`Diagnosebericht_${new Date().toISOString().slice(0, 10)}.html`, standaloneHtml(), "text/html"); } }, icon("download"), "HTML"));
 
 /* Nachher-Scan: Vollscan plus Fehlerspeicher neu lesen, dann als Ausgangsbefund festhalten. */
-async function runPostScan() {
+export async function runPostScan() {
   if (!state.status || state.postscanLaeuft) return;
   state.postscanLaeuft = true;
   renderTools();

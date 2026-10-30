@@ -1,12 +1,12 @@
 /* Handbuch im Programm: Übersicht der Kapitel, je Kapitel eine Seite (#handbuch/<id>) mit Inhaltsverzeichnis,
    Systembildern und Vor/Zurück. Inhalt in handbuch-inhalt.js, Bilder in handbuch-bilder.js. */
-import { $, h, icon, chev } from "./dom.js";
+import { $, h, icon } from "./dom.js";
 import { on } from "./state.js";
 import { go, currentRoute } from "./shell.js";
 import { icon3d } from "./icons3d.js";
 import { KAPITEL } from "./handbuch-inhalt.js";
 import { bild } from "./handbuch-bilder.js";
-import { lockup } from "./marke.js";
+import { zurueckZeile, kopfkarte, gruppe } from "./bausteine.js";
 
 export const kapitelIds = () => KAPITEL.map((k) => k.id);
 const TONE_MARK = { info: "Hinweis", warn: "Achtung", crit: "Grenze", ok: "Gut zu wissen" };
@@ -29,19 +29,16 @@ function block([art, a, b]) {
 }
 
 function toc(activeId) {
-  return h("nav", { class: "hb-toc", "aria-label": "Inhalt des Handbuchs" }, h("p", { class: "eyebrow" }, "Inhalt"),
+  return h("nav", { class: "hb-toc", "aria-label": "Inhalt des Handbuchs" }, h("p", { class: "li-k" }, "Inhalt"),
     h("ol", {}, ...KAPITEL.map((k, i) => h("li", {}, h("a", { href: `#handbuch/${k.id}`, "aria-current": k.id === activeId ? "page" : null,
       onclick: (ev) => { ev.preventDefault(); go("handbuch", { sub: k.id }); } }, h("span", { class: "n" }, String(i + 1).padStart(2, "0")), k.titel)))));
 }
 
 function overview() {
   return [
-    h("div", { class: "card hb-hero" }, lockup(64),
-      h("div", {}, h("p", { class: "eyebrow" }, "Handbuch"), h("h2", { class: "h2" }, "So funktioniert CANdor"),
-        h("p", { class: "p" }, "Jede Funktion erklärt, auch technisch: welche Hardware du brauchst, wie du installierst, wie die Verbindung über Bluetooth läuft, wie die Daten fließen, wie das Schreiben abgesichert ist und wie du Herstellerdaten über RMI einbindest."))),
-    h("div", { class: "hb-grid" }, ...KAPITEL.map((k, i) => h("button", { class: "hb-card", type: "button", onclick: () => go("handbuch", { sub: k.id }) },
-      h("span", { class: "hb-card-ic", "aria-hidden": "true" }, icon3d(k.icon)),
-      h("span", { class: "n" }, `Kapitel ${i + 1}`), h("span", { class: "t" }, k.titel), h("span", { class: "d" }, k.kurz)))),
+    zurueckZeile(),
+    kopfkarte({ bild: "handbuch", titel: "Handbuch", text: "So funktioniert CANdor, jede Funktion erklärt, auch technisch: Hardware, Installation, Verbindung über Bluetooth, Datenfluss, Absicherung des Schreibens und Herstellerdaten über RMI." }),
+    gruppe({ titel: "Kapitel", zeilen: KAPITEL.map((k, i) => ({ icon3d: k.icon, label: k.titel, unter: k.kurz, wert: String(i + 1).padStart(2, "0"), mono: true, ziel: () => go("handbuch", { sub: k.id }) })) }),
   ];
 }
 
@@ -49,17 +46,20 @@ function chapter(k) {
   const i = KAPITEL.indexOf(k), prev = KAPITEL[i - 1], next = KAPITEL[i + 1];
   const nav = (x, dir) => x ? h("button", { class: `btn ${dir === "next" ? "pri" : "sec"}`, type: "button", onclick: () => go("handbuch", { sub: x.id }) },
     dir === "prev" ? icon("back") : null, dir === "prev" ? `Zurück: ${x.titel}` : `Weiter: ${x.titel}`, dir === "next" ? icon("next") : null) : h("span");
-  return h("div", { class: "hb-layout" }, toc(k.id),
-    h("article", { class: "card hb-article", "aria-labelledby": `hb-${k.id}` },
-      h("p", { class: "eyebrow" }, `Kapitel ${i + 1} von ${KAPITEL.length}`), h("h2", { class: "h2", id: `hb-${k.id}` }, k.titel), h("p", { class: "lead" }, k.kurz),
-      ...k.bloecke.map(block).filter(Boolean),
-      h("div", { class: "hb-pager" }, nav(prev, "prev"), nav(next, "next"))));
+  return [
+    zurueckZeile(),
+    kopfkarte({ icon3d: k.icon, titel: k.titel, text: `Kapitel ${i + 1} von ${KAPITEL.length}. ${k.kurz}`, id: `hb-${k.id}` }),
+    h("div", { class: "hb-layout" }, toc(k.id),
+      h("article", { class: "li-gruppe hb-article", "aria-labelledby": `hb-${k.id}` },
+        ...k.bloecke.map(block).filter(Boolean),
+        h("div", { class: "hb-pager" }, nav(prev, "prev"), nav(next, "next")))),
+  ];
 }
 
 function render() {
   const sub = currentRoute().sub;
   const k = KAPITEL.find((x) => x.id === sub);
-  $("handbuch").replaceChildren(...(k ? [chapter(k)] : overview()));
+  $("handbuch").replaceChildren(...(k ? chapter(k) : overview()));
 }
 
 export function initHandbuch() {

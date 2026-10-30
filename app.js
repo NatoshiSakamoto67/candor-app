@@ -32,6 +32,7 @@ import { initBordnetz } from "./modules/bordnetz.js";
 import { initWerkbank } from "./modules/werkbank.js";
 import { ladeMandant, kundenfassung, wendeMarkeAn } from "./modules/mandant.js";
 import { initSeiten, wert } from "./modules/seiten.js";
+import { initFall } from "./modules/fall.js";
 
 /* Jeder Bereich hängt am Ereignis "render" (start, vehicle, faults, check, pfade, live, report). */
 function renderAll() {
@@ -68,7 +69,7 @@ async function start() {
   await ladeMandant();
   const wanted = initialRoute();
   initShell(); initVorgang(); initWerkstatt(); initHandbuch(); initEinstellungen(); initGarage(); initConnect(); initStart(); initWidgets(); initEinfach(); initHistory(); initInfo(); initApproval();
-  initVehicle(); initFaults(); initLive(); initCheck(); initPfade(); initAgent(); initReport(); initSearch(); initService(); initNavigation(); initBordnetz(); initWerkbank(); initSeiten();
+  initVehicle(); initFaults(); initLive(); initCheck(); initPfade(); initAgent(); initReport(); initSearch(); initService(); initNavigation(); initBordnetz(); initWerkbank(); initSeiten(); initFall();
   wendeMarkeAn();
   on("open-settings", openDisplaySettings);
   on("reload", reload);

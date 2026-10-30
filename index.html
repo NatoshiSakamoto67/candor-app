@@ -63,38 +63,42 @@
 
       <!-- Verbinden -->
       <section class="view view-connect" id="view-connect" aria-labelledby="page-title" hidden>
-        <div class="card connect">
-          <div class="sec-head">
-            <div class="veh-title"><span class="hero-ic" id="connect-ic" aria-hidden="true"></span><div><p class="eyebrow">Fahrzeug erkennen</p><h2>Verbinden in drei Schritten</h2></div></div>
-            <span class="sm" id="connect-state" aria-live="polite">bereit</span>
-          </div>
-          <ol class="csteps" id="connect-steps"></ol>
-          <div class="connect-help" id="connect-help" tabindex="-1" hidden></div>
-          <div class="connect-actions" id="connect-actions"></div>
+        <div class="li-seite">
+          <div id="connect-kopf"></div>
+          <section class="sk-block connect-block">
+            <h3 class="li-k">Drei Schritte <span class="sm li-k-rechts" id="connect-state" aria-live="polite">bereit</span></h3>
+            <div class="li-gruppe connect">
+              <ol class="csteps" id="connect-steps"></ol>
+              <div class="connect-help" id="connect-help" tabindex="-1" hidden></div>
+              <div class="connect-actions" id="connect-actions"></div>
+            </div>
+          </section>
         </div>
       </section>
 
       <!-- Fahrzeugbestand: Liste und Formular -->
       <section class="view view-fahrzeuge" id="view-fahrzeuge" aria-labelledby="page-title" hidden>
-        <div class="sec-head"><div><p class="eyebrow">Fahrzeuge auf diesem Gerät</p><h2>Fahrzeuge</h2></div><span class="sm" id="garage-count"></span></div>
-        <div class="garage-tools">
-          <label class="search-fld"><span class="sr">Fahrzeug suchen</span><input class="inp" id="garage-q" type="search" placeholder="Kennzeichen, Marke, Modell oder FIN" autocomplete="off"></label>
-          <div class="seg" id="garage-sort" role="group" aria-label="Sortierung"></div>
-          <button class="btn pri" id="garage-new" type="button">Neues Fahrzeug</button>
+        <div class="li-seite">
+          <div id="garage-kopf"></div>
+          <div class="garage-tools">
+            <label class="search-fld"><span class="sr">Fahrzeug suchen</span><input class="inp" id="garage-q" type="search" placeholder="Kennzeichen, Marke, Modell oder FIN" autocomplete="off"></label>
+            <div class="seg" id="garage-sort" role="group" aria-label="Sortierung"></div>
+            <button class="btn pri" id="garage-new" type="button">Neues Fahrzeug</button>
+          </div>
+          <div id="garage"></div>
         </div>
-        <div id="garage"></div>
       </section>
       <section class="view view-einstellungen" id="view-einstellungen" aria-labelledby="page-title" hidden>
-        <div class="form-page" id="einstellungen"></div>
+        <div class="li-seite" id="einstellungen"></div>
       </section>
       <section class="view view-handbuch" id="view-handbuch" aria-labelledby="page-title" hidden>
-        <div id="handbuch"></div>
+        <div class="li-seite li-breit" id="handbuch"></div>
       </section>
       <section class="view view-werkstatt" id="view-werkstatt" aria-labelledby="page-title" hidden>
-        <div class="form-page" id="werkstatt-form"></div>
+        <div class="li-seite" id="werkstatt-form"></div>
       </section>
       <section class="view view-fahrzeug" id="view-fahrzeug" aria-labelledby="page-title" hidden>
-        <div id="garage-form"></div>
+        <div class="li-seite" id="garage-form"></div>
       </section>
 
       <!-- Fahrzeug -->
@@ -237,6 +241,11 @@
         <div class="li-seite" id="seite"></div>
       </section>
 
+      <!-- Fall-Seite: ein Fehlercode, ein Bildschirm (fall.js) -->
+      <section class="view view-fall" id="view-fall" aria-labelledby="page-title" hidden>
+        <div class="li-seite" id="fall"></div>
+      </section>
+
       <!-- CAN-Werkbank (werkbank.js), nur Profi-Modus -->
       <section class="view view-werkbank" id="view-werkbank" aria-labelledby="page-title" hidden>
         <div class="li-seite" id="werkbank"></div>
@@ -295,18 +304,19 @@
 
       <!-- Bericht -->
       <section class="view view-report" id="view-report" aria-labelledby="page-title" hidden>
-        <div class="sec-head no-print">
-          <div><p class="eyebrow">Vorher und nachher, lokal, ohne Hersteller-Cloud</p><h2>Diagnosebericht</h2></div>
-          <button class="ib" type="button" data-info="begriff:bericht" aria-label="Was steht im Bericht?"><span class="dot"><svg class="ic i-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#z-info-i"/></svg></span></button>
+        <div class="li-seite li-breit">
+          <div class="no-print" id="report-kopf"></div>
+          <div class="report-tools no-print" id="report-tools"></div>
+          <article class="card paper" id="report"></article>
         </div>
-        <div class="report-tools no-print" id="report-tools"></div>
-        <article class="card paper" id="report"></article>
       </section>
 
       <!-- Verlauf -->
       <section class="view view-history" id="view-history" aria-labelledby="page-title" hidden>
-        <div class="sec-head"><div><p class="eyebrow">Frühere Diagnosen auf diesem Gerät</p><h2>Diagnoseverlauf</h2></div><span class="sm" id="history-count"></span></div>
-        <div id="history"></div>
+        <div class="li-seite li-breit">
+          <div id="history-kopf"></div>
+          <div id="history"></div>
+        </div>
       </section>
 
       <!-- Detailseite: Infos und Erklärungen als eigene Seite -->

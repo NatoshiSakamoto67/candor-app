@@ -380,7 +380,7 @@ function t3Karte(bt, at) {
     abschnitt("Messwerte jetzt", messwerte.length ? h("ul", { class: "t3-messwerte" }, ...messwerte.map((m) => h("li", {}, h("span", {}, signalTitle(m.sig)), h("b", { class: "num" }, `${num(m.v.wert, 1)} ${m.v.einheit || ""}`)))) : null),
     abschnitt("Fehlercodes dieses Teils", codes.length ? h("div", { class: "t3-codes" }, ...codes.filter((c) => aktiv.has(c)).map(codeChip), ...codeBereiche(codes.filter((c) => !aktiv.has(c))).slice(0, 4).map((b) => h("span", { class: "t3-code muted" }, b)), codes.length > 8 ? h("span", { class: "muted sm" }, `${codes.length} Codes`) : null) : null),
     h("div", { class: "row-actions" }, ...t3Probleme().filter((p) => t3Aufloesen(p.ids).includes(bt.id)).map((p) =>
-        h("button", { class: "btn sec small", type: "button", onclick: () => emit("open-info", `dtc:${p.code}`) }, `Diagnosepfad ${p.code}`)),
+        h("button", { class: "btn sec small", type: "button", onclick: () => go("fall", { sub: p.code }) }, `Fall ${p.code}`)),
       list.length ? h("button", { class: "btn sec small", type: "button", onclick: () => jumpToGroup(d) }, "Zur Liste") : null,
       h("button", { class: "btn qt small", type: "button", onclick: () => { card.hidden = true; } }, "Schließen")));
   card.hidden = false;
