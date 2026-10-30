@@ -429,11 +429,12 @@ body::before { background: radial-gradient(1400px 700px at 50% -20%, color-mix(i
 .pal-z:has(.li-unter) { min-height: 58px; padding-block: 7px; }
 .pal-z[aria-selected="true"] { background: color-mix(in oklab, var(--accent) 16%, transparent); box-shadow: inset 3px 0 0 var(--accent); }
 .pal-leer { padding: 28px 8px; text-align: center; }
-html.pal-offen, html.pal-offen body { overflow: hidden; }
+html.pal-offen, html.pal-offen body { overflow: hidden; overscroll-behavior: none; }
 @media (hover: none) { .pal-z[aria-selected="true"] { background: transparent; box-shadow: none; } .pal-z:active { background: color-mix(in oklab, var(--text) 7%, transparent); } }
 @media (max-width: 759px) {
-  /* Ganze sichtbare Fläche deckend; Höhe und Lage folgen dem visualViewport (search.js), Rest der Seite bleibt verdeckt */
-  .palette[open] { position: fixed; inset: auto; top: var(--vv-top, 0px); left: 0; width: 100vw; max-width: none; height: var(--vv-h, 100dvh); max-height: none; margin: 0; border-radius: 0; background: var(--surface-0); overflow: hidden; }
+  /* Deckt den ganzen Bildschirm, auch hinter Tastatur und iOS-Formularleiste (100lvh); nur der Inhalt rückt per Innenabstand
+     in die sichtbare Fläche des visualViewport (search.js), so scheint beim Verschieben nie die Seite durch */
+  .palette[open] { position: fixed; inset: 0 auto auto 0; width: 100vw; max-width: none; height: 100vh; height: 100lvh; max-height: none; margin: 0; border-radius: 0; background: var(--surface-0); overflow: hidden; box-sizing: border-box; padding: var(--vv-top, 0px) 0 var(--vv-unten, 0px); overscroll-behavior: none; }
   .palette::backdrop { background: var(--surface-0); }
   .palette .pal { height: 100%; max-width: none; border: 0; border-radius: 0; background: var(--surface-0); box-shadow: none; }
   .palette .results { flex: 1; min-height: 0; max-height: none; overflow: auto; overscroll-behavior: contain; order: 0; padding-top: calc(env(safe-area-inset-top, 0px) + 20px); }

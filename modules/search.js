@@ -172,6 +172,7 @@ function flaecheSetzen() {
   if (!dlg || !vv) return;
   dlg.style.setProperty("--vv-h", `${Math.round(vv.height)}px`);
   dlg.style.setProperty("--vv-top", `${Math.round(vv.offsetTop)}px`);
+  dlg.style.setProperty("--vv-unten", `${Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop))}px`);
   dlg.dataset.tastatur = window.innerHeight - vv.height > TASTATUR_AB ? "an" : "aus";
 }
 
@@ -205,9 +206,13 @@ export function openSearch() {
     h("div", { class: "pal-f sm" }, h("span", {}, h("span", { class: "kbd" }, "↑↓"), " wählen"), h("span", {}, h("span", { class: "kbd" }, "Enter"), " öffnen"), h("span", {}, h("span", { class: "kbd" }, "Esc"), " schließen")));
   const vv = window.visualViewport;
   if (vv) { vv.addEventListener("resize", flaecheSetzen); vv.addEventListener("scroll", flaecheSetzen); }
+  /* iOS rollt sonst die Seite hinter der Suche: Wischen nur in der Trefferliste zulassen */
+  const sperre = (e) => { if (!(e.target instanceof Element && e.target.closest(".results"))) e.preventDefault(); };
+  dlg.addEventListener("touchmove", sperre, { passive: false });
   document.documentElement.classList.add("pal-offen");
   dlg.addEventListener("close", () => {
     if (vv) { vv.removeEventListener("resize", flaecheSetzen); vv.removeEventListener("scroll", flaecheSetzen); }
+    dlg.removeEventListener("touchmove", sperre);
     document.documentElement.classList.remove("pal-offen");
     /* Escape oder X: Fokus zurück, wo er vorher war; nach einem Treffer übernimmt die neue Seite */
     if (!gewaehlt && vorher && vorher.isConnected && vorher.focus) vorher.focus({ preventScroll: true });
