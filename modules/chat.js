@@ -17,7 +17,7 @@ const IMAGE = /^image\/(png|jpeg|webp|gif)$/, TEXT = /\.(txt|csv|log|json|md|xml
 const QUICK = [["Fehler erklären", "Was bedeuten meine Fehlercodes?"], ["Wo fange ich an?", "Wo fange ich bei der Fehlersuche an?"], ["Schafft es die AU?", "Besteht das Auto die AU?"]];
 const QUICK_LEER = [["Was kannst du?", "Was kannst du für mich am Auto tun?"], ["Typische Probleme", "Such im Internet nach bekannten Problemen zu diesem Modell"], ["Wo fange ich an?", "Wo fange ich bei der Fehlersuche an?"]];
 let files = [], web = storageGet("kfzdiag-websuche", true), running = null;
-/* Diagnose-Agent: Claude liest selbst am Auto (nur lesend). Nur mit Server und Claude, Anhänge gehen weiter an den Chat. */
+/* Diagnose-Agent: die KI liest selbst am Auto (nur lesend). Nur mit Server und Claude oder einem OpenAI-kompatiblen Anbieter, Anhänge gehen weiter an den Chat. */
 let agentLive = storageGet("kfzdiag-agent-live", false);
 
 /* Verlauf: mehrere Chats (chatverlauf.js); jeder Chat gehört zum Fahrzeug, mit dem er begonnen wurde. */
@@ -32,7 +32,8 @@ function saveHistory(list, id = aktivId()) {
   return ziel;
 }
 const isServer = () => state.src && state.src.mode === "server";
-const agentMoeglich = () => isServer() && state.status && state.status.ki === "anthropic";
+const AGENT_ANBIETER = new Set(["anthropic", "openai_kompatibel"]);
+const agentMoeglich = () => isServer() && state.status && AGENT_ANBIETER.has(state.status.ki);
 const agentAn = () => agentLive && agentMoeglich();
 function agentUmschalten() {
   agentLive = !agentLive; storageSet("kfzdiag-agent-live", agentLive);
@@ -315,7 +316,7 @@ function plusMenu() {
     row(icon("rec"), "Foto aufnehmen", "Kamera am Handy oder Tablet", () => $("cx-camera").click()),
     h("div", { class: "cx-sep" }),
     row(icon("search"), "Websuche", "Codes, Rückrufe, bekannte Probleme, mit Quellen", () => { web = !web; storageSet("kfzdiag-websuche", web); renderToggles(); }, web),
-    agentMoeglich() ? row(icon("pulse"), "Selbst am Auto lesen", "Claude liest Fehler und Messwerte selbst, nur lesend", agentUmschalten, agentLive) : null);
+    agentMoeglich() ? row(icon("pulse"), "Selbst am Auto lesen", "Die KI liest Fehler und Messwerte selbst, nur lesend", agentUmschalten, agentLive) : null);
   $("cx-composer").append(menu);
   setTimeout(() => document.addEventListener("pointerdown", outside, true));
   menu.addEventListener("keydown", (ev) => { if (ev.key === "Escape") { close(); $("cx-plus").focus(); } });

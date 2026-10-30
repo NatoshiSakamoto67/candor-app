@@ -1,0 +1,471 @@
+{
+ "beschreibung": "Prüfregeln des deterministischen Prüfberichts. Jede Regel ist Daten: Eingangsfelder, deklarative Bedingung, Ergebnis wenn wahr (ok, hinweis, mangel), deutscher Text mit Platzhaltern {feld}, Quelle. Fehlt ein Eingangsfeld, lautet das Ergebnis offen (nicht prüfbar), nie stillschweigend ok. Keine Herstellerwerte. Ausgewertet von kfzdiag/pruefbericht.py und frontend/kern/pruefbericht.js mit identischer Logik.",
+ "version": "2026-10-30",
+ "regeln": [
+  {
+   "id": "R-FEHLER-01",
+   "titel": "Motorkontrollleuchte",
+   "bereich": "fehler",
+   "eingang": [
+    "readiness.mil"
+   ],
+   "bedingung": {
+    "feld": "readiness.mil",
+    "op": "wahr"
+   },
+   "ergebnis_wenn_wahr": "mangel",
+   "text": "Die Motorkontrollleuchte ist an. Das Steuergerät meldet einen abgasrelevanten Fehler, das Fahrzeug besteht so keine Abgasuntersuchung.",
+   "quelle": "Readiness und Fehlerstatus nach OBD-Norm (Modus 01 PID 01, Modus 03 und 07)"
+  },
+  {
+   "id": "R-FEHLER-02",
+   "titel": "Aktive bestätigte Fehler",
+   "bereich": "fehler",
+   "eingang": [
+    "fehler.aktiv",
+    "fehler.aktiv_codes"
+   ],
+   "bedingung": {
+    "feld": "fehler.aktiv",
+    "op": ">",
+    "wert": 0
+   },
+   "ergebnis_wenn_wahr": "mangel",
+   "text": "Bestätigt und aktuell aktiv ({fehler.aktiv}): {fehler.aktiv_codes}. Die Ursache liegt noch vor.",
+   "quelle": "Readiness und Fehlerstatus nach OBD-Norm (Modus 01 PID 01, Modus 03 und 07)"
+  },
+  {
+   "id": "R-FEHLER-03",
+   "titel": "Vorläufige Fehler",
+   "bereich": "fehler",
+   "eingang": [
+    "fehler.vorlaeufig",
+    "fehler.vorlaeufig_codes"
+   ],
+   "bedingung": {
+    "feld": "fehler.vorlaeufig",
+    "op": ">",
+    "wert": 0
+   },
+   "ergebnis_wenn_wahr": "hinweis",
+   "text": "Vorläufig gespeichert ({fehler.vorlaeufig}): {fehler.vorlaeufig_codes}. Noch nicht bestätigt, beim nächsten Fahrzyklus beobachten.",
+   "quelle": "Readiness und Fehlerstatus nach OBD-Norm (Modus 01 PID 01, Modus 03 und 07)"
+  },
+  {
+   "id": "R-FEHLER-04",
+   "titel": "Unbekannte Herstellercodes",
+   "bereich": "fehler",
+   "eingang": [
+    "fehler.unbekannt",
+    "fehler.unbekannt_codes"
+   ],
+   "bedingung": {
+    "feld": "fehler.unbekannt",
+    "op": ">",
+    "wert": 0
+   },
+   "ergebnis_wenn_wahr": "hinweis",
+   "text": "Ohne Quelle nicht gedeutet ({fehler.unbekannt}): {fehler.unbekannt_codes}. Diese Codes legt der Fahrzeugbauer selbst fest, nichts wird geraten.",
+   "quelle": "Genormte Codetabelle (OBDex CC0) und Fahrzeugprofile mit Quelle; alles andere gilt als unbekannt"
+  },
+  {
+   "id": "R-FEHLER-05",
+   "titel": "Fehlerspeicher leer",
+   "bereich": "fehler",
+   "eingang": [
+    "fehler.gesamt"
+   ],
+   "bedingung": {
+    "feld": "fehler.gesamt",
+    "op": "==",
+    "wert": 0
+   },
+   "ergebnis_wenn_wahr": "ok",
+   "text": "Kein Fehler gespeichert, weder im OBD-Speicher noch in gescannten Steuergeräten.",
+   "quelle": "Readiness und Fehlerstatus nach OBD-Norm (Modus 01 PID 01, Modus 03 und 07)"
+  },
+  {
+   "id": "R-READY-01",
+   "titel": "Readiness nicht vollständig",
+   "bereich": "readiness",
+   "eingang": [
+    "readiness.offen"
+   ],
+   "bedingung": {
+    "feld": "readiness.offen",
+    "op": "nicht_leer"
+   },
+   "ergebnis_wenn_wahr": "hinweis",
+   "text": "Bereitschaftstests noch offen: {readiness.offen}. Für die Abgasuntersuchung muss ein Fahrzyklus gefahren werden.",
+   "quelle": "Readiness und Fehlerstatus nach OBD-Norm (Modus 01 PID 01, Modus 03 und 07)"
+  },
+  {
+   "id": "R-READY-02",
+   "titel": "Readiness vollständig",
+   "bereich": "readiness",
+   "eingang": [
+    "readiness.offen",
+    "readiness.mil",
+    "readiness.gesamt"
+   ],
+   "bedingung": {
+    "alle": [
+     {
+      "feld": "readiness.gesamt",
+      "op": ">",
+      "wert": 0
+     },
+     {
+      "feld": "readiness.offen",
+      "op": "leer"
+     },
+     {
+      "feld": "readiness.mil",
+      "op": "falsch"
+     }
+    ]
+   },
+   "ergebnis_wenn_wahr": "ok",
+   "text": "Alle {readiness.gesamt} Bereitschaftstests sind fertig, die Motorkontrollleuchte ist aus. Aus Sicht der Readiness AU-bereit.",
+   "quelle": "Readiness und Fehlerstatus nach OBD-Norm (Modus 01 PID 01, Modus 03 und 07)"
+  },
+  {
+   "id": "R-READY-03",
+   "titel": "Abgasfehler gemeldet",
+   "bereich": "readiness",
+   "eingang": [
+    "readiness.anzahl_fehler"
+   ],
+   "bedingung": {
+    "feld": "readiness.anzahl_fehler",
+    "op": ">",
+    "wert": 0
+   },
+   "ergebnis_wenn_wahr": "hinweis",
+   "text": "Abgasrelevante Fehler laut Readiness-Abfrage des Motorsteuergeräts: {readiness.anzahl_fehler}.",
+   "quelle": "Readiness und Fehlerstatus nach OBD-Norm (Modus 01 PID 01, Modus 03 und 07)"
+  },
+  {
+   "id": "R-SOLL-01",
+   "titel": "Kühlmittel nach Warmlauf zu kalt",
+   "bereich": "sollwert",
+   "eingang": [
+    "live.KUEHLMITTEL",
+    "live.LAUFZEIT"
+   ],
+   "bedingung": {
+    "alle": [
+     {
+      "signal": "LAUFZEIT",
+      "zustand": "motor_laeuft",
+      "ueber_gleich": 600
+     },
+     {
+      "signal": "KUEHLMITTEL",
+      "zustand": "motor_laeuft",
+      "unter": 80
+     }
+    ]
+   },
+   "ergebnis_wenn_wahr": "hinweis",
+   "text": "Nach {live.LAUFZEIT} s Laufzeit liegt das Kühlmittel bei {live.KUEHLMITTEL} °C, unter 80 °C. Thermostat und Temperaturfühler prüfen.",
+   "quelle": "Allgemeiner Richtwert (sollwerte-allgemein.json), kein Herstellerwert"
+  },
+  {
+   "id": "R-SOLL-02",
+   "titel": "Kühlmittel zu heiß",
+   "bereich": "sollwert",
+   "eingang": [
+    "live.KUEHLMITTEL"
+   ],
+   "bedingung": {
+    "signal": "KUEHLMITTEL",
+    "zustand": "motor_laeuft",
+    "ueber": 105
+   },
+   "ergebnis_wenn_wahr": "mangel",
+   "text": "Kühlmittel bei {live.KUEHLMITTEL} °C, über 105 °C. Überhitzungsgefahr, Kühlsystem sofort prüfen.",
+   "quelle": "Allgemeiner Richtwert (sollwerte-allgemein.json), kein Herstellerwert"
+  },
+  {
+   "id": "R-SOLL-03",
+   "titel": "Langzeit-Gemischkorrektur Bank 1",
+   "bereich": "sollwert",
+   "eingang": [
+    "live.TRIM_LANG_B1"
+   ],
+   "bedingung": {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "ausserhalb": [
+     -10,
+     10
+    ]
+   },
+   "ergebnis_wenn_wahr": "hinweis",
+   "text": "Langzeit-Trim Bank 1 bei {live.TRIM_LANG_B1} %, außerhalb ±10 %. Gemisch wird dauerhaft korrigiert; Ursache über den Fall zum Fehlercode eingrenzen (Falschluft, Kraftstoffdruck, Luftmasse).",
+   "quelle": "Allgemeiner Richtwert (sollwerte-allgemein.json), kein Herstellerwert"
+  },
+  {
+   "id": "R-SOLL-04",
+   "titel": "Langzeit-Gemischkorrektur Bank 2",
+   "bereich": "sollwert",
+   "eingang": [
+    "live.TRIM_LANG_B2"
+   ],
+   "bedingung": {
+    "signal": "TRIM_LANG_B2",
+    "zustand": "motor_laeuft",
+    "ausserhalb": [
+     -10,
+     10
+    ]
+   },
+   "ergebnis_wenn_wahr": "hinweis",
+   "text": "Langzeit-Trim Bank 2 bei {live.TRIM_LANG_B2} %, außerhalb ±10 %. Ursache über den Fall zum Fehlercode eingrenzen.",
+   "quelle": "Allgemeiner Richtwert (sollwerte-allgemein.json), kein Herstellerwert"
+  },
+  {
+   "id": "R-SOLL-05",
+   "titel": "Leerlaufdrehzahl warm",
+   "bereich": "sollwert",
+   "eingang": [
+    "live.DREHZAHL",
+    "live.KUEHLMITTEL"
+   ],
+   "bedingung": {
+    "alle": [
+     {
+      "signal": "KUEHLMITTEL",
+      "zustand": "motor_laeuft",
+      "ueber_gleich": 75
+     },
+     {
+      "signal": "DREHZAHL",
+      "zustand": "motor_laeuft",
+      "ausserhalb": [
+       600,
+       950
+      ]
+     }
+    ]
+   },
+   "ergebnis_wenn_wahr": "hinweis",
+   "text": "Leerlaufdrehzahl {live.DREHZAHL} 1/min bei warmem Motor, außerhalb 600 bis 950. Leerlaufregelung, Falschluft oder Verbraucher prüfen.",
+   "quelle": "Allgemeiner Richtwert (sollwerte-allgemein.json), kein Herstellerwert"
+  },
+  {
+   "id": "R-SOLL-06",
+   "titel": "Ist gegen Soll ohne Abweichung",
+   "bereich": "sollwert",
+   "eingang": [
+    "sollwerte.anzahl",
+    "sollwerte.abweichungen"
+   ],
+   "bedingung": {
+    "alle": [
+     {
+      "feld": "sollwerte.anzahl",
+      "op": ">",
+      "wert": 0
+     },
+     {
+      "feld": "sollwerte.abweichungen",
+      "op": "==",
+      "wert": 0
+     }
+    ]
+   },
+   "ergebnis_wenn_wahr": "ok",
+   "text": "Alle {sollwerte.anzahl} verglichenen Messwerte liegen im Richtwertbereich.",
+   "quelle": "Allgemeiner Richtwert (sollwerte-allgemein.json), kein Herstellerwert"
+  },
+  {
+   "id": "R-BORD-01",
+   "titel": "Ladespannung zu niedrig",
+   "bereich": "bordnetz",
+   "eingang": [
+    "live.SPANNUNG",
+    "live.DREHZAHL"
+   ],
+   "bedingung": {
+    "signal": "SPANNUNG",
+    "zustand": "motor_laeuft",
+    "unter": 13.2
+   },
+   "ergebnis_wenn_wahr": "mangel",
+   "text": "Bordspannung {live.SPANNUNG} V bei laufendem Motor, unter 13,2 V. Die Lichtmaschine lädt nicht ausreichend; Keilrippenriemen, Lichtmaschine und Masseverbindungen prüfen.",
+   "quelle": "Allgemeiner Richtwert (sollwerte-allgemein.json), kein Herstellerwert"
+  },
+  {
+   "id": "R-BORD-02",
+   "titel": "Ladespannung zu hoch",
+   "bereich": "bordnetz",
+   "eingang": [
+    "live.SPANNUNG",
+    "live.DREHZAHL"
+   ],
+   "bedingung": {
+    "signal": "SPANNUNG",
+    "zustand": "motor_laeuft",
+    "ueber": 14.8
+   },
+   "ergebnis_wenn_wahr": "mangel",
+   "text": "Bordspannung {live.SPANNUNG} V bei laufendem Motor, über 14,8 V. Laderegler prüfen, Überspannung gefährdet Steuergeräte.",
+   "quelle": "Allgemeiner Richtwert (sollwerte-allgemein.json), kein Herstellerwert"
+  },
+  {
+   "id": "R-BORD-03",
+   "titel": "Ruhespannung niedrig",
+   "bereich": "bordnetz",
+   "eingang": [
+    "live.SPANNUNG",
+    "live.DREHZAHL"
+   ],
+   "bedingung": {
+    "signal": "SPANNUNG",
+    "zustand": "motor_aus",
+    "unter": 12.2
+   },
+   "ergebnis_wenn_wahr": "hinweis",
+   "text": "Bordspannung {live.SPANNUNG} V bei Zündung an und stehendem Motor, unter 12,2 V. Batterie entladen oder geschwächt; vor weiteren Messungen laden.",
+   "quelle": "Allgemeiner Richtwert (sollwerte-allgemein.json), kein Herstellerwert"
+  },
+  {
+   "id": "R-BORD-04",
+   "titel": "Ladespannung im Bereich",
+   "bereich": "bordnetz",
+   "eingang": [
+    "live.SPANNUNG",
+    "live.DREHZAHL"
+   ],
+   "bedingung": {
+    "signal": "SPANNUNG",
+    "zustand": "motor_laeuft",
+    "innerhalb": [
+     13.2,
+     14.8
+    ]
+   },
+   "ergebnis_wenn_wahr": "ok",
+   "text": "Bordspannung {live.SPANNUNG} V bei laufendem Motor, im Bereich 13,2 bis 14,8 V.",
+   "quelle": "Allgemeiner Richtwert (sollwerte-allgemein.json), kein Herstellerwert"
+  },
+  {
+   "id": "R-FALL-01",
+   "titel": "Belegte Ursache im Fall",
+   "bereich": "fall",
+   "eingang": [
+    "fall.belegt",
+    "fall.belegt_text"
+   ],
+   "bedingung": {
+    "feld": "fall.belegt",
+    "op": "nicht_leer"
+   },
+   "ergebnis_wenn_wahr": "hinweis",
+   "text": "Der Fall stützt eine Ursache mit belegten Messungen: {fall.belegt_text}. Maßnahme durchführen und mit dem Nachher-Scan nachweisen.",
+   "quelle": "Fall-Hypothesen aus den Diagnosepfaden (frontend/daten/diagnose), eigene Richtwerte, kein Herstellerwert"
+  },
+  {
+   "id": "R-FALL-02",
+   "titel": "Offene Messungen im Fall",
+   "bereich": "fall",
+   "eingang": [
+    "fall.offene_messungen"
+   ],
+   "bedingung": {
+    "feld": "fall.offene_messungen",
+    "op": ">",
+    "wert": 0
+   },
+   "ergebnis_wenn_wahr": "hinweis",
+   "text": "Offene Messungen in den Diagnosepfaden: {fall.offene_messungen}. Erst messen, dann Teile tauschen.",
+   "quelle": "Fall-Hypothesen aus den Diagnosepfaden (frontend/daten/diagnose), eigene Richtwerte, kein Herstellerwert"
+  },
+  {
+   "id": "R-FALL-03",
+   "titel": "Fehlercodes ohne Diagnosepfad",
+   "bereich": "fall",
+   "eingang": [
+    "fall.ohne_pfad"
+   ],
+   "bedingung": {
+    "feld": "fall.ohne_pfad",
+    "op": "nicht_leer"
+   },
+   "ergebnis_wenn_wahr": "hinweis",
+   "text": "Für {fall.ohne_pfad} gibt es keinen geführten Diagnosepfad. Nur die genormte Codebedeutung liegt vor, keine Hypothesen.",
+   "quelle": "Fall-Hypothesen aus den Diagnosepfaden (frontend/daten/diagnose), eigene Richtwerte, kein Herstellerwert"
+  },
+  {
+   "id": "R-NACHWEIS-01",
+   "titel": "Fehler nach Reparatur weiter gespeichert",
+   "bereich": "nachweis",
+   "eingang": [
+    "nachweis.weiter"
+   ],
+   "bedingung": {
+    "feld": "nachweis.weiter",
+    "op": "nicht_leer"
+   },
+   "ergebnis_wenn_wahr": "mangel",
+   "text": "Nach der Reparatur sind diese Fehler weiter gespeichert: {nachweis.weiter}. Die Maßnahme ist nicht nachgewiesen.",
+   "quelle": "Vergleich Eingangsbefund gegen Ausgangsbefund derselben Sitzung (Fehlercodes und Richtwerte), kein Herstellerwert"
+  },
+  {
+   "id": "R-NACHWEIS-02",
+   "titel": "Neue Fehler nach Reparatur",
+   "bereich": "nachweis",
+   "eingang": [
+    "nachweis.neu"
+   ],
+   "bedingung": {
+    "feld": "nachweis.neu",
+    "op": "nicht_leer"
+   },
+   "ergebnis_wenn_wahr": "hinweis",
+   "text": "Im Ausgangsbefund sind neue Fehler aufgetaucht: {nachweis.neu}. Folgefehler oder Arbeitsfehler prüfen.",
+   "quelle": "Vergleich Eingangsbefund gegen Ausgangsbefund derselben Sitzung (Fehlercodes und Richtwerte), kein Herstellerwert"
+  },
+  {
+   "id": "R-NACHWEIS-03",
+   "titel": "Eingangsfehler behoben",
+   "bereich": "nachweis",
+   "eingang": [
+    "nachweis.behoben",
+    "nachweis.weiter"
+   ],
+   "bedingung": {
+    "alle": [
+     {
+      "feld": "nachweis.behoben",
+      "op": "nicht_leer"
+     },
+     {
+      "feld": "nachweis.weiter",
+      "op": "leer"
+     }
+    ]
+   },
+   "ergebnis_wenn_wahr": "ok",
+   "text": "Alle Fehler des Eingangsbefunds sind im Ausgangsbefund weg: {nachweis.behoben}.",
+   "quelle": "Vergleich Eingangsbefund gegen Ausgangsbefund derselben Sitzung (Fehlercodes und Richtwerte), kein Herstellerwert"
+  },
+  {
+   "id": "R-NACHWEIS-04",
+   "titel": "Messwert normalisiert",
+   "bereich": "nachweis",
+   "eingang": [
+    "nachweis.normalisiert"
+   ],
+   "bedingung": {
+    "feld": "nachweis.normalisiert",
+    "op": "nicht_leer"
+   },
+   "ergebnis_wenn_wahr": "ok",
+   "text": "Vorher außerhalb, nachher im Richtwertbereich: {nachweis.normalisiert}. Die Wirkung der Maßnahme ist am Messwert belegt.",
+   "quelle": "Vergleich Eingangsbefund gegen Ausgangsbefund derselben Sitzung (Fehlercodes und Richtwerte), kein Herstellerwert"
+  }
+ ]
+}

@@ -113,6 +113,18 @@ export const KAPITEL = [
       wie: "Anbieter frei wählbar: Claude über das offizielle SDK oder ein lokales Modell über Ollama. Die KI bekommt nur, was das Auto geliefert hat, ohne FIN, und hat keine Werkzeuge: Sie kann nichts ins Auto schreiben.", dateien: "kfzdiag/ki.py, kfzdiag/chat.py, modules/chat.js, modules/md.js" }],
     ["funktion", { titel: "Bericht", icon: "report", was: "Eingangsbefund, Ausgangsbefund oder Vergleich, als Fassung für Kunde oder Werkstatt, mit Briefkopf, Kilometerstand und Unterschriftsfeldern. Drucken als PDF, Teilen oder als HTML speichern.",
       wie: "Der Eingangsbefund ist der erste Stand der Sitzung, der Ausgangsbefund entsteht mit dem Nachher-Scan. Der Vergleich trennt behoben, neu, weiter bestehend und vorher nicht geprüft. Gedruckt wird immer hell.", dateien: "modules/report.js, modules/befund.js" }],
+    ["funktion", { titel: "Prüfbericht", icon: "report", was: "Abschnitt im Bericht: 25 feste Regeln prüfen Fehlerspeicher, Readiness, Messwerte gegen Richtwerte, Bordspannung, Fälle und den Nachweis vorher und nachher. Jede Regel zeigt eine Ampel (in Ordnung, Hinweis, Mangel), einen Satz, die Werte und die Quelle. Oben stehen Prüfnummer, gekürzter Hash und die Zählung. Auf Wunsch formuliert der Assistent die Ergebnisse für die Kundschaft.",
+      wie: "Die Regeln sind Daten (daten/pruefregeln.json) und laufen ohne KI im Server und gleich im Browser. Die Prüfnummer CD-JJJJMMTT-xxxxxx endet mit den ersten Zeichen eines SHA-256 über die sortierten Eingangsdaten; Zeit, FIN und Kennzeichen gehen nicht ein. Gleiche Daten ergeben denselben Hash, so lässt sich ein Bericht später nachrechnen. Der Text vom Assistenten bekommt nur die Regelergebnisse, nie FIN oder Kennzeichen. Jeder Satz muss eine gültige Regelnummer tragen; nennt er einen Mangel nicht, stellt ihn als behoben dar oder macht aus »in Ordnung« einen Mangel, wird er abgelehnt und erscheint nicht im Bericht. Ohne eingerichtete KI gilt der Prüfbericht trotzdem.", dateien: "kfzdiag/pruefbericht.py, kern/pruefbericht.js, modules/pruefbericht.js, daten/pruefregeln.json" }],
+    ["funktion", { titel: "Dashboard", icon: "gauge", was: "Große Zahlen für die Fahrt: Drehzahl, Geschwindigkeit, Kühlmittel, Spannung und Motorlast, dazu eine Ampel für Fehler. Hochkant untereinander, quer nebeneinander. Tippen wechselt die Gruppe.",
+      wie: "Liest dieselben Live-Werte wie die Messwerte-Seite. Der Bildschirm bleibt an, solange die Seite offen ist (Wake Lock), wo der Browser das erlaubt; die Leiste zeigt, ob es greift.", dateien: "modules/dashboard.js, kern/dashboard-ton.js" }],
+    ["funktion", { titel: "Pannenhilfe", icon: "shield", was: "Checkliste für die Panne, der aktuelle Zustand des Autos und Rufnummern zum Antippen: Notruf 112, ADAC, ACE und die eigene Werkstatt, wenn eine Nummer hinterlegt ist.",
+      wie: "Der Standort wird nur auf Wunsch einmal bestimmt und zum Teilen angeboten; gespeichert wird er nicht.", dateien: "modules/seiten-mehr.js, kern/panne.js" }],
+    ["funktion", { titel: "Töne & Haptik", icon: "bubble", was: "Töne und Vibration an oder aus, Lautstärke, je Ereignis ein Schalter (neuer Fehler, Wert im roten Bereich, Scan fertig, Aktion ausgeführt) und eine Vorschau je Klang. Der Fahrt-Agent nutzt dieselben Einstellungen.",
+      wie: "Klänge entstehen im Browser (WebAudio), es gibt keine Tondateien. Browser spielen Ton erst nach einer Berührung.", dateien: "modules/toene.js, kern/toene.js" }],
+    ["funktion", { titel: "Papiere", icon: "clipboard", was: "Fahrzeugschein, Versicherungskarte, Rechnungen als Bild oder PDF bis 10 MB, nur auf diesem Gerät.",
+      wie: "Die Dateien liegen in der Browser-Datenbank (IndexedDB). Sie gehen weder an den Server noch an die KI.", dateien: "modules/seiten.js" }],
+    ["funktion", { titel: "Fernzugriff", icon: "lock", was: "Erklärt, wie CANdor von unterwegs erreichbar ist: über ein VPN und einen SSH-Tunnel zum eigenen Rechner. Aus der eingetragenen Serveradresse entsteht der passende Befehl zum Kopieren.",
+      wie: "Der Diagnose-Server nimmt nur Verbindungen vom eigenen Rechner an (127.0.0.1). Einen offenen Port im Internet gibt es nicht; öffentliche Adressen werden gewarnt.", dateien: "modules/seiten-mehr.js, kern/fernzugriff.js" }],
     ["funktion", { titel: "Verlauf", icon: "clock", was: "Jede Sitzung mit Datum, Fahrzeug, Kilometerstand, Fehlercodes sowie Eingangs- und Ausgangsbefund, nach Monaten gruppiert.",
       wie: "Ein Eintrag je Sitzung, der sich bei jedem neuen Stand aktualisiert. Die FIN steht nur maskiert drin.", dateien: "modules/history.js" }],
     ["funktion", { titel: "Anzeige", icon: "palette", was: "Eigene Akzentfarbe, Symbolfarben je Funktion oder in der Akzentfarbe, hell und dunkel, hoher Kontrast, Dichte bis zum Werkstatt-Modus mit 60-px-Zielen für Handschuhe.",
@@ -136,16 +148,26 @@ export const KAPITEL = [
     ["hinweis", "warn", "Der Diagnosepfad ist eine Hilfe, keine Diagnose. Er liest nur und schreibt nichts ins Auto. Herstellerwerte aus RMI-Daten haben immer Vorrang."],
   ] },
 
-  { id: "agent", titel: "Diagnose-Agent", icon: "robot", kurz: "Claude liest selbst am Auto, nur lesend", bloecke: [
-    ["p", "Im KI-Assistenten gibt es im Plus-Menü den Schalter »Selbst am Auto lesen«. Ist er an, beantwortet Claude deine Frage nicht nur aus dem Stand beim Öffnen, sondern liest selbst nach: Fehler, Freeze-Frame, Live-Werte, Bereitschaftstests, genormte Kennungen und den Diagnosepfad. Jede gelesene Quelle steht als Zeile über der Antwort und im Verlauf."],
+  { id: "agent", titel: "Diagnose-Agent", icon: "robot", kurz: "Die KI liest selbst am Auto, nur lesend", bloecke: [
+    ["p", "Im KI-Assistenten gibt es im Plus-Menü den Schalter »Selbst am Auto lesen«. Ist er an, beantwortet die KI deine Frage nicht nur aus dem Stand beim Öffnen, sondern liest selbst nach: Fehler, Freeze-Frame, Live-Werte, Bereitschaftstests, genormte Kennungen und den Diagnosepfad. Jede gelesene Quelle steht als Zeile über der Antwort und im Verlauf."],
     ["tabelle", ["Darf der Agent", "Antwort"], [
       ["Fehler, Messwerte, Readiness, Freeze-Frame lesen", "ja"],
       ["Software- und Hardwarekennungen lesen (F180 bis F19F)", "ja, außer der FIN"],
       ["Fehler löschen, Stellglieder, Anlernen, Flashen", "nein, dafür gibt es kein Werkzeug"],
       ["Eine Aktion vorschlagen", "ja, ausführen kannst nur du über die Freigabe"],
     ]],
-    ["p", "Der Schalter erscheint nur, wenn der Diagnose-Server läuft und als Anbieter Claude eingetragen ist. FIN und Kennzeichen gehen nicht an die KI. Je Frage liest der Agent höchstens zwölfmal, und ein Tagesbudget in Token schützt vor Dauerläufen."],
+    ["p", "Der Schalter erscheint nur, wenn der Diagnose-Server läuft und als Anbieter Claude oder ein OpenAI-kompatibler Anbieter eingetragen ist. FIN und Kennzeichen gehen nicht an die KI. Je Frage liest der Agent höchstens zwölfmal, und ein Tagesbudget in Token schützt vor Dauerläufen."],
     ["hinweis", "warn", "Anhänge (Bilder, PDF) gehen nicht an den Agenten, sondern an den normalen Chat."],
+    ["p", "Andere Anbieter: Unter »KI und Dienste« gibt es neben Claude und Ollama den Punkt »OpenAI-kompatibel«. Damit laufen Chat und Agent mit jedem Dienst, der die Schnittstelle von OpenAI spricht: DeepSeek, OpenAI, Mistral oder ein lokaler Server wie LM Studio. Der Schlüssel liegt nur auf diesem Rechner in der Datei ki_offen.key, du akzeptierst die Bedingungen deines Anbieters selbst, und Kennzeichen und FIN werden vor dem Senden entfernt. Websuche und PDF-Anhänge gibt es weiterhin nur mit Claude; ob ein Modell Werkzeuge und Bilder kann, steht beim Anbieter."],
+    ["schritte", ["Beim Anbieter ein Konto anlegen und einen API-Schlüssel erzeugen (bei DeepSeek unter platform.deepseek.com).", "In CANdor unter »KI und Dienste« den Anbieter »OpenAI-kompatibel« wählen, die Voreinstellung antippen (füllt Adresse https://api.deepseek.com/v1 und Modell deepseek-chat), den Schlüssel einfügen und speichern.", "Auf »Verbindung testen« tippen: Die Antwort nennt Modell und Antwortzeit. Danach im Assistenten den Schalter »Selbst am Auto lesen« einschalten."]],
+    ["tabelle", ["Anbieter", "Adresse", "Modell"], [
+      ["DeepSeek", "https://api.deepseek.com/v1", "deepseek-chat"],
+      ["OpenAI", "https://api.openai.com/v1", "gpt-4.1-mini"],
+      ["Mistral", "https://api.mistral.ai/v1", "mistral-small-latest"],
+      ["LM Studio, lokal", "http://127.0.0.1:1234/v1", "Name des geladenen Modells"],
+    ]],
+    ["p", "Fahrt-Agent: Unter »Fahrt-Agent & Warnungen« bleibt der Stecker während der Fahrt im Auto, und der Diagnose-Server liest im Takt von 2 bis 30 Sekunden mit (Standard 5). Er meldet sich bei einem neuen Fehlercode, bei einem Messwert außerhalb des Rahmens (erst nach drei Messungen in Folge, damit Rauschen nicht auslöst), bei einem Einbruch der Bordspannung (unter 11,5 V bei laufendem Motor, unter 9,6 V beim Start) und wenn die Bereitschaftstests fertig sind. Dasselbe Ereignis meldet sich höchstens alle 10 Minuten. Wie gewarnt wird (Ton, Vibration, Mitteilung), stellst du auf der Seite ein; die Wahl bleibt auf diesem Gerät."],
+    ["p", "Auf Wunsch schätzt der Assistent ein Ereignis ein: Er liest nur, antwortet in drei Sätzen nach stützt, widerspricht, fehlt und legt das als Fahrtbericht ab. Das passiert höchstens einmal in 10 Minuten und nur, solange das Tagesbudget reicht. Fahrtprotokoll und Berichte liegen auf dem Server unter var/fahrten, ohne FIN und Kennzeichen."],
   ] },
 
   { id: "werkbank", titel: "CAN-Werkbank", icon: "scope", kurz: "Mitschnitt, eigene DBC, Kennungen, Abgleich", bloecke: [

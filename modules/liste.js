@@ -17,7 +17,6 @@ import { setzeModus, modus } from "./einfach.js";
 export const schreibschutzAn = () => storageGet("kfzdiag-schreibschutz", false) === true;
 const SCHALTER = {
   schreibschutz: { an: schreibschutzAn, setzen: (an) => { storageSet("kfzdiag-schreibschutz", an); toast(an ? "Schreibschutz an. CANdor schreibt nichts ins Auto." : "Schreibschutz aus. Schreiben nur mit Halte-Freigabe."); emit("render"); } },
-  fernzugriff: { an: () => false, setzen: () => toast("Fernzugriff kommt später.") },
 };
 const AKTION = {
   vollscan: () => { if (!state.status) { go("connect"); return; } go("car"); if (!state.scanning) emit("run-scan"); },

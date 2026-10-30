@@ -25,8 +25,9 @@ export function zeile(z) {
     return h("button", { class: "li-row sk-row", type: "button", "aria-pressed": String(Boolean(z.an)), onclick: z.setze }, t, h("span", { class: "sk-haken", "aria-hidden": "true" }, z.an ? "✓" : ""));
   }
   if (z.typ === "aktion") return h("button", { class: `li-row sk-row sk-aktion t-${z.ton || "blau"}`, type: "button", onclick: z.tun }, h("span", { class: "li-t" }, z.label));
-  const klickbar = Boolean(z.ziel);
-  return h(klickbar ? "button" : "div", { class: "li-row sk-row", type: klickbar ? "button" : null, onclick: klickbar ? z.ziel : null },
+  /* Mit href ein echter Link (tel:, https:), damit das Betriebssystem ihn selbst öffnet; mit ziel ein Knopf. */
+  const link = Boolean(z.href), klickbar = link || Boolean(z.ziel);
+  return h(link ? "a" : klickbar ? "button" : "div", { class: "li-row sk-row", href: link ? z.href : null, type: !link && klickbar ? "button" : null, onclick: !link && klickbar ? z.ziel : null },
     z.bild ? h("span", { class: "li-ic li-bild", "aria-hidden": "true" }, h("img", { src: `icons/liste/${z.bild}.png`, alt: "", width: 30, height: 30 })) : z.mark ? h("span", { class: "sk-mark" }, mark(z.mark)) : null,
     t, z.wert != null ? h("span", { class: `li-v${z.ton ? ` t-${z.ton}` : ""}${z.mono ? " mono" : ""}` }, z.wert) : h("span"), klickbar ? chev() : h("span"));
 }

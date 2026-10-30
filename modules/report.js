@@ -1,5 +1,5 @@
 /* Bereich Bericht in drei Arten wie in der Werkstatt-Software: Eingangsbefund (Pre-Scan), Ausgangsbefund (Post-Scan
-   nach der Reparatur) und Vergleich. Dazu Readiness, Ist-Soll, KI mit Belegen, Prüfpfade, Aufnahmen, Verlauf.
+   nach der Reparatur) und Vergleich. Dazu Prüfbericht nach festen Regeln (pruefbericht.js), Readiness, Ist-Soll, KI mit Belegen, Prüfpfade, Aufnahmen, Verlauf.
    Lokal gedruckt (Browser: als PDF speichern) oder als HTML geteilt. Keine Hersteller-Cloud. */
 import { $, h, num, icon, mark, clockFull, clockTime, download, storageGet, storageSet, toast } from "./dom.js";
 import { vehicleLabel } from "./fahrzeuge.js";
@@ -14,12 +14,14 @@ import { recordings, stats } from "./recorder.js";
 import { pfadResults } from "./pfade.js";
 import { befundSenden } from "./werkhof.js";
 import { zurueckZeile, kopfkarte } from "./bausteine.js";
+import { pruefberichtAbschnitt } from "./pruefbericht.js";
 
 const opts = { auftrag: "", vin: true, fassung: "werkstatt", art: "vergleich", abschnitte: null, ...storageGet("kfzdiag-bericht", {}) };
 const ARTEN = [["vorher", "Eingangsbefund", "vor der Reparatur"], ["nachher", "Ausgangsbefund", "nach der Reparatur"], ["vergleich", "Vergleich", "vorher und nachher"]];
 /* Abschnitte je Fassung: Kunde bekommt das Verständliche, Werkstatt alles. Die Wahl lässt sich vor dem Druck ändern. */
 const SECTIONS = [
   ["diff", "Befund", befundSection, true],
+  ["pruef", "Prüfbericht", () => pruefberichtAbschnitt(opts.fassung, renderReport), true],
   ["readiness", "Readiness", readinessSection, true],
   ["soll", "Ist gegen Soll", sollSection, false],
   ["ki", "KI-Bewertung", kiSection, true],
@@ -189,7 +191,7 @@ function printTokens() {
 }
 function standaloneHtml() {
   const k = printTokens();
-  const css = `body{font:13px/1.45 system-ui,sans-serif;color:${k.text};background:${k.bg};margin:24px;max-width:900px}h2{font-size:22px;margin:0}h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:${k.muted};border-bottom:1px solid ${k.line};padding-bottom:4px;margin:18px 0 6px}table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{text-align:left;padding:5px 7px;border-bottom:1px solid ${k.line};vertical-align:top}th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:${k.muted}}td.num{text-align:right}.eyebrow,.hint,.sm,.foot{color:${k.muted}}.box{padding:10px 12px;border:1px solid ${k.line};border-radius:6px;background:${k.well}}.diff{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.diff .n{font-size:26px;font-weight:600}.sign{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px}.sign div{border-top:1px solid ${k.text};padding-top:6px;font-size:12px;color:${k.muted}}header{border-bottom:2px solid ${k.text};padding-bottom:10px}.report-brand{display:flex;gap:8px;align-items:center;margin-top:20px;color:${k.muted};font-size:12px}.report-brand img{display:none}.wordmark b{font-family:monospace}.letterhead p{margin:0}svg{display:none}`;
+  const css = `body{font:13px/1.45 system-ui,sans-serif;color:${k.text};background:${k.bg};margin:24px;max-width:900px}h2{font-size:22px;margin:0}h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:${k.muted};border-bottom:1px solid ${k.line};padding-bottom:4px;margin:18px 0 6px}table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{text-align:left;padding:5px 7px;border-bottom:1px solid ${k.line};vertical-align:top}th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:${k.muted}}td.num{text-align:right}.eyebrow,.hint,.sm,.foot{color:${k.muted}}.box{padding:10px 12px;border:1px solid ${k.line};border-radius:6px;background:${k.well}}.diff{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.diff .n{font-size:26px;font-weight:600}.sign{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px}.sign div{border-top:1px solid ${k.text};padding-top:6px;font-size:12px;color:${k.muted}}header{border-bottom:2px solid ${k.text};padding-bottom:10px}.report-brand{display:flex;gap:8px;align-items:center;margin-top:20px;color:${k.muted};font-size:12px}.report-brand img{display:none}.wordmark b{font-family:monospace}.letterhead p{margin:0}svg{display:none}.no-print{display:none}.cs{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-right:6px}.pb-liste{list-style:none;padding:0;margin:0}.pb-zeile{padding:8px 0;border-bottom:1px solid ${k.line}}.pb-zeile p{margin:2px 0}.pb-id{float:right;font-family:monospace;color:${k.muted}}.pb-meta{font-size:11.5px;color:${k.muted}}.t-crit .cs{color:${k.crit}}`;
   return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Diagnosebericht</title><style>${css}</style></head><body>${$("report").innerHTML}</body></html>`;
 }
 async function share() {

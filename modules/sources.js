@@ -69,6 +69,14 @@ export function createServer() {
       wissen: () => getJson("/api/fahrzeugwissen"),
       beobachten: (body) => getJson("/api/erkunder/beobachten", sendeJson(body)),
     },
+    /* Fahrt-Agent: der Server liest im Takt mit, die Seite fragt nur den Stand ab (kfzdiag/beobachter.py). */
+    beobachter: {
+      status: () => getJson("/api/beobachter"),
+      start: (body) => getJson("/api/beobachter/start", sendeJson(body)),
+      stopp: () => getJson("/api/beobachter/stopp", sendeJson({})),
+      test: () => getJson("/api/beobachter/test", sendeJson({})),
+      bericht: (name) => fetch(`/api/beobachter/bericht?name=${encodeURIComponent(name)}`, { credentials: "same-origin" }).then((r) => { if (!r.ok) throw new Error(`Bericht: ${r.status}`); return r.text(); }),
+    },
     async scan(onEvent) {
       const ws = await connect();
       return new Promise((resolve) => {
@@ -103,6 +111,8 @@ export function createDemo(data) {
     mode: "demo",
     werkbank: Object.fromEntries(["start", "stop", "widerrufen", "lesen", "csv", "dbc", "dekodiert", "erkunden", "wissen", "beobachten"].map((k) =>
       [k, async () => ({ ok: false, fehler: "vorschau", meldung: "In der Vorschau gibt es kein Fahrzeug. Die Werkbank braucht ein echtes Auto oder den Simulator im Server." })])),
+    beobachter: Object.fromEntries(["status", "start", "stopp", "test", "bericht"].map((k) =>
+      [k, async () => ({ ok: false, fehler: "vorschau", meldung: "Der Fahrt-Agent läuft im Diagnose-Server. In der Vorschau gibt es ihn nicht." })])),
     status: async () => d.status,
     vehicle: async () => d.fahrzeug,
     obdFaults: async () => d.obd_fehler,

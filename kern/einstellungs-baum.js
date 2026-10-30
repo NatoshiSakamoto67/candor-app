@@ -15,7 +15,7 @@ export const BAUM = [
     { id: "bus", label: "Fahrzeugbus", icon: "bus", farbe: FARBE.gruen, ziel: "seite", sub: "bus", profi: true, apple: "Mobilfunk" },
     { id: "steuergeraete", label: "Steuergeräte", icon: "ecu", bild: "steuergeraete", farbe: FARBE.gruen, ziel: "car", apple: "Persönlicher Hotspot" },
     { id: "bordnetz", label: "Bordnetz & Batterie", icon: "battery", bild: "messgeraet", farbe: FARBE.gruen, ziel: "bordnetz", kunde: true, apple: "Batterie" },
-    { id: "fernzugriff", label: "Fernzugriff", icon: "globus", farbe: FARBE.blau, schalter: "fernzugriff", bald: true, apple: "VPN" },
+    { id: "fernzugriff", label: "Fernzugriff", icon: "globus", farbe: FARBE.blau, ziel: "seite", sub: "fernzugriff", profi: true, apple: "VPN" },
   ] },
   { id: "diagnose", titel: "Diagnose", zeilen: [
     { id: "vollscan", label: "Vollscan", icon: "scan", bild: "pruefcheck", farbe: FARBE.blau, aktion: "vollscan", kunde: true, apple: "Softwareupdate" },
@@ -32,26 +32,26 @@ export const BAUM = [
     { id: "anzeige", label: "Anzeige", icon: "sonne", bild: "anzeige", farbe: FARBE.blau, ziel: "seite", sub: "anzeige", kunde: true, apple: "Anzeige & Helligkeit" },
     { id: "ki", label: "KI-Assistent", icon: "stern", bild: "ki", farbe: FARBE.indigo, ziel: "agent", apple: "Apple Intelligence & Siri" },
     { id: "cockpit", label: "Startseite & Cockpit", icon: "raster", farbe: FARBE.blau, aktion: "cockpit", apple: "Home-Bildschirm & App-Mediathek" },
-    { id: "kamera", label: "Kamera", icon: "kamera", bild: "freeze", farbe: FARBE.grau, bald: true, apple: "Kamera" },
+    { id: "kamera", label: "Foto an den Assistenten", icon: "kamera", bild: "freeze", farbe: FARBE.grau, ziel: "agent", sub: "kamera", apple: "Kamera" },
     { id: "statusleiste", label: "Statusleiste", icon: "schalter", farbe: FARBE.grau, ziel: "seite", sub: "statusleiste", apple: "Kontrollzentrum" },
-    { id: "dashboard", label: "Dashboard-Modus", icon: "uhr", farbe: FARBE.dunkel, bald: true, apple: "Standby" },
+    { id: "dashboard", label: "Dashboard-Modus", icon: "uhr", farbe: FARBE.dunkel, ziel: "dashboard", kunde: true, apple: "Standby" },
     { id: "suche", label: "Suche", icon: "lupe", farbe: FARBE.grau, ziel: "seite", sub: "suche", kunde: true, apple: "Suchen" },
   ] },
   { id: "hinweise", zeilen: [
-    { id: "warnungen", label: "Warnungen", icon: "glocke", farbe: FARBE.rot, bald: true, apple: "Mitteilungen" },
-    { id: "toene", label: "Töne & Haptik", icon: "ton", farbe: FARBE.pink, bald: true, apple: "Töne & Haptik" },
+    { id: "warnungen", label: "Fahrt-Agent & Warnungen", icon: "glocke", farbe: FARBE.rot, ziel: "beobachter", profi: true, apple: "Mitteilungen" },
+    { id: "toene", label: "Töne & Haptik", icon: "ton", farbe: FARBE.pink, ziel: "seite", sub: "toene", kunde: true, apple: "Töne & Haptik" },
     { id: "modus", label: "Modus", icon: "mond", farbe: FARBE.lila, aktion: "modus", apple: "Fokus" },
     { id: "betriebsbuch", label: "Betriebsbuch", icon: "buch", bild: "verlauf", farbe: FARBE.lila, aktion: "betriebsbuch", apple: "Bildschirmzeit" },
   ] },
   { id: "schutz", zeilen: [
     { id: "freigabe", label: "Freigabe", icon: "gesicht", farbe: FARBE.gruen, ziel: "seite", sub: "freigabe", apple: "Face ID & Code" },
-    { id: "panne", label: "Pannenhilfe", icon: "sos", farbe: FARBE.rot, bald: true, kunde: true, apple: "Notruf SOS" },
+    { id: "panne", label: "Pannenhilfe", icon: "sos", farbe: FARBE.rot, ziel: "seite", sub: "panne", kunde: true, apple: "Notruf SOS" },
     { id: "datenschutz", label: "Datenschutz & Sicherheit", icon: "schild", farbe: FARBE.blau, ziel: "handbuch", sub: "datenschutz", kunde: true, apple: "Datenschutz & Sicherheit" },
   ] },
   { id: "ablage", zeilen: [
     { id: "faelle", label: "Belegte Fälle", icon: "pokal", farbe: FARBE.gelb, ziel: "history", apple: "Game Center" },
     { id: "sicherung", label: "Sicherung", icon: "wolke", farbe: FARBE.blau, ziel: "seite", sub: "sicherung", apple: "iCloud" },
-    { id: "papiere", label: "Papiere", icon: "karte", farbe: FARBE.dunkel, bald: true, apple: "Wallet" },
+    { id: "papiere", label: "Papiere", icon: "karte", farbe: FARBE.dunkel, ziel: "seite", sub: "papiere", kunde: true, apple: "Wallet" },
   ] },
   { id: "werkstatt", zeilen: [
     { id: "meinewerkstatt", label: "Meine Werkstatt", icon: "werkstatt", farbe: FARBE.blau, aktion: "portal", kunde: true, nurKunde: true, apple: "Apps (Werkstatt-Portal)" },
@@ -97,7 +97,6 @@ export function werte(s) {
     bus: { text: s.verbunden && s.protokoll ? s.protokoll : "–" },
     steuergeraete: { text: s.scanning ? `${s.scanPct || 0} %` : s.scanned ? `${s.steuergeraete} gefunden` : "–" },
     bordnetz: { text: typeof s.spannung === "number" ? `${f(s.spannung, 1)} V` : "–", ton: bordnetzTon(s.spannung, Boolean(s.motorLaeuft)) },
-    fernzugriff: { text: "bald" },
     vollscan: { text: s.scanning ? `läuft, ${s.scanPct || 0} %` : s.scanned ? "erledigt" : s.verbunden ? "starten" : "–", ton: s.scanning ? "running" : null },
     fehler: { text: !s.verbunden ? "–" : fehler ? (s.vorlaeufig ? `${s.gespeichert} + ${s.vorlaeufig}` : String(s.gespeichert)) : "keine", ton: s.gespeichert ? "crit" : s.vorlaeufig ? "warn" : s.verbunden ? "ok" : null },
     live: { text: !s.verbunden ? "–" : s.motorLaeuft ? "Motor läuft" : "Zündung an" },
@@ -112,7 +111,7 @@ export function werte(s) {
 
 /**
  * Zeilen für die Fassung: Kundenfassung nur Zeilen mit kunde, sonst alle außer nurKunde; einfach ohne profi.
- * Zeilen mit bald (»kommt später«) nur mit bald: true, und das auch nur im Profi-Modus und nicht in der Kundenfassung.
+ * Zeilen mit bald (»kommt später«, derzeit keine) nur mit bald: true, und das auch nur im Profi-Modus und nicht in der Kundenfassung.
  * @param {{kunde?: boolean, einfach?: boolean, bald?: boolean}} f
  */
 export const zeilenFuer = (f) => (z) => (f.kunde ? Boolean(z.kunde) : !z.nurKunde) && !(f.einfach && z.profi) && (!z.bald || (Boolean(f.bald) && !f.kunde && !f.einfach));
@@ -122,4 +121,5 @@ export const SEITEN_TITEL = Object.freeze({
   profil: "Fahrzeug", bluetooth: "Bluetooth-Adapter", wlan: "WLAN-Adapter", bus: "Fahrzeugbus", takt: "Abfrage-Takt",
   batteriezustand: "Batteriezustand", allgemein: "Allgemein", info: "Info", einheiten: "Sprache & Einheiten", anzeige: "Anzeige",
   bedienung: "Bedienungshilfen", suche: "Suche", sicherung: "Sicherung", statusleiste: "Statusleiste", freigabe: "Freigabe",
+  panne: "Pannenhilfe", toene: "Töne & Haptik", papiere: "Papiere", fernzugriff: "Fernzugriff",
 });

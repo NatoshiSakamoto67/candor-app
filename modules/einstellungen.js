@@ -1,11 +1,13 @@
 /* Einstellungen, oben über das Zahnrad erreichbar: KI und API-Schlüssel, Werkstatt, Anzeige, Verbindung, Daten.
-   Der API-Schlüssel geht einmal an den Diagnose-Server und kommt nie zurück, die Seite zeigt nur »sk-ant-…abcd«. */
+   Der API-Schlüssel geht einmal an den Diagnose-Server und kommt nie zurück, die Seite zeigt nur »sk-ant-…abcd«.
+   Anbieter: Aus, Claude, Ollama, OpenAI-kompatibel (DeepSeek, OpenAI, Mistral, LM Studio: Adresse, Modell, Schlüssel). */
 import { $, h, icon, mark, toast, storageGet } from "./dom.js";
 import { state, on, emit, logEvent } from "./state.js";
 import { werkhofSektion } from "./werkhof.js";
 import { zurueckZeile, kopfkarte, gruppe, formBlock } from "./bausteine.js";
 
-const ANBIETER = [["aus", "Aus"], ["anthropic", "Claude (Anthropic)"], ["ollama", "Ollama, lokal"]];
+const ANBIETER = [["aus", "Aus"], ["anthropic", "Claude (Anthropic)"], ["ollama", "Ollama, lokal"], ["openai_kompatibel", "OpenAI-kompatibel"]];
+const hostVon = (u) => { try { return new URL(u).host; } catch { return u || "?"; } };
 let data = null, choice = null, errors = {}, busy = false, testResult = null;
 
 const isServer = () => state.src && state.src.mode === "server";
@@ -49,6 +51,8 @@ function kiSection() {
       h("div", { class: `fld${errors.modell ? " bad" : ""}` }, h("label", { for: "set-omodell" }, "Modell in Ollama"), h("input", { class: "inp mono", id: "set-omodell", value: ki.anbieter === "ollama" ? ki.modell || "" : "qwen3:8b", spellcheck: "false" }), fieldErr("modell")),
       h("div", { class: `fld${errors.ollama_url ? " bad" : ""}` }, h("label", { for: "set-ourl" }, "Adresse"), h("input", { class: "inp mono", id: "set-ourl", value: ki.ollama_url || "http://127.0.0.1:11434", spellcheck: "false" }), fieldErr("ollama_url"))),
       h("p", { class: "sm" }, "Ollama läuft auf diesem Rechner oder im eigenen Netz. Nichts verlässt das Netz. Modell vorher mit »ollama pull qwen3:8b« laden."));
+  } else if (sel === "openai_kompatibel") {
+    parts.push(...offenFelder(ki));
   } else parts.push(h("p", { class: "sm" }, "Ohne KI funktionieren alle Diagnosefunktionen, nur Assistent und KI-Bewertung bleiben aus."));
   parts.push(
     testResult ? h("div", { class: `set-result t-${testResult.ok ? "ok" : "crit"}`, role: "status" }, mark(testResult.ok ? "ok" : "crit"), testResult.meldung) : null,
@@ -57,7 +61,30 @@ function kiSection() {
       sel !== "aus" ? h("button", { class: "btn sec", type: "button", disabled: busy || null, onclick: test }, icon("gateway"), "Verbindung testen") : null),
     h("p", { class: "sm" }, data.quelle === "umgebung" ? "Gerade gilt die Einstellung aus den Umgebungsvariablen beim Start. Speichern hier hat Vorrang." : "Gespeichert in einstellungen.json neben der Datenbank."));
   const modelName = (data.modelle.find((m) => m.id === ki.modell) || { name: ki.modell }).name;
-  return section("KI und API-Schlüssel", "robot", `Aktiv: ${ki.anbieter === "aus" || !ki.anbieter ? "keine KI" : ki.anbieter === "anthropic" ? modelName : `Ollama, ${ki.modell}`}`, ...parts);
+  const aktiv = ki.anbieter === "aus" || !ki.anbieter ? "keine KI" : ki.anbieter === "anthropic" ? modelName : ki.anbieter === "ollama" ? `Ollama, ${ki.modell}` : `${ki.modell} über ${hostVon(ki.basis_url)}`;
+  return section("KI und API-Schlüssel", "robot", `Aktiv: ${aktiv}`, ...parts);
+}
+
+/* OpenAI-kompatibel: Voreinstellung antippen füllt Adresse und Modell, der Schlüssel ist optional (lokale Server). */
+function offenFelder(ki) {
+  const offen = ki.anbieter === "openai_kompatibel", key = ki.schluessel_offen || {};
+  const waehlen = (v) => { $("set-burl").value = v.basis_url; if (v.modell) $("set-bmodell").value = v.modell; $(v.modell ? "set-bkey" : "set-bmodell").focus(); };
+  const chips = h("div", { class: "ki-chips", role: "group", "aria-label": "Voreinstellungen" }, ...(data.voreinstellungen || []).map((v) =>
+    h("button", { class: "ki-chip", type: "button", "aria-pressed": String(offen && ki.basis_url === v.basis_url), onclick: () => waehlen(v) }, h("b", {}, v.name), h("span", {}, v.hinweis))));
+  const feld = (k, id, label, attrs) => h("div", { class: `fld${errors[k] ? " bad" : ""}` }, h("label", { for: id }, label),
+    h("input", { class: "inp mono", id, spellcheck: "false", "aria-invalid": errors[k] ? "true" : null, ...attrs }), fieldErr(k));
+  return [
+    h("div", { class: "blk" }, h("p", { class: "eyebrow" }, "Voreinstellung antippen"), chips),
+    h("div", { class: "fgrid set-grid" },
+      feld("basis_url", "set-burl", "Adresse", { type: "url", value: offen ? ki.basis_url || "" : "", placeholder: "https://api.deepseek.com/v1" }),
+      feld("modell", "set-bmodell", "Modell", { value: offen ? ki.modell || "" : "", placeholder: "deepseek-chat" }),
+      h("div", { class: `fld${errors.schluessel ? " bad" : ""}` }, h("label", { for: "set-bkey" }, "Schlüssel"),
+        h("input", { class: "inp mono", id: "set-bkey", type: "password", autocomplete: "off", spellcheck: "false", placeholder: key.gesetzt ? "leer = gespeicherten behalten" : "optional bei lokalen Servern", "aria-invalid": errors.schluessel ? "true" : null, "aria-describedby": "set-bkey-state" }),
+        errors.schluessel ? fieldErr("schluessel") : h("span", { class: "fld-hint", id: "set-bkey-state" }, key.gesetzt ? `Gespeichert: ${key.maske}` : "Noch kein Schlüssel gespeichert."))),
+    budgetFeld(),
+    h("p", { class: "sm" }, "Der Schlüssel liegt nur auf diesem Rechner. Du akzeptierst die Bedingungen deines Anbieters selbst. Kennzeichen und FIN werden vor dem Senden entfernt. Websuche und PDF-Anhänge gibt es nur mit Claude."),
+    key.gesetzt ? h("button", { class: "btn qt small", type: "button", onclick: () => save({ schluessel_loeschen: true }) }, icon("delete"), "Gespeicherten Schlüssel entfernen") : null,
+  ];
 }
 
 /* Tagesbudget des Diagnose-Agenten: Grenze und Verbrauch heute (im Server gezählt, Neustart setzt den Zähler zurück) */
@@ -76,6 +103,10 @@ function body(extra = {}) {
     return { anbieter: sel, modell: $("set-modell").value, schluessel: $("set-key").value.trim() || undefined, budget_tokens: Number.isFinite(budget) ? budget : undefined, ...extra };
   }
   if (sel === "ollama") return { anbieter: sel, modell: $("set-omodell").value.trim(), ollama_url: $("set-ourl").value.trim(), ...extra };
+  if (sel === "openai_kompatibel") {
+    const budget = Number.parseInt($("set-budget").value, 10);
+    return { anbieter: sel, basis_url: $("set-burl").value.trim(), modell: $("set-bmodell").value.trim(), schluessel: $("set-bkey").value.trim() || undefined, budget_tokens: Number.isFinite(budget) ? budget : undefined, ...extra };
+  }
   return { anbieter: "aus" };
 }
 

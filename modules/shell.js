@@ -29,6 +29,8 @@ export const PAGES = [
   { id: "agent", label: "KI-Assistent", icon: "chat" },
   { id: "report", label: "Bericht", icon: "report" },
   { id: "history", label: "Verlauf", icon: "clock" },
+  { id: "beobachter", label: "Fahrt-Agent", icon: "chat" },
+  { id: "dashboard", label: "Dashboard", icon: "live" },
   { id: "detail", label: "Details", icon: "info" },
 ];
 /* Bereiche für die Suche (ohne Start, Verbinden und Detailseite) */

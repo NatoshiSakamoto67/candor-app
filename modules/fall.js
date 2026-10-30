@@ -37,7 +37,8 @@ export const hatPfad = (code) => PFAD_CODES.has(String(code || "").toUpperCase()
 let katalogP = null;
 const ladeKatalog = () => (katalogP ||= fetch("daten/diagnose/hypothesen.json").then((r) => { if (!r.ok) throw new Error(`hypothesen.json: ${r.status}`); return r.json(); }));
 const pfadAus = (k) => ({ signale: k.messwerte, messungen: k.messungen });
-async function laden(code, manuell) {
+/* Auch für den Prüfbericht ohne Server (pruefbericht.js). */
+export async function fallLaden(code, manuell) {
   if (state.src && state.src.mode === "server") {
     const q = Object.entries(manuell).map(([k, v]) => `${k}=${v}`).join(",");
     const r = await fetch(`/api/fall?code=${encodeURIComponent(code)}${q ? `&manuell=${encodeURIComponent(q)}` : ""}`);
@@ -204,7 +205,7 @@ export async function render(neu = false) {
   const lauf = ++laufend;
   if (!$("fall").childElementCount) $("fall").replaceChildren(nav(), h("p", { class: "sm", role: "status" }, "Fall wird geladen …"));
   try {
-    const k = await laden(code, f0.manuell);
+    const k = await fallLaden(code, f0.manuell);
     if (lauf !== laufend || $("view-fall").hidden) return;
     if (!k.ok) { $("fall").replaceChildren(...ohnePfad(code, k)); return; }
     letzteKette = k;

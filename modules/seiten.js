@@ -12,6 +12,7 @@ import { buchLaenge } from "./service.js";
 import { schreibschutzAn } from "./liste.js";
 import { setzeModus, modus } from "./einfach.js";
 import { bild, kopf, zeile, gruppe, zahlen, balken, raster } from "./bausteine-seiten.js";
+import { seitenMehr, initSeitenMehr } from "./seiten-mehr.js";
 
 /* ---------- Einstellungen der Unterseiten ---------- */
 const KEY = "kfzdiag-seiten";
@@ -46,8 +47,9 @@ function exportieren() {
   toast("Fahrzeugakte exportiert. Die Datei enthält Kennzeichen und FIN, bitte sicher aufbewahren.");
 }
 
-/* ---------- Seiten ---------- */
+/* ---------- Seiten (Pannenhilfe, Töne, Papiere, Fernzugriff in seiten-mehr.js) ---------- */
 const SEITEN = {
+  ...seitenMehr((neu) => render(neu)),
   profil() {
     const fz = state.fahrzeug;
     if (!fz) return [kopf({ bild: "auto", titel: "Kein Fahrzeug", text: "Lege ein Fahrzeug an oder wähle eines aus dem Fuhrpark." }), gruppe({ zeilen: [{ label: "Fahrzeug anlegen", ziel: () => go("fahrzeug") }, { label: "Fuhrpark", ziel: () => go("fahrzeuge") }] })];
@@ -219,6 +221,7 @@ export function render(neu = false) {
 
 export function initSeiten() {
   wendeAn();
+  initSeitenMehr();
   on("seite", () => render(true));
   on("status", () => render(false));
   on("render", () => render(false));
