@@ -2,7 +2,7 @@
    Fotos, Dateien, Websuche, Agent), Chip mit Modell und Stufe, Diktat, Senden und Stopp, Antwort Wort für Wort, Quellen, Vorschlag mit Freigabe. Die KI führt nichts aus.
    Anhänge gehen nur mit der aktuellen Nachricht an den Server; im Verlauf bleiben nur ihre Namen. */
 import { $, h, icon, mark, toast, storageGet, storageSet, clockTime, reducedMotion } from "./dom.js";
-import { state, on, emit, faultSet, logEvent } from "./state.js";
+import { state, on, emit, faultSet, firstReadiness, logEvent } from "./state.js";
 import { startAction } from "./approval.js";
 import { go } from "./shell.js";
 import { render as markdown } from "./md.js";
@@ -13,12 +13,16 @@ import { initPanel, zeichnePanel, schliessePanel } from "./chatpanel.js";
 import { vehicleName } from "./fahrzeuge.js";
 import { oeffneBlatt } from "./kontextblatt.js";
 import { modellChip, kannDiktieren } from "../kern/kontext.js";
+import { startVorschlaege } from "../kern/assistent-start.js";
 
 const MAX_FILES = 5, MAX_BYTES = 10 * 1024 * 1024, MAX_EDGE = 2000, MAX_HISTORY = 60, SEND_HISTORY = 20;
 const IMAGE = /^image\//, TEXT = /\.(txt|csv|log|json|md|xml)$/i;
-/* Kurze Vorschläge unter der Eingabe wie bei Claude: kurzer Text auf dem Knopf, ganze Frage beim Senden. */
-const QUICK = [["Fehler erklären", "Was bedeuten meine Fehlercodes?"], ["Wo fange ich an?", "Wo fange ich bei der Fehlersuche an?"], ["Schafft es die AU?", "Besteht das Auto die AU?"]];
-const QUICK_LEER = [["Was kannst du?", "Was kannst du für mich am Auto tun?"], ["Typische Probleme", "Such im Internet nach bekannten Problemen zu diesem Modell"], ["Wo fange ich an?", "Wo fange ich bei der Fehlersuche an?"]];
+/* Kurze Vorschläge im leeren Chat wie bei Claude: kurzer Text auf dem Knopf, ganze Frage beim Senden.
+   Dieselbe Auswahl wie die Karte »Assistent« auf der Startseite (kern/assistent-start.js). */
+export function aktuelleVorschlaege() {
+  const r = firstReadiness();
+  return startVorschlaege({ verbunden: Boolean(state.status), scanned: state.scanned, codes: [...faultSet().values()].map((f) => f.code), readinessGesamt: r ? r.tests.length : null });
+}
 let files = [], web = storageGet("kfzdiag-websuche", true), running = null;
 /* Diagnose-Agent: die KI liest selbst am Auto (nur lesend). Nur mit Server und Claude oder einem OpenAI-kompatiblen Anbieter, Anhänge gehen weiter an den Chat. */
 let agentLive = storageGet("kfzdiag-agent-live", false);
@@ -146,8 +150,7 @@ function renderQuick(leer) {
   const box = $("cx-vorschlaege");
   box.hidden = !leer;
   if (!leer) { box.replaceChildren(); return; }
-  const liste = faultSet().size ? QUICK : QUICK_LEER;
-  box.replaceChildren(...liste.map(([kurz, frage]) => h("button", { class: "cx-q", type: "button", title: frage, onclick: () => send(frage) }, kurz)));
+  box.replaceChildren(...aktuelleVorschlaege().map(({ kurz, frage }) => h("button", { class: "cx-q", type: "button", title: frage, onclick: () => send(frage) }, kurz)));
 }
 function renderHistory() {
   const list = history(), c = aktivId() && chats.holen(aktivId());

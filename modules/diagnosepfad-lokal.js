@@ -32,6 +32,7 @@ function naechste(messungen, status) {
 
 async function ladePfad(code, holen) {
   const p = code.slice(0, 3);
+  if (!PAKETE.includes(p)) return null;
   if (!pakete.has(p)) pakete.set(p, holen(`daten/diagnose/${p}.json`).catch(() => ({})));
   return (await pakete.get(p))[code] || null;
 }

@@ -4,12 +4,13 @@
 import { $, h, mark, toast, download, storageGet, storageSet, numFix } from "./dom.js";
 import { state, on, logEvent, vehicleKey } from "./state.js";
 import { kundenfassung } from "./mandant.js";
-import { letzteWerte, nachSteuergeraet, dbcDateiPruefen, zustimmungAn, mitZustimmung, beobachtenEingabe, erkundungZeile, erkundungLaeuft } from "../kern/werkbank-sicht.js";
+import { letzteWerte, nachSteuergeraet, dbcDateiPruefen, zustimmungAn, mitZustimmung, beobachtenEingabe, erkundungZeile, erkundungLaeuft,
+  didFunde, statusAbzeichen, rechercheLaeuft, rechercheKopf, rechercheJeFund } from "../kern/werkbank-sicht.js";
 import { FARBE } from "../kern/einstellungs-baum.js";
 import { zurueckZeile, kopfkarte } from "./bausteine.js";
 
 const KEY = "kfzdiag-werkbank-eigen";
-const LEER = { mitschnitt: null, dbc: null, dekodiert: null, wissen: null, abgleich: null, erkundung: null, erweitert: false, laeuft: "", eingabe: { adresse: "7E0", did: "F18C", byte: "0", anzahl: "60" } };
+const LEER = { mitschnitt: null, dbc: null, dekodiert: null, wissen: null, abgleich: null, erkundung: null, recherche: null, erweitert: false, laeuft: "", eingabe: { adresse: "7E0", did: "F18C", byte: "0", anzahl: "60" } };
 let daten = LEER;
 /* Jede Antwort gehört zu dem Fahrzeug, bei dem sie angefragt wurde; nach einem Wechsel wird sie verworfen. */
 let generation = 0;
@@ -113,6 +114,81 @@ function sgZeile(sg) {
     h("span", { class: "li-t" }, z.titel, h("span", { class: "li-unter mono" }, z.unter), h("span", { class: "li-unter wb-zahlen" }, z.wert),
       z.hinweis ? h("span", { class: "li-unter wb-hinweis" }, z.hinweis) : null));
 }
+/* ---------- Recherche-Agent (E2): Deutung mit Quelle, hebt nichts über »vermutet« ---------- */
+const MAX_FUNDE_ANZEIGE = 12;
+let rechercheUhr = 0;
+function rechercheAbfragen() {
+  clearTimeout(rechercheUhr);
+  const g = generation;
+  rechercheUhr = setTimeout(async () => {
+    if (g !== generation || !api()) return;
+    try {
+      const r = await api().recherche();
+      if (g !== generation || !r || !r.ok) return;
+      setzeDaten({ recherche: r }, g);
+      if (rechercheLaeuft(r)) { rechercheAbfragen(); return; }
+      logEvent(`Recherche: ${r.meldung}`, r.phase === "fertig" ? "info" : "warn");
+      await wissen();
+    } catch (err) { toast(`Recherche: ${err.message}`); }
+  }, STAND_TAKT_MS);
+}
+async function rechercheStarten(auswahl) {
+  if (rechercheLaeuft(daten.recherche)) return;
+  const r = await mit("Recherche", () => api().rechercheStart(auswahl));
+  if (!meldeFehler(r)) return;
+  setzeDaten({ recherche: r });
+  logEvent(`Recherche gestartet: ${r.funde.length} Fund${r.funde.length === 1 ? "" : "e"}`, "info");
+  rechercheAbfragen();
+}
+async function rechercheAbbrechen() {
+  const r = await api().rechercheAbbrechen();
+  if (meldeFehler(r)) toast("Recherche wird nach dem laufenden Fund angehalten …");
+}
+function rechercheKopfZeile() {
+  const st = daten.recherche;
+  if (!st || st.phase === "bereit") return null;
+  const k = rechercheKopf(st);
+  return [h("div", { class: `li-row sk-row wb-recherche-kopf${k.ton ? ` t-${k.ton}` : ""}`, role: "status" },
+    h("span", { class: "li-t" }, k.titel, h("span", { class: "li-unter" }, k.unter))),
+  rechercheLaeuft(st) ? aktion("Recherche abbrechen", rechercheAbbrechen, "rot") : null];
+}
+function ergebnisTeil(e) {
+  return h("div", { class: `wb-ergebnis${e.ton ? " t-warn" : ""}` },
+    h("p", { class: "wb-deutung" }, e.deutung, h("span", { class: `lvl ${e.sicherheit === "hoch" ? "belegt" : e.sicherheit === "mittel" ? "plausibel" : "vermutung"}` }, e.sicherheit)),
+    e.formel ? h("p", { class: "wb-formel mono" }, `Formel ${e.formel}`) : null,
+    e.pruefung ? h("p", { class: "wb-pruefung" }, e.pruefung) : null,
+    e.quellen.length ? h("ul", { class: "wb-quellen" }, ...e.quellen.map((q) => h("li", null, h("a", { href: q.url, target: "_blank", rel: "noopener noreferrer" }, q.titel)))) : null,
+    h("p", { class: "wb-herkunft" }, `${e.herkunft}${e.verworfen ? `, ${e.verworfen} Quelle${e.verworfen === 1 ? "" : "n"} verworfen` : ""}. ${e.notiz}`));
+}
+function fundZeile(f, lauf) {
+  const abz = statusAbzeichen(f.status), imLauf = lauf.get(f.kennung);
+  const beschaeftigt = rechercheLaeuft(daten.recherche) || Boolean(daten.laeuft);
+  const knopf = f.status === "unbekannt"
+    ? h("button", { class: "btn sec small", type: "button", disabled: beschaeftigt || null, onclick: () => rechercheStarten({ funde: [f.kennung] }) },
+      imLauf && imLauf.status === "laeuft" ? "Sucht …" : imLauf && imLauf.status === "wartet" ? "Wartet" : "Recherchieren")
+    : null;
+  return h("div", { class: "li-row sk-row wb-fund" },
+    h("div", { class: "wb-fund-kopf" },
+      h("span", { class: "li-t" }, f.did, h("span", { class: "li-unter" }, f.sitzung), h("span", { class: "li-unter mono" }, f.roh)),
+      h("span", { class: abz.klasse }, abz.text), knopf),
+    imLauf && imLauf.status === "fehler" ? h("p", { class: "wb-pruefung t-warn" }, imLauf.meldung) : null,
+    f.ergebnis ? ergebnisTeil(f.ergebnis) : null);
+}
+function fundeZeilen(sg) {
+  const eintraege = (daten.wissen && daten.wissen.eintraege) || [];
+  const funde = didFunde(eintraege, sg.adresse);
+  if (!funde.length) return [];
+  const lauf = rechercheJeFund(daten.recherche);
+  const unbekannt = funde.filter((f) => f.status === "unbekannt").length;
+  const sichtbar = funde.slice(0, MAX_FUNDE_ANZEIGE);
+  return [
+    unbekannt ? aktion(`${unbekannt === 1 ? "Den unbekannten Fund" : `Unbekannte Funde (${Math.min(unbekannt, 10)})`} recherchieren`,
+      () => rechercheStarten({ steuergeraet: sg.adresse }), "blau", rechercheLaeuft(daten.recherche) || Boolean(daten.laeuft)) : null,
+    ...sichtbar.map((f) => fundZeile(f, lauf)),
+    funde.length > sichtbar.length ? zeileUnter("Weitere", `${funde.length - sichtbar.length} Funde, im Fahrzeugwissen gespeichert`) : null,
+  ];
+}
+
 function erkundungBlock() {
   const st = daten.erkundung, laeuft = erkundungLaeuft(st);
   const sgs = (st && st.steuergeraete) || [];
@@ -123,8 +199,9 @@ function erkundungBlock() {
       h("span", { class: "li-t" }, laeuft ? "Läuft" : st.phase === "fertig" ? "Fertig" : "Abgebrochen", h("span", { class: "li-unter" }, st.meldung || "")),
       h("progress", { max: "100", value: String(st.prozent || 0), "aria-label": "Fortschritt der Erkundung" })) : null,
     laeuft ? aktion("Abbrechen", erkundungAbbrechen, "rot") : null,
-    ...sgs.map(sgZeile),
-  ], "Fragt alle Steuergeräte ab (11 und 29 Bit): Kennungen, Fehlerspeicher und lesbare DIDs in den Bereichen 0100 bis 01FF, F400 bis F4FF und FD00 bis FDFF. Nur lesend, nur am eigenen Fahrzeug, nur im Stand, gedrosselt. Airbag-Steuergeräte nur Kennungen und Fehler. Funde landen mit Status »unbekannt« im Fahrzeugwissen.");
+    ...(rechercheKopfZeile() || []),
+    ...sgs.flatMap((sg) => [sgZeile(sg), ...(laeuft ? [] : fundeZeilen(sg))]),
+  ], "Fragt alle Steuergeräte ab (11 und 29 Bit): Kennungen, Fehlerspeicher und lesbare DIDs in den Bereichen 0100 bis 01FF, F400 bis F4FF und FD00 bis FDFF. Nur lesend, nur am eigenen Fahrzeug, nur im Stand, gedrosselt. Airbag-Steuergeräte nur Kennungen und Fehler. Funde landen mit Status »unbekannt« im Fahrzeugwissen. »Recherchieren« fragt die KI nach Bedeutung, Formel und Quelle; das Ergebnis ist ein Vorschlag (höchstens »vermutet«), nichts wird ans Auto gesendet.");
 }
 
 /* ---------- Eigene DBC ---------- */
@@ -221,8 +298,13 @@ async function erkundungLesen() {
   const g = generation, r = await api().erkundung();
   if (r && r.ok) { setzeDaten({ erkundung: r }, g); if (erkundungLaeuft(r)) standAbfragen(); }
 }
+async function rechercheLesen() {
+  if (!api().recherche) return;
+  const g = generation, r = await api().recherche();
+  if (r && r.ok) { setzeDaten({ recherche: r }, g); if (rechercheLaeuft(r)) rechercheAbfragen(); }
+}
 
 export function initWerkbank() {
-  on("tab", (id) => { if (id === "werkbank") { zeichnen(); if (api()) { lesen(); wissen(); erkundungLesen(); } } });
-  on("fahrzeug-aktiv", () => { generation += 1; clearTimeout(standUhr); daten = LEER; zeichnen(); });
+  on("tab", (id) => { if (id === "werkbank") { zeichnen(); if (api()) { lesen(); wissen(); erkundungLesen(); rechercheLesen(); } } });
+  on("fahrzeug-aktiv", () => { generation += 1; clearTimeout(standUhr); clearTimeout(rechercheUhr); daten = LEER; zeichnen(); });
 }

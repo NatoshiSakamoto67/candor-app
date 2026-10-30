@@ -75,3 +75,19 @@ export function fassungTitel(fassung, nutzung) {
 }
 /** Beschriftung der Fassungsknöpfe. @param {unknown} nutzung @returns {[Fassung, string][]} */
 export const fassungKnoepfe = (nutzung) => (nutzungLesen(nutzung) === "privat" ? [["kunde", "Kurz"], ["werkstatt", "Ausführlich"]] : [["kunde", "Kunde"], ["werkstatt", "Werkstatt"]]);
+
+/** Knopf im Werkzeugbereich des Berichts, der zu den Angaben im Briefkopf führt. Beim eigenen Auto ohne »Werkstatt«.
+ * @param {{werkstatt: {name?: string}|null|undefined, nutzung: unknown}} s @returns {string} */
+export function briefkopfKnopf({ werkstatt, nutzung }) {
+  const privat = nutzungLesen(nutzung) === "privat";
+  if (werkstatt) return `${privat ? "Briefkopf" : "Werkstatt"}: ${werkstatt.name || "Angaben"}`;
+  return privat ? "Angaben im Briefkopf" : "Werkstattdaten eintragen";
+}
+
+/** Zeile unter »Anrufen« in der Pannenhilfe, solange keine eigene Nummer hinterlegt ist.
+ * @param {unknown} nutzung @returns {{label: string, unter: string}} */
+export function panneNummerZeile(nutzung) {
+  return nutzungLesen(nutzung) === "privat"
+    ? { label: "Eigene Nummer", unter: "Eigene Werkstatt oder Pannennummer hinterlegen" }
+    : { label: "Eigene Werkstatt", unter: "Telefon in den Werkstattdaten hinterlegen" };
+}

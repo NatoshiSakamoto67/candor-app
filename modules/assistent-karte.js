@@ -2,10 +2,10 @@
    (auf iOS bleibt die Tastatur auf der Startseite, beim Senden öffnet der Chat mit der Frage in einem neuen Chat),
    darunter Vorschläge aus dem Fehlerstand und eine Statuszeile wie der Modell-Chip im Chat. Logik in kern/assistent-start.js. */
 import { h, icon } from "./dom.js";
-import { state, on, faultSet, firstReadiness } from "./state.js";
+import { state, on } from "./state.js";
 import { go, currentRoute } from "./shell.js";
-import { neueFrage } from "./chat.js";
-import { startVorschlaege, startStatus } from "../kern/assistent-start.js";
+import { neueFrage, aktuelleVorschlaege } from "./chat.js";
+import { startStatus } from "../kern/assistent-start.js";
 
 /* Frage wartet, bis der Chat gezeichnet ist (der Seitenwechsel läuft mit View Transition verzögert). */
 let offen = null, horchtTab = false;
@@ -59,8 +59,7 @@ export function assistentKarte() {
 export function aktualisiereKarte(k, neuZeichnen = () => {}) {
   if (!k) return;
   ladeEinst(neuZeichnen);
-  const r = firstReadiness();
-  const v = startVorschlaege({ verbunden: Boolean(state.status), scanned: state.scanned, codes: [...faultSet().values()].map((f) => f.code), readinessGesamt: r ? r.tests.length : null });
+  const v = aktuelleVorschlaege();
   const s = startStatus(lage());
   const schluessel = JSON.stringify([v, s]);
   if (currentRoute().page === "agent" && currentRoute().sub !== "kamera") k.kopf.setAttribute("aria-current", "page"); else k.kopf.removeAttribute("aria-current");

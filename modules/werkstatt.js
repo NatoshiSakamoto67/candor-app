@@ -19,7 +19,7 @@ const FIELDS = [
   { k: "strasse", label: "Straße und Nummer", ph: "Musterstraße 1", auto: "street-address" },
   { k: "plz", label: "PLZ", ph: "10115", mode: "numeric", max: 5, auto: "postal-code" },
   { k: "ort", label: "Ort", ph: "Berlin", auto: "address-level2" },
-  { k: "telefon", label: "Telefon", ph: "030 123456", mode: "tel", auto: "tel" },
+  { k: "telefon", label: "Telefon", ph: "030 123456", mode: "tel", auto: "tel", hint: "Steht auch in der Pannenhilfe unter »Anrufen«." },
   { k: "email", label: "E-Mail", ph: "info@werkstatt.de", mode: "email", auto: "email" },
   { k: "mechaniker", label: "Mechaniker oder Mechanikerin", ph: "Name für die Unterschrift", hint: "Steht im Bericht an der Unterschrift." },
 ];
@@ -106,7 +106,9 @@ function renderWahl() {
 /* ---------- Werkstattangaben ---------- */
 function render(errors = {}, values = null) {
   if (currentRoute().sub === "wahl") { gewaehlt = nutzung || STANDARD_NUTZUNG; renderWahl(); return; }
-  const first = !record;
+  /* Aus der Pannenhilfe (#werkstatt/telefon): kein Erststart, nach dem Speichern zurück, Telefon gleich im Fokus. */
+  const telefon = currentRoute().sub === "telefon";
+  const first = !record && !telefon;
   const v = values || workshop() || {};
   const count = Object.keys(errors).length;
   const zaehler = first ? schritt("werkstatt", nutzung) : "";
@@ -129,6 +131,7 @@ function render(errors = {}, values = null) {
   ]);
   const bad = Object.keys(errors)[0];
   if (bad) $(`${PREFIX}-${bad}`).focus();
+  else if (telefon) $(`${PREFIX}-telefon`).focus();
 }
 
 function submit(first) {

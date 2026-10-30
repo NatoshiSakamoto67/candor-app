@@ -57,7 +57,7 @@ function parseHash() {
   const tail = decodeURIComponent(rest.join("/"));
   if (page === "info" && tail) return { page: "detail", sub: null, spec: tail };
   if (!PAGES.some((p) => p.id === page) || page === "detail") return null;
-  const sub = page === "check" ? (CHECK_SUBS.some((c) => c.id === tail) ? tail : null) : ["fahrzeug", "handbuch", "service", "seite", "fall"].includes(page) ? tail || null : page === "werkstatt" && tail === "wahl" ? "wahl" : null;
+  const sub = page === "check" ? (CHECK_SUBS.some((c) => c.id === tail) ? tail : null) : ["fahrzeug", "handbuch", "service", "seite", "fall"].includes(page) ? tail || null : page === "werkstatt" && ["wahl", "telefon"].includes(tail) ? tail : null;
   return { page, sub, spec: null };
 }
 const depth = () => (history.state && history.state.depth) || 0;

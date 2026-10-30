@@ -72,6 +72,10 @@ export function createServer() {
       erkundungStart: (body) => getJson("/api/erkundung/start", sendeJson(body)),
       erkundung: () => getJson("/api/erkundung"),
       erkundungAbbrechen: () => getJson("/api/erkundung/abbrechen", sendeJson({})),
+      /* Recherche-Agent (E2): schlägt Deutungen mit Quelle vor, sendet nichts ans Auto. */
+      rechercheStart: (body) => getJson("/api/recherche/start", sendeJson(body)),
+      recherche: () => getJson("/api/recherche"),
+      rechercheAbbrechen: () => getJson("/api/recherche/abbrechen", sendeJson({})),
     },
     /* Fahrt-Agent: der Server liest im Takt mit, die Seite fragt nur den Stand ab (kfzdiag/beobachter.py). */
     beobachter: {

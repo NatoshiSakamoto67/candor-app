@@ -75,3 +75,78 @@ export function erkundungZeile(sg) {
 
 /** Läuft gerade eine Erkundung? @param {{ laeuft?: boolean } | null | undefined} stand */
 export const erkundungLaeuft = (stand) => Boolean(stand && stand.laeuft);
+
+/* ---------- Recherche-Agent (E2): Funde, Ergebnis, Stand ---------- */
+
+/** Text der Status-Leiter (Bestandsaufnahme C.5). */
+export const STATUS_TEXT = Object.freeze({ unbekannt: "unbekannt", beobachtet: "beobachtet", vermutet: "vermutet", plausibel: "plausibel",
+  bestaetigt: "bestätigt", geprueft: "geprüft", freigegeben: "freigegeben" });
+
+/** Abzeichen für einen Status. @param {string | undefined} status */
+export function statusAbzeichen(status) {
+  const s = status && Object.hasOwn(STATUS_TEXT, status) ? status : "unbekannt";
+  return { text: STATUS_TEXT[/** @type {keyof typeof STATUS_TEXT} */ (s)], klasse: `wb-st st-${s}` };
+}
+
+/** Nur Links mit http oder https, alles andere fällt weg. @param {any} q */
+const sichereQuelle = (q) => {
+  try {
+    const u = new URL(String(q && q.url));
+    return u.protocol === "https:" || u.protocol === "http:" ? { url: u.href, titel: String((q && q.titel) || u.hostname) } : null;
+  } catch { return null; }
+};
+
+/**
+ * Letztes Rechercheergebnis eines Funds für die Anzeige oder null.
+ * @param {{ belege?: any[] }} wert
+ */
+export function rechercheErgebnis(wert) {
+  const b = [...((wert && wert.belege) || [])].reverse().find((x) => x && x.art === "recherche");
+  if (!b) return null;
+  const pruefung = b.pruefung || {};
+  return {
+    deutung: b.bedeutung || "unbekannt",
+    formel: b.formel ? `${b.formel}${b.einheit ? ` · ${b.einheit}` : ""}` : "",
+    sicherheit: b.sicherheit || "niedrig",
+    pruefung: pruefung.hinweis || "",
+    notiz: b.notiz || "",
+    quellen: (b.quellen || []).map(sichereQuelle).filter(Boolean),
+    verworfen: (b.verworfen || []).length,
+    herkunft: b.websuche ? `Websuche, ${b.modell || "KI"}` : `aus Vorwissen, nicht im Netz geprüft (${b.modell || "KI"})`,
+    ton: pruefung.passt === false ? "warn" : "",
+  };
+}
+
+/**
+ * DID-Funde eines Steuergeräts aus dem Fahrzeugwissen, nach DID sortiert.
+ * @param {{ art: string, kennung: string, wert: any }[]} eintraege @param {string} adresse
+ */
+export function didFunde(eintraege, adresse) {
+  return (eintraege || []).filter((e) => e.art === "did" && e.wert && e.wert.steuergeraet === adresse)
+    .map((e) => ({ kennung: e.kennung, did: e.wert.did, roh: e.wert.roh || "", sitzung: e.wert.sitzung === "03" ? "Sitzung 03" : "Sitzung 01",
+      status: e.wert.status || "unbekannt", ergebnis: rechercheErgebnis(e.wert) }))
+    .sort((a, b) => a.kennung.localeCompare(b.kennung));
+}
+
+/** Läuft gerade eine Recherche? @param {{ laeuft?: boolean } | null | undefined} stand */
+export const rechercheLaeuft = (stand) => Boolean(stand && stand.laeuft);
+
+const tausender = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+/**
+ * Kopfzeile des Recherche-Stands: Fortschritt, Token, geschätzte Kosten.
+ * @param {{ laeuft: boolean, phase: string, meldung: string, funde: { status: string }[], eingabe_tokens?: number, ausgabe_tokens?: number, kosten_usd?: number | null, websuche?: boolean }} st
+ */
+export function rechercheKopf(st) {
+  const fertig = st.funde.filter((f) => f.status !== "wartet" && f.status !== "laeuft").length;
+  const token = (st.eingabe_tokens || 0) + (st.ausgabe_tokens || 0);
+  const kosten = typeof st.kosten_usd === "number" ? `, ca. ${st.kosten_usd.toFixed(2).replace(".", ",")} USD` : "";
+  return {
+    titel: st.laeuft ? `Recherche läuft: ${fertig} von ${st.funde.length}` : st.phase === "fertig" ? "Recherche fertig" : "Recherche abgebrochen",
+    unter: `${st.meldung || ""}${st.meldung ? " " : ""}${tausender(token)} Token${kosten}${st.websuche === false ? ", ohne Websuche" : ""}`.trim(),
+    ton: st.phase === "abgebrochen" ? "warn" : "",
+  };
+}
+
+/** Status je Fund im laufenden Lauf (wartet, laeuft, fertig, fehler). @param {{ funde: { kennung: string, status: string, meldung?: string | null }[] } | null} st */
+export const rechercheJeFund = (st) => new Map(((st && st.funde) || []).map((f) => [f.kennung, f]));

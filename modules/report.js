@@ -7,7 +7,7 @@ import { lockup } from "./marke.js";
 import { buildCase, addCase } from "./faelle.js";
 import { state, on, emit, logEvent, faultSet, firstReadiness, signalTitle, captureBefund } from "./state.js";
 import { compareFaults, unscannedBefore, workshopLines } from "./befund.js";
-import { unterschriften, berichtFassung, fassungTitel, fassungKnoepfe } from "../kern/erststart.js";
+import { unterschriften, berichtFassung, fassungTitel, fassungKnoepfe, briefkopfKnopf } from "../kern/erststart.js";
 import { nutzungJetzt } from "./werkstatt.js";
 import { runScan } from "./vehicle.js";
 import { go } from "./shell.js";
@@ -212,7 +212,7 @@ async function share() {
 }
 
 function renderTools() {
-  const werkstatt = h("button", { class: "btn sec", type: "button", onclick: () => go("werkstatt") }, state.werkstatt ? `Werkstatt: ${state.werkstatt.name || "Angaben"}` : "Werkstattdaten eintragen");
+  const werkstatt = h("button", { class: "btn sec", type: "button", onclick: () => go("werkstatt") }, briefkopfKnopf({ werkstatt: state.werkstatt, nutzung: nutzungJetzt() }));
   const auftrag = h("input", { class: "inp txt", value: opts.auftrag, placeholder: "Auftrag oder Kennzeichen", "aria-label": "Auftrag" });
   auftrag.addEventListener("input", () => { opts.auftrag = auftrag.value; saveOpts(); renderReport(); });
   const version = h("div", { class: "seg", id: "report-version", role: "group", "aria-label": "Fassung" }, ...fassungKnoepfe(nutzungJetzt()).map(([id, label]) =>
@@ -235,8 +235,9 @@ function renderTools() {
     h("div", { class: "rt-row" }, werkstatt, auftrag),
     sections,
     TOOL_ACTIONS(),
-    state.src && state.src.mode === "server" ? h("div", { class: "rt-row" }, ...[["vorher", "Vorher-Befund an Werkhof"], ["nachher", "Nachher-Befund an Werkhof"]].map(([phase, text]) =>
-      h("button", { class: "btn sec", type: "button", onclick: async (ev) => { const b = ev.currentTarget; b.disabled = true; const r = await befundSenden(phase); b.disabled = false; toast(r.ok ? `${text}: abgelegt (${String(r.sha256 || "").slice(0, 8)}).` : r.meldung || "Nicht übergeben."); } }, icon("share"), text))) : null);
+    /* replaceChildren schreibt null als Text, deshalb nur bei Server ein Element. */
+    ...(state.src && state.src.mode === "server" ? [h("div", { class: "rt-row" }, ...[["vorher", "Vorher-Befund an Werkhof"], ["nachher", "Nachher-Befund an Werkhof"]].map(([phase, text]) =>
+      h("button", { class: "btn sec", type: "button", onclick: async (ev) => { const b = ev.currentTarget; b.disabled = true; const r = await befundSenden(phase); b.disabled = false; toast(r.ok ? `${text}: abgelegt (${String(r.sha256 || "").slice(0, 8)}).` : r.meldung || "Nicht übergeben."); } }, icon("share"), text)))] : []));
   scanKey = null;
   renderScanState();
   renderCaseBox();
