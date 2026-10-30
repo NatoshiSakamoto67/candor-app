@@ -95,7 +95,7 @@ export function renderFaults() {
     h("p", { class: "fgroup-p" }, g.text),
     h("div", { class: "list" }, ...g.items.map(faultCard))))
     : [h("div", { class: "empty card" }, icon3d("clipboard", "t-ok"), h("p", { class: "h3" }, "Fehlerspeicher leer"), h("p", { class: "sm" }, state.scanned ? "Weder die Abgas-Steuergeräte noch der Vollscan melden einen Fehler." : "Die Abgas-Steuergeräte melden nichts. Für alle anderen Steuergeräte den Vollscan starten."))]));
-  $("obd-clear").disabled = !state.status.schreiben_an || !obdList("gespeichert").length;
+  $("obd-clear").disabled = !(state.status && state.status.schreiben_an) || !obdList("gespeichert").length;
   $("obd-clear").hidden = !obdList("gespeichert").length;
   renderKi();
 }

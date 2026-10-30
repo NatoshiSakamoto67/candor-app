@@ -5,12 +5,12 @@ import { $, h, mark, toast, download, storageGet, storageSet, numFix } from "./d
 import { state, on, logEvent, vehicleKey } from "./state.js";
 import { kundenfassung } from "./mandant.js";
 import { letzteWerte, nachSteuergeraet, dbcDateiPruefen, zustimmungAn, mitZustimmung, beobachtenEingabe, erkundungZeile, erkundungLaeuft,
-  didFunde, statusAbzeichen, rechercheLaeuft, rechercheKopf, rechercheJeFund } from "../kern/werkbank-sicht.js";
+  didFunde, statusAbzeichen, rechercheLaeuft, rechercheKopf, rechercheJeFund, eigeneFunde, statusKnoepfe } from "../kern/werkbank-sicht.js";
 import { FARBE } from "../kern/einstellungs-baum.js";
 import { zurueckZeile, kopfkarte } from "./bausteine.js";
 
 const KEY = "kfzdiag-werkbank-eigen";
-const LEER = { mitschnitt: null, dbc: null, dekodiert: null, wissen: null, abgleich: null, erkundung: null, recherche: null, erweitert: false, laeuft: "", eingabe: { adresse: "7E0", did: "F18C", byte: "0", anzahl: "60" } };
+const LEER = { mitschnitt: null, dbc: null, dekodiert: null, wissen: null, abgleich: null, erkundung: null, recherche: null, validierung: null, statusForm: null, erweitert: false, laeuft: "", eingabe: { adresse: "7E0", did: "F18C", byte: "0", anzahl: "60" } };
 let daten = LEER;
 /* Jede Antwort gehört zu dem Fahrzeug, bei dem sie angefragt wurde; nach einem Wechsel wird sie verworfen. */
 let generation = 0;
@@ -204,6 +204,59 @@ function erkundungBlock() {
   ], "Fragt alle Steuergeräte ab (11 und 29 Bit): Kennungen, Fehlerspeicher und lesbare DIDs in den Bereichen 0100 bis 01FF, F400 bis F4FF und FD00 bis FDFF. Nur lesend, nur am eigenen Fahrzeug, nur im Stand, gedrosselt. Airbag-Steuergeräte nur Kennungen und Fehler. Funde landen mit Status »unbekannt« im Fahrzeugwissen. »Recherchieren« fragt die KI nach Bedeutung, Formel und Quelle; das Ergebnis ist ein Vorschlag (höchstens »vermutet«), nichts wird ans Auto gesendet.");
 }
 
+/* ---------- Status-Leiter (E3): Validierung und Knöpfe von Hand ---------- */
+const MAX_VERLAUF_ANZEIGE = 4;
+async function validieren() {
+  const r = await mit("Validierung", () => api().validieren({}));
+  if (!meldeFehler(r)) return;
+  setzeDaten({ validierung: r });
+  const geaendert = r.funde.filter((f) => f.status !== f.status_vorher).length;
+  toast(r.funde.length ? `${r.funde.length} Fund${r.funde.length === 1 ? "" : "e"} geprüft, ${geaendert} mit neuem Status.` : "Keine Funde ab »vermutet« mit Formel.");
+  logEvent(`Validierung: ${r.funde.length} Funde, ${geaendert} geändert`, "info");
+  await wissen();
+}
+async function statusBestaetigen(form, f, knopf) {
+  const eingabe = new FormData(form);
+  const r = await mit("Status", () => api().statusSetzen({ kennung: f.kennung, ziel: knopf.ziel, beleg: String(eingabe.get("beleg") || ""), bestaetigt: eingabe.get("gefahr") === "ja" }));
+  if (!meldeFehler(r)) return;
+  logEvent(`Fund ${f.titel}: ${knopf.text} (${r.status})`, "info");
+  setzeDaten({ statusForm: null });
+  await wissen();
+}
+function statusFormular(f, knopf) {
+  const form = h("form", { class: "wb-statusform", onsubmit: (e) => { e.preventDefault(); statusBestaetigen(form, f, knopf); } },
+    h("label", { class: "wb-feld" }, h("span", { class: "sm" }, knopf.ziel === "herabstufen" ? "Notiz: welcher Widerspruch?" : "Beleg: womit abgeglichen, was gesehen?"),
+      h("textarea", { class: "inp", name: "beleg", rows: "2", maxlength: "1000", required: true, placeholder: knopf.ziel === "herabstufen" ? "etwa: springt bei Kälte, Kombi zeigt anderes" : "etwa: Kombiinstrument zeigt 82 °C, CANdor 82 °C" })),
+    h("label", { class: "wb-gefahr" }, h("input", { type: "checkbox", name: "gefahr", value: "ja", required: true }),
+      h("span", null, "Auf eigene Gefahr, nur intern. Ein Mensch steht für diese Deutung ein.")),
+    h("div", { class: "wb-statusform-knoepfe" },
+      h("button", { class: `btn ${knopf.ziel === "herabstufen" ? "sec" : "pri"} small`, type: "submit", disabled: Boolean(daten.laeuft) || null }, `${knopf.text} bestätigen`),
+      h("button", { class: "btn sec small", type: "button", onclick: () => setzeDaten({ statusForm: null }) }, "Abbrechen")));
+  return form;
+}
+function statusFundZeile(f) {
+  const abz = statusAbzeichen(f.status);
+  const offen = daten.statusForm && daten.statusForm.kennung === f.kennung ? statusKnoepfe(f.status).find((k) => k.ziel === daten.statusForm.ziel) : null;
+  return h("div", { class: "li-row sk-row wb-fund wb-leiter" },
+    h("div", { class: "wb-fund-kopf" },
+      h("span", { class: "li-t" }, f.titel, h("span", { class: "li-unter" }, f.deutung), f.formel ? h("span", { class: "li-unter mono" }, f.formel) : null),
+      h("span", { class: abz.klasse }, abz.text)),
+    f.widerspruch ? h("p", { class: "wb-pruefung t-warn" }, "Widerspruch in einer Fahrt. Bitte von Hand prüfen.") : null,
+    f.verlauf.length ? h("ol", { class: "wb-verlauf", "aria-label": "Status-Verlauf" }, ...f.verlauf.slice(0, MAX_VERLAUF_ANZEIGE).map((v) =>
+      h("li", null, h("b", null, v.titel), h("span", { class: "sm" }, v.unter), v.grund ? h("span", { class: "sm" }, v.grund) : null, v.beleg ? h("span", { class: "sm wb-beleg" }, `Beleg: ${v.beleg}`) : null))) : null,
+    offen ? statusFormular(f, offen) : h("div", { class: "wb-statusknoepfe" }, ...statusKnoepfe(f.status).map((k) =>
+      h("button", { class: `btn ${k.ziel === "herabstufen" ? "sec" : "pri"} small`, type: "button", disabled: Boolean(daten.laeuft) || null,
+        onclick: () => setzeDaten({ statusForm: { kennung: f.kennung, ziel: k.ziel } }) }, k.text))));
+}
+function leiterBlock() {
+  const funde = eigeneFunde((daten.wissen && daten.wissen.eintraege) || []);
+  return block("Eigene Signale prüfen", [
+    aktion("Diese Fahrt prüfen (Validierung)", validieren, "blau", Boolean(daten.laeuft)),
+    funde.length ? null : zeileUnter("Noch keine", "Funde ab »vermutet« mit Formel erscheinen hier und in den Live-Werten."),
+    ...funde.slice(0, MAX_FUNDE_ANZEIGE).map(statusFundZeile),
+  ], "Funde ab »vermutet« mit Formel liest CANdor live per 0x22 mit (nur lesend, Standardsitzung, gedrosselt). Die Validierung prüft die Messreihen dieser Fahrt: Bereich, Sprünge, Ruhezustand, Bezug zu einem genormten Signal. Automatisch geht es höchstens bis »plausibel« (eine Fahrt passt) und »bestätigt« (zweite Fahrt, zweites Fahrzeug gleicher Teilenummer oder zweite Quelle). »Geprüft« und »Freigegeben« setzt nur ein Mensch mit Beleg, auf eigene Gefahr und nur intern.");
+}
+
 /* ---------- Eigene DBC ---------- */
 async function dbcLaden(text, name) {
   const r = await mit("DBC", () => api().dbc(text, name));
@@ -287,10 +340,11 @@ export function zeichnen() {
   if (kundenfassung()) { $("werkbank").replaceChildren(...kopf("Die Werkbank gibt es in dieser Fassung nicht.")); return; }
   if (!api()) { $("werkbank").replaceChildren(...kopf("Erst ein Fahrzeug verbinden oder den Simulator im Server starten.")); return; }
   $("werkbank").replaceChildren(...[
-    ...kopf("Werkzeuge für das eigene Fahrzeug: erkunden, mitschneiden, mit einer eigenen DBC-Datei lesen, Kennungen der Steuergeräte sammeln und die Bedeutung unbekannter Werte abgleichen. Alles nur lesend."),
+    ...kopf(`Werkzeuge für das eigene Fahrzeug: erkunden, mitschneiden, mit einer eigenen DBC-Datei lesen, Kennungen der Steuergeräte sammeln und die Bedeutung unbekannter Werte abgleichen. Alles nur lesend.${
+      state.src && state.src.mode === "demo" ? " In der Vorschau gibt es kein Fahrzeug: Erkunden und Mitschneiden gehen nur mit dem Simulator im Diagnose-Server oder am echten Auto." : ""}`),
     daten.laeuft ? h("p", { class: "sm wb-laeuft", role: "status" }, mark("pending"), ` ${daten.laeuft} läuft …`) : null,
     block("Eigenes Fahrzeug", [zustimmungZeile()]),
-    erkundungBlock(), mitschnittBlock(), dbcBlock(), erkunderBlock(), abgleichBlock()].filter(Boolean));
+    erkundungBlock(), leiterBlock(), mitschnittBlock(), dbcBlock(), erkunderBlock(), abgleichBlock()].filter(Boolean));
 }
 
 async function erkundungLesen() {

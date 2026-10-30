@@ -76,6 +76,9 @@ export function createServer() {
       rechercheStart: (body) => getJson("/api/recherche/start", sendeJson(body)),
       recherche: () => getJson("/api/recherche"),
       rechercheAbbrechen: () => getJson("/api/recherche/abbrechen", sendeJson({})),
+      /* Validation Engine (E3): prüft die laufende Fahrt, Status von Hand nur mit Beleg und Bestätigung. */
+      validieren: (body) => getJson("/api/validierung", sendeJson(body || {})),
+      statusSetzen: (body) => getJson("/api/fahrzeugwissen/status", sendeJson(body)),
     },
     /* Fahrt-Agent: der Server liest im Takt mit, die Seite fragt nur den Stand ab (kfzdiag/beobachter.py). */
     beobachter: {
@@ -117,7 +120,7 @@ export function createDemo(data) {
   };
   return {
     mode: "demo",
-    werkbank: Object.fromEntries(["start", "stop", "widerrufen", "lesen", "csv", "dbc", "dekodiert", "erkunden", "wissen", "beobachten"].map((k) =>
+    werkbank: Object.fromEntries(["start", "stop", "widerrufen", "lesen", "csv", "dbc", "dekodiert", "erkunden", "wissen", "beobachten", "validieren", "statusSetzen"].map((k) =>
       [k, async () => ({ ok: false, fehler: "vorschau", meldung: "In der Vorschau gibt es kein Fahrzeug. Die Werkbank braucht ein echtes Auto oder den Simulator im Server." })])),
     beobachter: Object.fromEntries(["status", "start", "stopp", "test", "bericht"].map((k) =>
       [k, async () => ({ ok: false, fehler: "vorschau", meldung: "Der Fahrt-Agent läuft im Diagnose-Server. In der Vorschau gibt es ihn nicht." })])),

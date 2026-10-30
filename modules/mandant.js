@@ -4,12 +4,16 @@
 import { $, h, storageSet } from "./dom.js";
 
 export const kundenfassung = () => document.documentElement.dataset.edition === "kunde";
+/* Werkstattfassung (30.10.2026): CI der Werkstatt, aber alle Werkstattfunktionen (Profi, Fall-Seite, Bericht). */
+export const werkstattfassung = () => document.documentElement.dataset.edition === "werkstatt";
+export const mitMandant = () => kundenfassung() || werkstattfassung();
 let mandant = null;
 export const MANDANT = () => mandant;
 
 export async function ladeMandant() {
-  if (!kundenfassung()) return null;
+  if (!mitMandant()) return null;
   mandant = await fetch("marke/mandant.json").then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  if (!kundenfassung()) return mandant;
   /* Kundenfassung: immer einfach, Schreiben immer aus (zusätzlich zur harten Sperre in approval.js). */
   storageSet("kfzdiag-modus", "einfach");
   storageSet("kfzdiag-schreibschutz", true);
@@ -19,7 +23,7 @@ export async function ladeMandant() {
 
 /* Kopf: Logo der Werkstatt statt CANdor. */
 export function wendeMarkeAn() {
-  if (!kundenfassung() || !mandant) return;
+  if (!mitMandant() || !mandant) return;
   const home = $("nav-home");
   if (home) {
     home.setAttribute("aria-label", `${mandant.name}, ${mandant.titel}`);

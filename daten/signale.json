@@ -1,0 +1,1027 @@
+{
+ "version": 1,
+ "hinweis": "Eine Signaldefinition für Server (kfzdiag/pids.py) und App (frontend/kern/pids.js). Formeln in A, B, … (Rohbytes), umkehr in X (Wert zu roher Zahl, für den Simulator). Kein eval: nur Zahlen, + - * / ( ) & | >> <<.",
+ "signale": [
+  {
+   "id": "sig:motor.last",
+   "name": "LAST",
+   "beschreibung": "Motorlast berechnet",
+   "einheit": "%",
+   "groesse": "last",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "04",
+     "formel": "A*100/255",
+     "umkehr": "X*255/100",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 100
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:motor.kuehlmittel_temperatur",
+   "name": "KUEHLMITTEL",
+   "beschreibung": "Kühlmitteltemperatur",
+   "einheit": "°C",
+   "groesse": "temperatur",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "05",
+     "formel": "A-40",
+     "umkehr": "X+40",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": -40,
+    "max": 215
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ],
+   "warngrenzen": {
+    "min": -35,
+    "max": 130,
+    "text": "Unplausibel. Fühler oder Leitung prüfen."
+   }
+  },
+  {
+   "id": "sig:motor.saugrohrdruck",
+   "name": "SAUGROHRDRUCK",
+   "beschreibung": "Saugrohrdruck absolut",
+   "einheit": "kPa",
+   "groesse": "druck",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "0B",
+     "formel": "A",
+     "umkehr": "X",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 255
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:motor.drehzahl",
+   "name": "DREHZAHL",
+   "beschreibung": "Motordrehzahl",
+   "einheit": "1/min",
+   "groesse": "drehzahl",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "0C",
+     "formel": "(A*256+B)/4",
+     "umkehr": "X*4",
+     "bytes": 2
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 16383.75
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:fahrzeug.geschwindigkeit",
+   "name": "GESCHWINDIGKEIT",
+   "beschreibung": "Fahrzeuggeschwindigkeit",
+   "einheit": "km/h",
+   "groesse": "geschwindigkeit",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "0D",
+     "formel": "A",
+     "umkehr": "X",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 255
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:motor.ansaugluft_temperatur",
+   "name": "ANSAUGLUFT",
+   "beschreibung": "Ansauglufttemperatur",
+   "einheit": "°C",
+   "groesse": "temperatur",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "0F",
+     "formel": "A-40",
+     "umkehr": "X+40",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": -40,
+    "max": 215
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ],
+   "warngrenzen": {
+    "min": -35,
+    "max": 90,
+    "text": "Unplausibel. Fühler oder Leitung prüfen."
+   }
+  },
+  {
+   "id": "sig:motor.luftmasse",
+   "name": "LUFTMASSE",
+   "beschreibung": "Luftmasse",
+   "einheit": "g/s",
+   "groesse": "massenstrom",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "10",
+     "formel": "(A*256+B)/100",
+     "umkehr": "X*100",
+     "bytes": 2
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 655.35
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:motor.drosselklappe",
+   "name": "DROSSELKLAPPE",
+   "beschreibung": "Drosselklappenstellung",
+   "einheit": "%",
+   "groesse": "stellung",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "11",
+     "formel": "A*100/255",
+     "umkehr": "X*255/100",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 100
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:kraftstoff.tank",
+   "name": "TANK",
+   "beschreibung": "Tankfüllstand",
+   "einheit": "%",
+   "groesse": "fuellstand",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "2F",
+     "formel": "A*100/255",
+     "umkehr": "X*255/100",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 100
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:umgebung.luftdruck",
+   "name": "LUFTDRUCK",
+   "beschreibung": "Umgebungsluftdruck",
+   "einheit": "kPa",
+   "groesse": "druck",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "33",
+     "formel": "A",
+     "umkehr": "X",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 255
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:bordnetz.spannung_sg",
+   "name": "SPANNUNG",
+   "beschreibung": "Steuergerätespannung",
+   "einheit": "V",
+   "groesse": "spannung",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "42",
+     "formel": "(A*256+B)/1000",
+     "umkehr": "X*1000",
+     "bytes": 2
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 65.535
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ],
+   "warngrenzen": {
+    "min": 11.8,
+    "max": 15.2,
+    "text": "Bordnetz außerhalb 11,8 bis 15,2 V. Batterie und Lichtmaschine prüfen."
+   }
+  },
+  {
+   "id": "sig:umgebung.temperatur",
+   "name": "UMGEBUNG",
+   "beschreibung": "Umgebungstemperatur",
+   "einheit": "°C",
+   "groesse": "temperatur",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "46",
+     "formel": "A-40",
+     "umkehr": "X+40",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": -40,
+    "max": 215
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:motor.oel_temperatur",
+   "name": "OELTEMPERATUR",
+   "beschreibung": "Motoröltemperatur",
+   "einheit": "°C",
+   "groesse": "temperatur",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "5C",
+     "formel": "A-40",
+     "umkehr": "X+40",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": -40,
+    "max": 210
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ],
+   "warngrenzen": {
+    "min": -35,
+    "max": 160,
+    "text": "Unplausibel. Fühler oder Leitung prüfen."
+   }
+  },
+  {
+   "id": "sig:gemisch.trim_kurz_b1",
+   "name": "TRIM_KURZ_B1",
+   "beschreibung": "Gemischkorrektur kurzfristig Bank 1",
+   "einheit": "%",
+   "groesse": "gemischkorrektur",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "06",
+     "formel": "(A-128)*100/128",
+     "umkehr": "X*128/100+128",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": -100,
+    "max": 99.2
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:gemisch.trim_lang_b1",
+   "name": "TRIM_LANG_B1",
+   "beschreibung": "Gemischkorrektur langfristig Bank 1",
+   "einheit": "%",
+   "groesse": "gemischkorrektur",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "07",
+     "formel": "(A-128)*100/128",
+     "umkehr": "X*128/100+128",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": -100,
+    "max": 99.2
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ],
+   "warngrenzen": {
+    "min": -15,
+    "max": 15,
+    "text": "Gemischkorrektur über ±15 %. Falschluft, Einspritzung oder Lambdasonde prüfen."
+   }
+  },
+  {
+   "id": "sig:gemisch.trim_kurz_b2",
+   "name": "TRIM_KURZ_B2",
+   "beschreibung": "Gemischkorrektur kurzfristig Bank 2",
+   "einheit": "%",
+   "groesse": "gemischkorrektur",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "08",
+     "formel": "(A-128)*100/128",
+     "umkehr": "X*128/100+128",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": -100,
+    "max": 99.2
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:gemisch.trim_lang_b2",
+   "name": "TRIM_LANG_B2",
+   "beschreibung": "Gemischkorrektur langfristig Bank 2",
+   "einheit": "%",
+   "groesse": "gemischkorrektur",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "09",
+     "formel": "(A-128)*100/128",
+     "umkehr": "X*128/100+128",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": -100,
+    "max": 99.2
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ],
+   "warngrenzen": {
+    "min": -15,
+    "max": 15,
+    "text": "Gemischkorrektur über ±15 %. Falschluft, Einspritzung oder Lambdasonde prüfen."
+   }
+  },
+  {
+   "id": "sig:gemisch.lambda_soll",
+   "name": "LAMBDA_SOLL",
+   "beschreibung": "Lambda Sollwert",
+   "einheit": "λ",
+   "groesse": "lambda",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "44",
+     "formel": "(A*256+B)*2/65536",
+     "umkehr": "X*32768",
+     "bytes": 2
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 2
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:motor.zuendwinkel",
+   "name": "ZUENDWINKEL",
+   "beschreibung": "Zündzeitpunkt (vor OT)",
+   "einheit": "°",
+   "groesse": "winkel",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "0E",
+     "formel": "A/2-64",
+     "umkehr": "(X+64)*2",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": -64,
+    "max": 63.5
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:motor.last_absolut",
+   "name": "LAST_ABSOLUT",
+   "beschreibung": "Motorlast absolut",
+   "einheit": "%",
+   "groesse": "last",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "43",
+     "formel": "(A*256+B)*100/255",
+     "umkehr": "X*255/100",
+     "bytes": 2
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 25700
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:motor.drossel_relativ",
+   "name": "DROSSEL_RELATIV",
+   "beschreibung": "Drosselklappe relativ",
+   "einheit": "%",
+   "groesse": "stellung",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "45",
+     "formel": "A*100/255",
+     "umkehr": "X*255/100",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 100
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:motor.drehmoment_ist",
+   "name": "DREHMOMENT",
+   "beschreibung": "Motordrehmoment Ist",
+   "einheit": "%",
+   "groesse": "last",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "62",
+     "formel": "A-125",
+     "umkehr": "X+125",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": -125,
+    "max": 130
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:motor.laufzeit",
+   "name": "LAUFZEIT",
+   "beschreibung": "Laufzeit seit Motorstart",
+   "einheit": "s",
+   "groesse": "zeit",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "1F",
+     "formel": "A*256+B",
+     "umkehr": "X",
+     "bytes": 2
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 65535
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:kraftstoff.raildruck",
+   "name": "RAILDRUCK",
+   "beschreibung": "Kraftstoff-Raildruck",
+   "einheit": "kPa",
+   "groesse": "druck",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "23",
+     "formel": "(A*256+B)*10",
+     "umkehr": "X/10",
+     "bytes": 2
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 655350
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:kraftstoff.verbrauch",
+   "name": "VERBRAUCH",
+   "beschreibung": "Kraftstoffverbrauch",
+   "einheit": "l/h",
+   "groesse": "volumenstrom",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "5E",
+     "formel": "(A*256+B)/20",
+     "umkehr": "X*20",
+     "bytes": 2
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 3276.75
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:abgas.agr_soll",
+   "name": "AGR_SOLL",
+   "beschreibung": "Abgasrückführung Soll",
+   "einheit": "%",
+   "groesse": "stellung",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "2C",
+     "formel": "A*100/255",
+     "umkehr": "X*255/100",
+     "bytes": 1
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 100
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:abgas.kat_temperatur_b1",
+   "name": "KAT_TEMP_B1",
+   "beschreibung": "Katalysatortemperatur Bank 1",
+   "einheit": "°C",
+   "groesse": "temperatur",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "3C",
+     "formel": "(A*256+B)/10-40",
+     "umkehr": "(X+40)*10",
+     "bytes": 2
+    }
+   ],
+   "bereich": {
+    "min": -40,
+    "max": 6513.5
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ],
+   "warngrenzen": {
+    "min": -40,
+    "max": 900,
+    "text": "Katalysator über 900 °C. Überhitzung durch Zündaussetzer möglich."
+   }
+  },
+  {
+   "id": "sig:zaehler.km_mit_mil",
+   "name": "KM_MIT_MIL",
+   "beschreibung": "Strecke mit leuchtender Motorkontrollleuchte",
+   "einheit": "km",
+   "groesse": "strecke",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "21",
+     "formel": "A*256+B",
+     "umkehr": "X",
+     "bytes": 2
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 65535
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  },
+  {
+   "id": "sig:zaehler.km_seit_loeschen",
+   "name": "KM_SEIT_LOESCHEN",
+   "beschreibung": "Strecke seit dem letzten Löschen",
+   "einheit": "km",
+   "groesse": "strecke",
+   "zugriffe": [
+    {
+     "weg": "obd",
+     "mode": "01",
+     "pid": "31",
+     "formel": "A*256+B",
+     "umkehr": "X",
+     "bytes": 2
+    }
+   ],
+   "bereich": {
+    "min": 0,
+    "max": 65535
+   },
+   "richtwerte": {},
+   "status": "freigegeben",
+   "quelle": {
+    "art": "norm",
+    "text": "SAE J1979 / ISO 15031-5, Dienst 01"
+   },
+   "region": [
+    "EU",
+    "US",
+    "JP",
+    "KR",
+    "CN"
+   ]
+  }
+ ]
+}

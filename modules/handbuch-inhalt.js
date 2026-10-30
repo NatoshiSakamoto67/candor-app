@@ -170,7 +170,7 @@ export const KAPITEL = [
     ["p", "Auf Wunsch schätzt der Assistent ein Ereignis ein: Er liest nur, antwortet in drei Sätzen nach stützt, widerspricht, fehlt und legt das als Fahrtbericht ab. Das passiert höchstens einmal in 10 Minuten und nur, solange das Tagesbudget reicht. Fahrtprotokoll und Berichte liegen auf dem Server unter var/fahrten, ohne FIN und Kennzeichen."],
   ] },
 
-  { id: "werkbank", titel: "CAN-Werkbank", icon: "scope", kurz: "Mitschnitt, eigene DBC, Kennungen, Abgleich", bloecke: [
+  { id: "werkbank", titel: "CAN-Werkbank", icon: "scope", kurz: "Erkunden, Recherche, Status-Leiter, Mitschnitt, eigene DBC", bloecke: [
     ["p", "Die CAN-Werkbank im Profi-Modus ist für das eigene Fahrzeug gedacht. Sie liest nur und schreibt nichts ins Auto. Bevor sie mitschneidet oder Kennungen sammelt, bestätigst du einmal, dass es dein eigenes Fahrzeug ist. Der Server merkt sich das je Fahrzeug, ohne die FIN zu speichern."],
     ["tabelle", ["Werkzeug", "Was es tut"], [
       ["Mitschnitt", "zeichnet die Anfragen und Antworten auf, die CANdor mit dem Auto austauscht, mit Zeit und Adresse; Export als CSV"],
@@ -180,6 +180,18 @@ export const KAPITEL = [
     ]],
     ["hinweis", "warn", "Ein ELM327 liefert die Nutzdaten der Diagnosebotschaften, nicht jeden Rahmen auf dem Bus. Hersteller-DBC-Dateien gehören nicht in CANdor. Ein Abgleich ist ein Vorschlag, kein Beleg: mit einer gezielten Änderung gegenprüfen, etwa Gas geben."],
     ["p", "Für DBC-Dateien braucht der Server das Zusatzpaket cantools: pip install kfzdiag[can]. Ohne es laufen Mitschnitt, Kennungen und Abgleich trotzdem."],
+    ["p", "Erkunden, Recherche und Status-Leiter: »Fahrzeug erkunden« fragt alle Steuergeräte nur lesend ab und legt jede lesbare DID als Fund mit Status »unbekannt« ab. »Recherchieren« lässt die KI mit Websuche eine Bedeutung, Formel und Einheit mit Quelle vorschlagen; ohne zulässige Quelle bleibt der Fund unbekannt, mit Quelle und passender Formel wird er »vermutet«. Ab »vermutet« liest CANdor den Fund in den Live-Werten mit (UDS 0x22, Standardsitzung, gedrosselt) und zeigt ihn in der Gruppe »Eigene Deutung« mit Abzeichen."],
+    ["tabelle", ["Status", "Bedeutung", "Wer setzt ihn"], [
+      ["unbekannt", "Rohbytes ohne Deutung", "Erkundung"],
+      ["beobachtet", "Bytes ändern sich erkennbar mit einem bekannten Wert", "Abgleich"],
+      ["vermutet", "Formel und Einheit mit Quelle vorgeschlagen", "Recherche"],
+      ["plausibel", "eine Fahrt passt: Bereich, keine unmöglichen Sprünge, Ruhezustand bei Motor aus, folgt einem genormten Signal", "Validierung, automatisch"],
+      ["bestätigt", "zweite Fahrt, zweites Fahrzeug mit gleicher Teilenummer oder zweite unabhängige Quelle passt", "Validierung, automatisch"],
+      ["geprüft", "gegen Kombiinstrument, Messgerät oder Handbuch abgeglichen", "nur ein Mensch, mit Beleg"],
+      ["freigegeben", "darf als Wert gelten (nur intern)", "nur ein Mensch, mit Beleg"],
+    ]],
+    ["p", "»Diese Fahrt prüfen« wendet die Regeln auf die Messreihen der laufenden Sitzung an. Für eine Aussage braucht es mindestens 60 Messpunkte mit Bewegung, also eine echte Fahrt oder Gas geben im Stand. Widerspricht eine Fahrt, fällt ein Fund von »plausibel« oder »bestätigt« auf »vermutet« zurück; bei »geprüft« und »freigegeben« gibt es nur einen Vermerk. Jede Statusänderung steht mit Zeit, Grund und Urheber im Verlauf des Funds."],
+    ["hinweis", "warn", "»Als geprüft markieren« und »Freigeben« geschehen auf eigene Gefahr und nur intern. Eine eigene Deutung ist kein Herstellerwert. Der KI-Agent und der Fahrt-Agent bekommen eigene Signale nicht als Messwert."],
   ] },
 
   { id: "schreibschutz", titel: "Sicherheit beim Schreiben", icon: "lock", kurz: "Warum nichts ohne dich ins Auto geht", bloecke: [

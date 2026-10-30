@@ -150,3 +150,67 @@ export function rechercheKopf(st) {
 
 /** Status je Fund im laufenden Lauf (wartet, laeuft, fertig, fehler). @param {{ funde: { kennung: string, status: string, meldung?: string | null }[] } | null} st */
 export const rechercheJeFund = (st) => new Map(((st && st.funde) || []).map((f) => [f.kennung, f]));
+
+/* ---------- Status-Leiter (E3): eigene Funde, Verlauf, Knöpfe, eigene Signale in Live ---------- */
+const LEITER = ["unbekannt", "beobachtet", "vermutet", "plausibel", "bestaetigt", "geprueft", "freigegeben"];
+/** @param {string | undefined} s */
+const rangVon = (s) => Math.max(0, LEITER.indexOf(String(s)));
+const statusText = (s) => statusAbzeichen(s).text;
+
+/** Jüngste Deutung mit Formel. @param {any} wert */
+function deutungVon(wert) {
+  const b = [...((wert && wert.belege) || [])].reverse().find((x) => x && x.formel);
+  return b ? { deutung: String(b.bedeutung || "ohne Deutung"), formel: `${b.formel}${b.einheit ? ` · ${b.einheit}` : ""}` } : { deutung: "ohne Deutung", formel: "" };
+}
+
+/**
+ * Funde ab »vermutet« für die Status-Leiter, höchster Status zuerst.
+ * @param {{ art: string, kennung: string, wert: any }[]} eintraege
+ */
+export function eigeneFunde(eintraege) {
+  return (eintraege || []).filter((e) => e.art === "did" && e.wert && rangVon(e.wert.status) >= rangVon("vermutet"))
+    .map((e) => ({ kennung: e.kennung, titel: `${e.wert.steuergeraet} · ${e.wert.did}`, status: e.wert.status, widerspruch: Boolean(e.wert.widerspruch),
+      sitzung: e.wert.sitzung, ...deutungVon(e.wert), verlauf: verlaufZeilen(e.wert),
+      fahrten: ((e.wert.validierung && e.wert.validierung.fahrten) || []).length }))
+    .sort((a, b) => rangVon(b.status) - rangVon(a.status) || a.kennung.localeCompare(b.kennung));
+}
+
+const DURCH = { mensch: "von Hand", validierung: "Validierung", recherche: "Recherche", erkundung: "Erkundung" };
+/** »2026-10-30T11:05:00« als »30.10.2026, 11:05«. @param {string} iso */
+const zeitText = (iso) => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(iso || ""));
+  return m ? `${m[3]}.${m[2]}.${m[1]}, ${m[4]}:${m[5]}` : "";
+};
+
+/** Verlauf eines Funds, neueste Änderung zuerst. @param {{ verlauf?: any[] }} wert */
+export function verlaufZeilen(wert) {
+  return [...((wert && wert.verlauf) || [])].reverse().map((v) => ({
+    titel: v.von === v.nach ? `Vermerk (${statusText(v.nach)})` : `${statusText(v.von)} → ${statusText(v.nach)}`,
+    unter: [zeitText(v.zeit), DURCH[/** @type {keyof typeof DURCH} */ (v.durch)] || String(v.durch || "")].filter(Boolean).join(" · "),
+    grund: String(v.grund || ""), beleg: v.beleg ? String(v.beleg) : "",
+  }));
+}
+
+/** Knöpfe, die ein Mensch bei diesem Status hat (mit Beleg und Bestätigung). @param {string} status */
+export function statusKnoepfe(status) {
+  const r = rangVon(status);
+  /** @type {{ ziel: string, text: string, ton: string }[]} */
+  const k = [];
+  if (r >= rangVon("vermutet") && r < rangVon("geprueft")) k.push({ ziel: "geprueft", text: "Als geprüft markieren", ton: "blau" });
+  if (status === "geprueft") k.push({ ziel: "freigegeben", text: "Freigeben", ton: "gruen" });
+  if (r > rangVon("vermutet")) k.push({ ziel: "herabstufen", text: "Herabstufen", ton: "rot" });
+  return k;
+}
+
+/** @param {{ signal?: string, eigen?: boolean }} v */
+export const istEigenesSignal = (v) => Boolean(v && v.eigen && String(v.signal || "").startsWith("eigen:"));
+
+/** Zeile für ein eigenes Signal in den Live-Werten. @param {any} v */
+export function eigenesSignal(v) {
+  const [, sg = "", did = ""] = String(v.signal).split(":");
+  return {
+    titel: v.beschreibung || `${sg} ${did}`, abzeichen: statusAbzeichen(v.status),
+    unter: `${sg} · ${did} · ${v.hinweis || "eigene Deutung"}${v.qualitaet && v.qualitaet !== "ok" ? ` · ${v.qualitaet}` : ""}`,
+    ton: v.qualitaet === "unplausibel" || v.qualitaet === "ausserhalb" ? "warn" : "",
+  };
+}

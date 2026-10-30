@@ -158,6 +158,8 @@ function renderHistory() {
   $("view-agent").classList.toggle("leer", !list.length);
   renderQuick(!list.length);
   $("cx-titel").textContent = c ? c.titel : "";
+  /* Leerer Chat: keine leere Überschrift im Kopf (Screenreader), der Platz bleibt durch die Knöpfe gleich. */
+  $("cx-titel").hidden = !c;
   $("cx-clear").hidden = !list.length;
   zeichnePanel();
 }

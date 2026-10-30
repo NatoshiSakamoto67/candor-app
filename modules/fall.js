@@ -2,11 +2,11 @@
    die eine nächste Messung, Bauteile im 3D, Maßnahme mit Betriebsbuch, Nachweis vorher/nachher je Signal, Agent.
    Rechenregeln in kern/fall.js (Vorschau) und /api/fall (Server). Manuelle Ergebnisse und Maßnahme je Code liegen
    lokal in kfzdiag-faelle-offen, ohne FIN und Kennzeichen. */
-import { $, h, icon, mark, num, storageGet, storageSet, toast, clockTime } from "./dom.js";
+import { $, h, icon, mark, storageGet, storageSet, toast, clockTime } from "./dom.js";
 import { state, on, emit, signalTitle, DTC_REG, faultSet, logEvent } from "./state.js";
 import { go, back, currentRoute } from "./shell.js";
 import { gruppe } from "./bausteine-seiten.js";
-import { hypothesen, naechsteMessung, nachweis, knopfText, fallStatus, liveWerte, bewerteSignal, messwertText } from "../kern/fall.js";
+import { hypothesen, naechsteMessung, nachweis, knopfText, fallStatus, liveWerte, bewerteSignal, messwertText, freezeZeile } from "../kern/fall.js";
 import { bauteileFuer } from "../kern/bauteilfehler.js";
 import { FUNKTIONEN } from "../kern/service-katalog.js";
 import { eintragen } from "./service.js";
@@ -79,7 +79,7 @@ function kopf(code, k, f) {
     h("h2", { class: "sk-titel" }, h("span", { class: "mono" }, code), k.titel ? ` · ${k.titel}` : ""),
     h("p", { class: "sk-text" }, `${k.steuergeraet || "Steuergerät unbekannt"} · ${dtcStatus} · ${seit.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })} ${clockTime(seit)}`, " ",
       h("span", { class: `cs t-${stand === "nachgeprüft" ? "ok" : stand === "offen" ? "neutral" : "warn"}` }, stand)),
-    ff && ff.werte && ff.werte.length ? h("p", { class: "sm" }, "Freeze-Frame: ", ff.werte.slice(0, 4).map((v) => `${num(v.wert, 0)} ${v.einheit || ""}`.trim()).join(" · ")) : null);
+    ff && freezeZeile(ff.werte) ? h("p", { class: "sm" }, "Freeze-Frame: ", freezeZeile(ff.werte)) : null);
 }
 
 /* ---------- 2 Ursachen ---------- */

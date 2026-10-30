@@ -65,6 +65,8 @@ const PATHS = {
   tick: "M5 12l4 4L19 6",
   cross: "M6 6l12 12M18 6L6 18",
   minus: "M6 12h12",
+  /* Prüfpfad: Start, Weg, Ziel (Knopf »Fall öffnen«; fehlte bis 30.10.2026 und fiel auf den Strich zurück) */
+  route: "M6 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM6 16v-4a3 3 0 0 1 3-3h6a3 3 0 0 0 3-3",
   plus: "M12 5v14M5 12h14",
   up: "M12 19V5M6 11l6-6 6 6",
   down: "M12 5v14M6 13l6 6 6-6",

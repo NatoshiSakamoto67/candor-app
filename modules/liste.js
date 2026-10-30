@@ -6,7 +6,7 @@ import { state, on, emit, firstReadiness, totalFaults, pendingFaults } from "./s
 import { go, currentRoute, openDisplaySettings } from "./shell.js";
 import { BAUM, werte, zeilenFuer } from "../kern/einstellungs-baum.js";
 import { nutzungJetzt } from "./werkstatt.js";
-import { kundenfassung, MANDANT, zumPortal } from "./mandant.js";
+import { kundenfassung, mitMandant, MANDANT, zumPortal } from "./mandant.js";
 import { FUNKTIONEN } from "../kern/service-katalog.js";
 import { ablauf, weiterText } from "../kern/ablauf.js";
 import { erledigtHeute, buchLaenge } from "./service.js";
@@ -115,7 +115,7 @@ export function zeichneListe(containerId, { kompakt = false } = {}) {
   if (!l || l.key !== key) {
     const refs = new Map();
     box.replaceChildren(...[
-      kompakt ? null : h("h1", { class: "li-titel" }, kundenfassung() && MANDANT() ? MANDANT().titel : "CANdor"),
+      kompakt ? null : h("h1", { class: "li-titel" }, mitMandant() && MANDANT() ? MANDANT().titel : "CANdor"),
       profilkarte(refs),
       naechster(refs),
       /* Der KI-Assistent steht als eigene Karte oben statt als Zeile in der Liste (gleiche Sichtbarkeit wie die Zeile). */

@@ -46,7 +46,6 @@ function bauen() {
     h("div", { class: "db-kacheln", id: "db-kacheln", role: "list" }),
     h("p", { class: "db-hinweis", id: "db-hinweis" }, "Tippen: nächste Gruppe und Zurück"));
   box.addEventListener("click", (ev) => { if (ev.target.closest(".db-leiste")) return; gruppe = naechsteGruppe(gruppe); leisteBis = Date.now() + LEISTE_MS; zeichnen(); });
-  box.addEventListener("keydown", (ev) => { if (ev.key === "Escape") back(); });
   gebaut = true;
 }
 function kachel(sig) {
@@ -88,5 +87,7 @@ export function initDashboard() {
   on("tab", (id) => { if (id === "dashboard") betreten(); else if (uhr) verlassen(); });
   on("live-tick", zeichnen);
   on("render", zeichnen);
+  /* Escape verlässt das Dashboard auch, wenn die Leiste mit dem fokussierten Zurück-Knopf wieder verschwunden ist. */
+  document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && aktiv() && !document.querySelector("dialog[open]")) back(); });
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && aktiv()) wachHalten(); });
 }

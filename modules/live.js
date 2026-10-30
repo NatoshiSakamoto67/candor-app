@@ -4,6 +4,7 @@ import { $, h, s, num, numFix, cssVar, mixColor, icon, mark, chev, toast, downlo
 import { icon3d } from "./icons3d.js";
 import { rundinstrument, SKALEN } from "./rundinstrument.js";
 import { state, WISSEN, on, emit, signalTitle, sollFor, logEvent } from "./state.js";
+import { istEigenesSignal, eigenesSignal } from "../kern/werkbank-sicht.js";
 import { buffer, pushSample, recordings, rec, startRecording, stopRecording, markRecording, armTrigger, disarmTrigger, deleteRecording, toCsv, stats, resample } from "./recorder.js";
 export { historyOf } from "./recorder.js";
 
@@ -274,7 +275,7 @@ function settledBad(sig, raw) {
 /* Skala je Signal: runde Grenzen (1-2-5) um das Sollband, die nur wächst, wenn ein Wert hinausläuft. So bleibt das Band stehen. */
 const scales = new Map();
 /* Beim Fahrzeugwechsel zurücksetzen, damit Skalen und Schleppzeiger nicht vom alten Auto bleiben. */
-export function setzeLiveZurueck() { scales.clear(); rows.clear(); shownBad.clear(); layoutKey = ""; for (const ri of instrumente.values()) ri.zuruecksetzen(); for (const k in shown) delete shown[k]; }
+export function setzeLiveZurueck() { scales.clear(); rows.clear(); eigenRows.clear(); shownBad.clear(); layoutKey = ""; for (const ri of instrumente.values()) ri.zuruecksetzen(); for (const k in shown) delete shown[k]; }
 function niceStep(span) { const p = 10 ** Math.floor(Math.log10(span)), f = span / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; }
 export function scaleFor(sig, soll, wert) {
   if (isTrim(sig)) return { a: -25, b: 25, step: 5, min: soll.soll_min, max: soll.soll_max };
@@ -321,8 +322,26 @@ function fillRow(r, sig, v, soll, bad) {
   [[sc.a, 0], [soll.soll_min, pct(soll.soll_min)], [soll.soll_max, pct(soll.soll_max)], [sc.b, 100]].forEach(([x, at], i) => {
     r.labs[i].textContent = isTrim(sig) ? signed(x, 0) : num(x, dg); r.labs[i].style.left = `${at}%`; });
 }
+/* Eigene Signale (E3): Funde der Erkundung ab »vermutet«, per 0x22 gelesen. Eigene Gruppe mit Status-Abzeichen,
+   nie als Herstellerwert und ohne Sollband. */
+const eigenRows = new Map();
+function eigenRow() {
+  const r = { t: h("div", { class: "t" }), d: h("div", { class: "d" }), abz: h("span"), val: h("b"), unit: h("small") };
+  r.el = h("div", { class: "tap param eigen-param", role: "group" }, h("div", { class: "eigen-text" }, r.abz, r.t, r.d), h("span", { class: "v" }, r.val, r.unit));
+  return r;
+}
+function fillEigen(r, v) {
+  const z = eigenesSignal(v), dg = digitsFor(v.einheit);
+  r.el.classList.toggle("warn", z.ton === "warn");
+  r.t.textContent = z.titel; r.d.textContent = z.unter;
+  if (r.abzText !== z.abzeichen.text) { r.abz.className = z.abzeichen.klasse; r.abz.textContent = z.abzeichen.text; r.abzText = z.abzeichen.text; }
+  r.val.textContent = numFix(steadyDigit(`e:${v.signal}`, v.wert, 10 ** -dg), dg); r.unit.textContent = v.einheit || "";
+}
 export function renderParams() {
-  const list = Object.entries(state.live).filter(([, v]) => v.wert != null);
+  const alle = Object.entries(state.live).filter(([, v]) => v.wert != null);
+  const list = alle.filter(([, v]) => !istEigenesSignal(v));
+  const eigene = alle.filter(([, v]) => istEigenesSignal(v)).map(([sig]) => sig);
+  for (const sig of eigene) { if (!eigenRows.has(sig)) eigenRows.set(sig, eigenRow()); fillEigen(eigenRows.get(sig), state.live[sig]); }
   const bad = [], fine = [];
   for (const [sig, v] of list) {
     const soll = sollFor(sig);
@@ -331,12 +350,15 @@ export function renderParams() {
     fillRow(rows.get(sig), sig, v, soll, isBad);
     (isBad ? bad : fine).push(sig);
   }
-  const key = `${bad.join(",")}|${fine.join(",")}`;
+  const key = `${bad.join(",")}|${fine.join(",")}|${eigene.join(",")}`;
   if (key !== layoutKey) {
     layoutKey = key;
     $("params").replaceChildren(...[
       bad.length ? h("h3", { class: "pgroup t-warn" }, mark("warn"), `Auffällig (${bad.length})`) : null, bad.length ? h("div", { class: "list" }, ...bad.map((sig) => rows.get(sig).el)) : null,
-      fine.length ? h("h3", { class: "pgroup" }, mark("ok"), `Im Rahmen (${fine.length})`) : null, fine.length ? h("div", { class: "list" }, ...fine.map((sig) => rows.get(sig).el)) : null].filter(Boolean));
+      fine.length ? h("h3", { class: "pgroup" }, mark("ok"), `Im Rahmen (${fine.length})`) : null, fine.length ? h("div", { class: "list" }, ...fine.map((sig) => rows.get(sig).el)) : null,
+      eigene.length ? h("h3", { class: "pgroup" }, `Eigene Deutung (${eigene.length})`) : null,
+      eigene.length ? h("p", { class: "sm eigen-hinweis" }, "Aus eigenen Funden der Werkbank, per UDS 0x22 gelesen. Kein Herstellerwert; der Status zeigt, wie weit die Deutung geprüft ist.") : null,
+      eigene.length ? h("div", { class: "list" }, ...eigene.map((sig) => eigenRows.get(sig).el)) : null].filter(Boolean));
   }
   renderLiveHero(list.length, bad);
   const zustand = state.analysis ? state.analysis.sollwerte.zustand_text : "";

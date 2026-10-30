@@ -151,3 +151,13 @@ export function fallStatus(f) {
 
 /** Messwerte aus state.live ({SIG: {wert}}) als flache Zahlen. @param {Record<string, { wert?: unknown } | undefined>} live @returns {Werte} */
 export const liveWerte = (live) => Object.fromEntries(Object.entries(live || {}).filter(([, v]) => v && typeof v.wert === "number").map(([k, v]) => [k, /** @type {number} */ (v && v.wert)]));
+
+/**
+ * Kurzzeile Freeze-Frame im Fallkopf: Name und Wert, höchstens n Einträge (Gesamttest 30.10.2026: nur Zahlen waren nicht lesbar).
+ * @param {{ signal?: string, beschreibung?: string, wert: unknown, einheit?: string }[] | undefined} werte
+ * @param {number} [n]
+ */
+export function freezeZeile(werte, n = 4) {
+  return (werte || []).filter((v) => typeof v.wert === "number").slice(0, n)
+    .map((v) => `${v.beschreibung || v.signal || "Wert"} ${zahl(/** @type {number} */ (v.wert))}${v.einheit ? ` ${v.einheit}` : ""}`).join(" · ");
+}
