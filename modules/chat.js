@@ -1,5 +1,5 @@
-/* KI-Chat wie in modernen Assistenten: Verlauf je Fahrzeug, Eingabe mit Plus (Datei, Bild, Foto, Websuche),
-   Diktat, Senden und Stopp, Antwort Wort für Wort, Quellen, Vorschlag mit Freigabe. Die KI führt nichts aus.
+/* KI-Chat wie in modernen Assistenten: Verlauf je Fahrzeug, Eingabe mit Plus (Blatt »Kontext hinzufügen« mit Kamera,
+   Fotos, Dateien, Websuche, Agent), Chip mit Modell und Stufe, Diktat, Senden und Stopp, Antwort Wort für Wort, Quellen, Vorschlag mit Freigabe. Die KI führt nichts aus.
    Anhänge gehen nur mit der aktuellen Nachricht an den Server; im Verlauf bleiben nur ihre Namen. */
 import { $, h, icon, mark, toast, storageGet, storageSet, clockTime, reducedMotion } from "./dom.js";
 import { state, on, emit, faultSet, logEvent } from "./state.js";
@@ -10,9 +10,11 @@ import { icon3d } from "./icons3d.js";
 import { similar, forAi as caseForAi } from "./faelle.js";
 import { verlauf, suche as chatSuche, gruppe as zeitGruppe, GRUPPEN, mitWerkzeug, zumSenden } from "./chatverlauf.js";
 import { vehicleName } from "./fahrzeuge.js";
+import { oeffneBlatt } from "./kontextblatt.js";
+import { modellChip, kannDiktieren } from "../kern/kontext.js";
 
 const MAX_FILES = 5, MAX_BYTES = 10 * 1024 * 1024, MAX_EDGE = 2000, MAX_HISTORY = 60, SEND_HISTORY = 20;
-const IMAGE = /^image\/(png|jpeg|webp|gif)$/, TEXT = /\.(txt|csv|log|json|md|xml)$/i;
+const IMAGE = /^image\//, TEXT = /\.(txt|csv|log|json|md|xml)$/i;
 /* Kurze Vorschläge unter der Eingabe wie bei Claude: kurzer Text auf dem Knopf, ganze Frage beim Senden. */
 const QUICK = [["Fehler erklären", "Was bedeuten meine Fehlercodes?"], ["Wo fange ich an?", "Wo fange ich bei der Fehlersuche an?"], ["Schafft es die AU?", "Besteht das Auto die AU?"]];
 const QUICK_LEER = [["Was kannst du?", "Was kannst du für mich am Auto tun?"], ["Typische Probleme", "Such im Internet nach bekannten Problemen zu diesem Modell"], ["Wo fange ich an?", "Wo fange ich bei der Fehlersuche an?"]];
@@ -35,8 +37,8 @@ const isServer = () => state.src && state.src.mode === "server";
 const AGENT_ANBIETER = new Set(["anthropic", "openai_kompatibel"]);
 const agentMoeglich = () => isServer() && state.status && AGENT_ANBIETER.has(state.status.ki);
 const agentAn = () => agentLive && agentMoeglich();
-function agentUmschalten() {
-  agentLive = !agentLive; storageSet("kfzdiag-agent-live", agentLive);
+function agentSetzen(an) {
+  agentLive = an; storageSet("kfzdiag-agent-live", agentLive);
   if (agentLive && !storageGet("kfzdiag-agent-hinweis", false)) { toast("Der Agent liest selbst am Auto. Er kann nichts löschen oder schreiben."); storageSet("kfzdiag-agent-hinweis", true); }
   renderToggles();
 }
@@ -48,7 +50,7 @@ const toBase64 = (blob) => new Promise((resolve, reject) => { const r = new File
 /* Jedes Bild wird neu gezeichnet: das verkleinert große Fotos und entfernt immer die Metadaten (EXIF mit GPS-Ort,
    Kamera, Zeit), bevor etwas an die KI geht. Kennzeichen im Bild erkennt das nicht, dafür steht der Hinweis am Chat. */
 async function shrink(file) {
-  const bitmap = await createImageBitmap(file);
+  const bitmap = await createImageBitmap(file).catch(() => { throw new Error("Dieses Bildformat kann der Browser nicht lesen. Bitte als JPEG oder PNG."); });
   const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
   const canvas = Object.assign(document.createElement("canvas"), { width: Math.round(bitmap.width * scale), height: Math.round(bitmap.height * scale) });
   canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
@@ -136,8 +138,8 @@ function messageView(m) {
 }
 function emptyView() {
   const fz = state.fahrzeug;
-  return h("div", { class: "cx-empty" }, h("span", { class: "cx-empty-ic", "aria-hidden": "true" }, icon3d("robot")),
-    h("h2", { class: "h2" }, fz ? `Was ist mit dem ${vehicleName(fz)}?` : "Was ist mit dem Auto?"));
+  return h("div", { class: "cx-empty" }, h("img", { class: "cx-empty-zeichen", src: "marke/candor-zeichen.svg", alt: "", width: 56, height: 56 }),
+    h("h2", { class: "cx-gruss" }, fz ? `Was ist mit dem ${vehicleName(fz)}?` : "Was ist mit dem Auto?"));
 }
 function renderQuick(leer) {
   const box = $("cx-vorschlaege");
@@ -302,31 +304,41 @@ export async function send(textArg) {
   }
 }
 
-/* ---------- Plus-Menü ---------- */
-function plusMenu() {
-  const open = $("cx-menu");
-  if (open) { open.remove(); return; }
-  const close = () => { menu.remove(); document.removeEventListener("pointerdown", outside, true); };
-  const outside = (ev) => { if (!menu.contains(ev.target) && ev.target !== $("cx-plus")) close(); };
-  const row = (ic, title, sub, onclick, pressed) => h("button", { class: "cx-mi", type: "button", role: "menuitem", "aria-pressed": pressed == null ? null : String(pressed), onclick: () => { onclick(); close(); } },
-    h("span", { class: "cx-mi-ic" }, ic), h("span", {}, h("b", {}, title), h("small", {}, sub)), pressed == null ? null : h("span", { class: `cx-dot${pressed ? " on" : ""}`, "aria-hidden": "true" }));
-  const menu = h("div", { class: "cx-menu glass", id: "cx-menu", role: "menu" },
-    row(icon("doc"), "Datei oder PDF", "Werkstatthandbuch, Rechnung, Protokoll", () => $("cx-file").click()),
-    row(icon("car"), "Bild", "Foto vom Motorraum, Fehlerbild, Typenschild", () => $("cx-image").click()),
-    row(icon("rec"), "Foto aufnehmen", "Kamera am Handy oder Tablet", () => $("cx-camera").click()),
-    h("div", { class: "cx-sep" }),
-    row(icon("search"), "Websuche", "Codes, Rückrufe, bekannte Probleme, mit Quellen", () => { web = !web; storageSet("kfzdiag-websuche", web); renderToggles(); }, web),
-    agentMoeglich() ? row(icon("pulse"), "Selbst am Auto lesen", "Die KI liest Fehler und Messwerte selbst, nur lesend", agentUmschalten, agentLive) : null);
-  $("cx-composer").append(menu);
-  setTimeout(() => document.addEventListener("pointerdown", outside, true));
-  menu.addEventListener("keydown", (ev) => { if (ev.key === "Escape") { close(); $("cx-plus").focus(); } });
-  menu.querySelector("button").focus();
+/* ---------- Plus: Blatt »Kontext hinzufügen«, Modell-Chip ---------- */
+/* Einstellungen (Modell, Modellnamen, Tagesbudget) liest der Chat vom Server, den Schlüssel sieht er nie. */
+let einst = null;
+async function ladeEinstellungen() {
+  if (!isServer()) { einst = null; renderModell(); return; }
+  try { const r = await state.src.settings(); einst = r && r.ok ? r : null; } catch (_) { einst = null; }
+  renderModell();
 }
+const lage = () => ({
+  server: isServer(), anbieter: einst ? einst.ki.anbieter : state.status && state.status.ki, modell: einst && einst.ki.modell, modelle: einst ? einst.modelle : [],
+  budget: einst && einst.budget, agentMoeglich: agentMoeglich(), agentAn: agentAn(), websuche: web,
+});
+function renderModell() {
+  const chip = modellChip(lage()), el = $("cx-modell");
+  el.replaceChildren(...[h("span", {}, chip.text), chip.stufe ? h("span", { class: "cx-stufe" }, chip.stufe) : null].filter(Boolean));
+  el.classList.toggle("einrichten", chip.einrichten);
+  el.setAttribute("aria-label", chip.einrichten ? `${chip.text}, öffnet die Einstellungen` : `Modell ${chip.text}${chip.stufe ? `, Stufe ${chip.stufe}` : ""}, öffnet die Einstellungen`);
+}
+function waehleDatei(k) {
+  const inp = $(k.eingabe);
+  inp.accept = k.accept;
+  if (k.capture) inp.setAttribute("capture", k.capture); else inp.removeAttribute("capture");
+  inp.click();
+}
+function schalte(id, an) {
+  if (id === "websuche") { web = an; storageSet("kfzdiag-websuche", web); renderToggles(); }
+  if (id === "agent") agentSetzen(an);
+}
+const plusBlatt = () => oeffneBlatt(lage(), { waehle: waehleDatei, schalte, ziel: () => go("einstellungen") }, $("cx-plus"));
 function renderToggles() {
   $("cx-plus").classList.toggle("web-an", web); $("cx-plus").title = web ? "Anhängen, Websuche ist an" : "Anhängen, Websuche ist aus";
   const an = agentAn();
   $("view-agent").classList.toggle("agent-an", an);
   $("cx-input").placeholder = an ? "Frag den Agenten, er liest selbst am Auto" : $("cx-input").dataset.platzhalter || $("cx-input").placeholder;
+  renderModell();
 }
 
 export function initAgent() {
@@ -337,7 +349,9 @@ export function initAgent() {
   input.addEventListener("paste", (ev) => { const list = [...(ev.clipboardData.files || [])]; if (list.length) { ev.preventDefault(); addFiles(list); } });
   $("cx-composer").addEventListener("submit", (ev) => { ev.preventDefault(); send(); });
   $("cx-stop").addEventListener("click", () => running && running.abort());
-  $("cx-plus").addEventListener("click", plusMenu);
+  $("cx-plus").addEventListener("click", plusBlatt);
+  $("cx-modell").addEventListener("click", () => go("einstellungen"));
+  $("cx-mic").hidden = !kannDiktieren(window);
   $("cx-mic").addEventListener("click", dictate);
   for (const id of ["cx-file", "cx-image", "cx-camera"]) $(id).addEventListener("change", (ev) => { addFiles(ev.target.files); ev.target.value = ""; });
   $("cx-clear").addEventListener("click", neuerChat);
@@ -351,7 +365,7 @@ export function initAgent() {
   view.addEventListener("dragover", (ev) => { if (ev.dataTransfer.types.includes("Files")) { ev.preventDefault(); view.classList.add("drop"); } });
   view.addEventListener("dragleave", (ev) => { if (ev.target === view || !view.contains(ev.relatedTarget)) view.classList.remove("drop"); });
   view.addEventListener("drop", (ev) => { ev.preventDefault(); view.classList.remove("drop"); addFiles(ev.dataTransfer.files); });
-  on("tab", (id) => { if (id === "agent") { renderHistory(); renderToggles(); updateSend(); requestAnimationFrame(scrollEnd); } });
+  on("tab", (id) => { if (id === "agent") { renderHistory(); renderToggles(); updateSend(); ladeEinstellungen(); requestAnimationFrame(scrollEnd); } });
   /* Anderes Fahrzeug: neuer leerer Chat, der Verlauf bleibt in der Seitenleiste */
   on("fahrzeug-aktiv", () => { const c = aktivId() && chats.holen(aktivId()); if (c && state.fahrzeug && c.fz && c.fz !== state.fahrzeug.id) chats.setzeAktiv(null); if (!$("view-agent").hidden) renderHistory(); });
   on("status", renderToggles);

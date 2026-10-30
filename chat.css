@@ -266,3 +266,81 @@
 .cx-tools b { color: var(--text); font-weight: 600; }
 .cx-tools li.nicht b { color: var(--crit); }
 .agent-an .cx-composer { box-shadow: 0 0 0 2px var(--accent); }
+
+/* Wie in Assistenten-Apps (David, 30.10.): leerer Chat ist eine ruhige Fläche mit CANdor-Zeichen und Begrüßung in
+   der Mitte, die Eingabe sitzt unten als runde Karte: Plus links, Modell-Chip, Mikrofon, Senden. Plus öffnet das Blatt
+   »Kontext hinzufügen« (kontextblatt.js). Laufende Unterhaltungen bleiben wie oben beschrieben. */
+.view-agent { --font-gruss: ui-serif, "New York", "Iowan Old Style", Charter, Georgia, serif; }
+.view-agent.leer .cx-main { grid-template-rows: auto minmax(0, 1fr) auto auto auto; padding-bottom: 0; }
+.view-agent.leer .cx-log { align-self: center; padding: 0; }
+.cx-empty { gap: 14px; }
+.cx-empty-zeichen { width: 56px; height: 56px; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, .28)); }
+@media (prefers-reduced-motion: no-preference) { .cx-empty-zeichen { animation: cx-in var(--dur-slow) var(--ease-out) both; } }
+.cx-gruss { margin: 0; max-width: 20ch; font: 400 30px/1.2 var(--font-gruss); letter-spacing: -.01em; color: var(--text); text-wrap: balance; }
+.cx-vorschlaege { margin-bottom: 2px; }
+
+.cx-composer { padding: 12px 10px 10px; gap: 8px; border-radius: 26px; background: var(--surface-1); -webkit-backdrop-filter: none; backdrop-filter: none;
+  border: 1px solid color-mix(in oklab, var(--text) 11%, transparent); box-shadow: 0 10px 30px rgba(0, 0, 0, .18); }
+[data-theme="hell"] .cx-composer { box-shadow: 0 8px 24px rgba(0, 0, 0, .07); }
+.cx-input { padding: 4px 8px 2px; }
+.cx-bar { gap: 8px; }
+.cx-plus { flex: none; background: var(--surface-2); border: 1px solid var(--line); color: var(--text); }
+.cx-plus:hover { background: var(--surface-3); }
+.cx-modell { flex: 0 1 auto; min-width: 0; display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 16px; border-radius: var(--r-pill);
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--text); font: 500 var(--t-3)/20px var(--font-text); white-space: nowrap; cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+.cx-modell > span { overflow: hidden; text-overflow: ellipsis; }
+.cx-modell .cx-stufe { color: var(--text-muted); }
+.cx-modell.einrichten { color: var(--accent); }
+.cx-modell:hover { background: var(--surface-3); }
+.cx-modell:active { transform: scale(.97); }
+.cx-modell:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface-1), 0 0 0 4px var(--accent); }
+#cx-mic { background: var(--surface-2); color: var(--text); }
+#cx-mic[hidden] { display: none; }
+.cx-send:disabled { background: var(--surface-3); color: var(--text-muted); }
+
+/* Blatt von unten: schwebt mit Abstand zum Rand, großer Radius, Kacheln und Zeilen als eigene Flächen */
+.kb-ebene { position: fixed; inset: 0; z-index: 40; }
+.kb-schleier { position: absolute; inset: 0; background: rgba(0, 0, 0, .5); opacity: 0; transition: opacity var(--dur-sheet) var(--ease-out); }
+.kb-blatt { position: absolute; left: 8px; right: 8px; bottom: max(8px, env(safe-area-inset-bottom, 0px)); max-width: 560px; max-height: calc(100dvh - 48px); margin: 0 auto; overflow-y: auto;
+  display: grid; gap: 14px; padding: 8px 16px 18px; border-radius: 34px; background: var(--surface-1); color: var(--text);
+  border: 1px solid color-mix(in oklab, var(--text) 9%, transparent); box-shadow: var(--sh2);
+  transform: translateY(calc(100% + 24px)); transition: transform var(--dur-sheet) var(--ease-out); touch-action: pan-y; }
+.kb-ebene.auf .kb-schleier { opacity: 1; }
+.kb-ebene.auf .kb-blatt { transform: none; }
+.kb-blatt.zieht { transition: none; }
+.kb-griff { justify-self: center; width: 36px; height: 5px; border-radius: 3px; background: color-mix(in oklab, var(--text) 22%, transparent); cursor: grab; touch-action: none; }
+.kb-kopf { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; touch-action: none; }
+.kb-titel { margin: 0; text-align: center; font: 600 var(--t-4)/var(--t-4-lh) var(--font-display); }
+.kb-zu { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface-2); color: var(--text); cursor: pointer; }
+.kb-zu:hover { background: var(--surface-3); }
+.kb-sym { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.kb-zu .kb-sym { width: 20px; height: 20px; stroke-width: 2; }
+.kb-kacheln { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 10px; margin-top: 4px; }
+.kb-kachel { display: grid; justify-items: center; align-content: center; gap: 8px; min-height: 100px; padding: 12px 6px; border: 0; border-radius: 24px;
+  background: var(--surface-2); color: var(--text); font: 500 var(--t-4)/22px var(--font-text); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+.kb-kachel:hover { background: var(--surface-3); }
+.kb-kachel:active, .kb-zeile:active { transform: scale(.97); }
+.kb-zeilen { display: grid; gap: 10px; }
+.kb-zeile { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto auto; align-items: center; gap: 14px; min-height: 58px; padding: 8px 18px; border: 0; border-radius: 22px;
+  background: var(--surface-2); color: var(--text); text-align: left; font: 400 var(--t-4)/22px var(--font-text); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+label.kb-zeile { grid-template-columns: 24px minmax(0, 1fr) auto; }
+.kb-zeile:hover { background: var(--surface-3); }
+.kb-z-sym { display: grid; place-items: center; color: var(--text-muted); }
+.kb-z-t { display: grid; min-width: 0; }
+.kb-z-t small { font: 400 var(--t-2)/17px var(--font-text); color: var(--text-muted); }
+.kb-z-v { color: var(--text-muted); white-space: nowrap; }
+.kb-zeile .li-chev { color: var(--text-muted); font-size: 22px; line-height: 1; }
+.kb-zeile .li-sw { grid-column: auto; }
+.kb-kachel:focus-visible, .kb-zeile:focus-visible, .kb-zu:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface-1), 0 0 0 4px var(--accent); }
+.kb-zeile:has(.li-sw:focus-visible) { box-shadow: 0 0 0 2px var(--surface-1), 0 0 0 4px var(--accent); }
+.kb-hinweis { margin: 0; padding: 0 6px; text-align: center; font: 400 var(--t-1)/var(--t-1-lh) var(--font-text); color: var(--text-muted); }
+[data-contrast="hoch"] .kb-kachel, [data-contrast="hoch"] .kb-zeile { border: 1px solid var(--line); }
+@media (prefers-reduced-motion: reduce) { .kb-blatt, .kb-schleier { transition: none; } }
+/* Am Handy gehört der untere Rand der Eingabe: die schwebende Suche weicht auf dieser Seite. */
+@media (max-width: 1099px) {
+  body:has(#view-agent:not([hidden])) .tb-suche { display: none; }
+  body:has(#view-agent:not([hidden])) .main { padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
+}
+/* Ruhige Fläche ohne Schein: die Spalte zeichnete sich sonst als Kasten ab. */
+.cx-ambient { display: none; }

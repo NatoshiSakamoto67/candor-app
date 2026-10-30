@@ -325,8 +325,9 @@ body::before { background: radial-gradient(1400px 700px at 50% -20%, color-mix(i
   box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.25); }
 .li-ic.li-bild { background: none; box-shadow: 0 1px 2px rgba(0,0,0,.28); overflow: hidden; }
 .li-ic.li-bild img { display: block; width: 100%; height: 100%; }
-.li-avatar.li-avatar-bild { background: none; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
-.li-avatar.li-avatar-bild img { width: 100%; height: 100%; object-fit: contain; padding: 4px; box-sizing: border-box; }
+/* Die Bilder sind randlose Quadrate; die Rundung kommt nur von der Kachel, damit kein Bildrand oder Schatten hervorschaut. */
+.li-avatar.li-avatar-bild { background: none; overflow: hidden; border-radius: 22.5%; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+.li-avatar.li-avatar-bild img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
 /* ---------- Unterseiten im Apple-Stil (seiten.js) ---------- */
 .sk-block { margin-top: 26px; }
