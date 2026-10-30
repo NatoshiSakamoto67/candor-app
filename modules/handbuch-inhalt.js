@@ -80,7 +80,7 @@ export const KAPITEL = [
     ["bild", "ablauf"],
     ["p", "Der Ablauf folgt professioneller Werkstatt-Software (Bosch ESI[tronic], Autel MaxiSys, Launch X431, Gutmann mega macs): Erst das Fahrzeug, dann der Eingangsbefund, dann die Arbeit, zum Schluss der Ausgangsbefund und der Vergleich."],
     ["schritte", [
-      "Beim allerersten Start: Werkstattdaten eintragen oder überspringen.",
+      "Beim allerersten Start: wählen, ob du CANdor für dein eigenes Auto oder in der Werkstatt nutzt. Werkstattangaben fragt CANdor nur in der Werkstatt, und auch dort sind sie freiwillig.",
       "Fahrzeug anlegen. Pflicht sind Marke und Modell, dazu Kennzeichen oder FIN. Oder »Mit Beispielfahrzeug ausprobieren«.",
       "Verbinden. Passt der Herstellercode des Autos nicht zur hinterlegten FIN, warnt die Fahrzeugkarte.",
       "Kilometerstand vom Tacho eintragen. Weniger als beim letzten Mal geht nur nach Bestätigung.",

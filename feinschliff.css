@@ -407,25 +407,39 @@ body::before { background: radial-gradient(1400px 700px at 50% -20%, color-mix(i
 .sk-zurueck:active { transform: scale(.94); }
 @media (min-width: 1100px) { .sk-nav { display: none; } }
 
-/* ---------- Suche wie in den iOS-Einstellungen: Vorschläge und Zuletzt, Suchfeld unten mit Mikrofon und Schließen ---------- */
+/* ---------- Suche wie in den iOS-Einstellungen: Vorschläge und Zuletzt, Treffer als Karte mit Pfad, Suchfeld unten ---------- */
 .pal { display: flex; flex-direction: column; }
 .pal-bar { display: flex; align-items: center; gap: 10px; padding: 10px 12px; order: -1; }
-.pal-bar .pal-in { flex: 1; height: 48px; border-radius: 24px; border: 0; padding: 0 14px; background: color-mix(in oklab, var(--text) 9%, transparent); }
+.pal-bar .pal-in { flex: 1; height: 48px; margin: 0; border-radius: 24px; border: 0; padding: 0 8px 0 14px; background: color-mix(in oklab, var(--text) 9%, transparent); }
 .pal-bar .pal-in input { font-size: 17px; }
+.pal-bar .pal-in input::-webkit-search-cancel-button { display: none; }
 .pal-mik, .pal-x { flex: none; border: 0; display: grid; place-items: center; color: var(--text); background: none; cursor: pointer; }
 .pal-mik { width: 36px; height: 36px; border-radius: 50%; color: var(--text-muted); }
-.pal-mik[hidden] { display: none; }
 .pal-mik.aktiv { color: var(--accent); animation: pulse 1s ease-in-out infinite; }
-.pal-x { width: 48px; height: 48px; border-radius: 50%; background: color-mix(in oklab, var(--text) 9%, transparent); font-size: 20px; }
-.pal-vor .pal-r { min-height: 56px; }
-.pal-vor .li-ic { width: 30px; height: 30px; border-radius: 7px; }
-.pal-vor .li-ic .ic { width: 18px; height: 18px; }
+.pal-x { width: 48px; height: 48px; border-radius: 50%; background: color-mix(in oklab, var(--text) 9%, transparent); font-size: 20px; transition: transform var(--dur-fast) var(--ease-out); }
+.pal-x:active { transform: scale(.92); }
+.pal-mik:focus-visible, .pal-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.palette .results { padding: 0 12px 12px; }
+.pal-g { padding: 0; }
+.pal-g .li-k { margin: 18px 4px 7px; }
+.pal-z { width: 100%; border: 0; font: inherit; text-align: left; background: transparent; }
+.pal-z .li-t { display: grid; gap: 1px; }
+.pal-z .pr-t, .pal-z .li-unter { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pal-z .code { font-weight: 600; }
+.pal-z:has(.li-unter) { min-height: 58px; padding-block: 7px; }
+.pal-z[aria-selected="true"] { background: color-mix(in oklab, var(--accent) 16%, transparent); box-shadow: inset 3px 0 0 var(--accent); }
+.pal-leer { padding: 28px 8px; text-align: center; }
+html.pal-offen, html.pal-offen body { overflow: hidden; }
+@media (hover: none) { .pal-z[aria-selected="true"] { background: transparent; box-shadow: none; } .pal-z:active { background: color-mix(in oklab, var(--text) 7%, transparent); } }
 @media (max-width: 759px) {
-  .palette { max-width: none; width: 100vw; height: 100dvh; max-height: none; margin: 0; border-radius: 0; background: var(--bg); }
-  .palette::backdrop { background: var(--bg); }
-  .pal { height: 100%; }
-  .palette .results { flex: 1; max-height: none; order: 0; padding-top: 28px; }
-  .pal-bar { order: 1; position: sticky; bottom: 0; padding-bottom: max(12px, env(safe-area-inset-bottom, 0px)); background: linear-gradient(to top, var(--bg) 70%, transparent); }
+  /* Ganze sichtbare Fläche deckend; Höhe und Lage folgen dem visualViewport (search.js), Rest der Seite bleibt verdeckt */
+  .palette[open] { position: fixed; inset: auto; top: var(--vv-top, 0px); left: 0; width: 100vw; max-width: none; height: var(--vv-h, 100dvh); max-height: none; margin: 0; border-radius: 0; background: var(--surface-0); overflow: hidden; }
+  .palette::backdrop { background: var(--surface-0); }
+  .palette .pal { height: 100%; max-width: none; border: 0; border-radius: 0; background: var(--surface-0); box-shadow: none; }
+  .palette .results { flex: 1; min-height: 0; max-height: none; overflow: auto; overscroll-behavior: contain; order: 0; padding-top: calc(env(safe-area-inset-top, 0px) + 20px); }
+  .pal-bar { order: 1; flex: none; padding: 8px 12px max(10px, env(safe-area-inset-bottom, 0px)); background: var(--surface-0); }
+  .palette[data-tastatur="an"] .pal-bar { padding-bottom: 8px; }
+  .palette[data-tastatur="an"] .results { padding-top: 12px; }
   .pal-f { display: none; }
 }
 
@@ -518,3 +532,11 @@ button.sk-mehr { border: 0; background: none; padding: 0; margin: 0; font: inher
   [data-seite="unter"] .sk-nav { display: none; }
   [data-seite="unter"] .brand-btn { padding: 0 4px; }
 }
+/* Erststart (30.10.2026): große Wahlzeilen »Wofür nutzt du CANdor?«, gewählt mit Haken und leichter Akzentfläche */
+.li-row.sk-row.sk-wahl { grid-template-columns: 48px minmax(0, 1fr) 22px; min-height: 78px; padding-block: 12px; }
+.sk-wahl .li-ic { width: 48px; height: 48px; border-radius: 11px; }
+.sk-wahl .li-t { font: 600 17px/22px var(--font-text); }
+.sk-wahl .li-unter { font-weight: 400; }
+.sk-wahl + .sk-wahl::before { left: 78px; }
+.li-row.sk-wahl[aria-checked="true"] { background: color-mix(in oklab, var(--accent) 9%, transparent); }
+.brand-hero .sk-titel { margin: 0; }

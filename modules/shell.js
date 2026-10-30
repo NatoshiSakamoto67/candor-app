@@ -14,7 +14,7 @@ export const PAGES = [
   { id: "connect", label: "Verbinden", icon: "gateway" },
   { id: "fahrzeuge", label: "Fahrzeuge", icon: "car" },
   { id: "fahrzeug", label: "Fahrzeug anlegen", icon: "car" },
-  { id: "werkstatt", label: "Werkstattdaten", icon: "car" },
+  { id: "werkstatt", label: "Werkstattangaben", icon: "car" },
   { id: "handbuch", label: "Handbuch", icon: "doc" },
   { id: "einstellungen", label: "KI und Dienste", icon: "display" },
   { id: "car", label: "Steuergeräte", icon: "ecu" },
@@ -57,7 +57,7 @@ function parseHash() {
   const tail = decodeURIComponent(rest.join("/"));
   if (page === "info" && tail) return { page: "detail", sub: null, spec: tail };
   if (!PAGES.some((p) => p.id === page) || page === "detail") return null;
-  const sub = page === "check" ? (CHECK_SUBS.some((c) => c.id === tail) ? tail : null) : ["fahrzeug", "handbuch", "service", "seite", "fall"].includes(page) ? tail || null : null;
+  const sub = page === "check" ? (CHECK_SUBS.some((c) => c.id === tail) ? tail : null) : ["fahrzeug", "handbuch", "service", "seite", "fall"].includes(page) ? tail || null : page === "werkstatt" && tail === "wahl" ? "wahl" : null;
   return { page, sub, spec: null };
 }
 const depth = () => (history.state && history.state.depth) || 0;
@@ -67,6 +67,7 @@ function titleFor(r) {
   if (r.page === "check" && r.sub) return CHECK_SUBS.find((c) => c.id === r.sub).label;
   if (r.page === "seite" && r.sub) return SEITEN_TITEL[r.sub] || "Einstellungen";
   if (r.page === "fahrzeug") return r.sub ? "Fahrzeug bearbeiten" : "Fahrzeug anlegen";
+  if (r.page === "werkstatt" && r.sub === "wahl") return "Willkommen";
   if (r.page === "fall") return r.sub ? `Fall ${r.sub.toUpperCase()}` : "Fall";
   if (r.page === "handbuch" && r.sub) return `Handbuch · ${(KAPITEL.find((k) => k.id === r.sub) || { titel: "Kapitel" }).titel}`;
   return PAGES.find((p) => p.id === r.page).label;
@@ -298,7 +299,7 @@ export function initShell() {
   $("status-tools").replaceChildren(
     h("button", { class: "btn qt search-btn", type: "button", "aria-label": "Suche (Strg+K)", onclick: () => emit("open-search") }, icon("search"), h("span", { class: "lbl" }, "Suche"), h("span", { class: "kbd" }, "Strg K")),
     h("button", { class: "icb", type: "button", "aria-label": "Handbuch", title: "Handbuch: So funktioniert das Programm", onclick: () => go("handbuch") }, icon("doc")),
-    h("button", { class: "icb", type: "button", "aria-label": "Einstellungen", title: "Einstellungen: KI und API-Schlüssel, Werkstatt, Anzeige", onclick: () => go("einstellungen") }, icon("display")));
+    h("button", { class: "icb", type: "button", "aria-label": "Einstellungen", title: "Einstellungen: KI und Dienste, Anzeige, Töne, Handbuch", onclick: () => go("seite", { sub: "einstellungen" }) }, icon("zahnrad")));
   applyPrefs();
   setupPrint();
   Object.values(MQ).forEach((mq) => mq.addEventListener("change", applyPrefs));

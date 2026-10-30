@@ -4,12 +4,14 @@
 import { $, h, icon, mark, numFix, storageGet, storageSet, toast, download, clockFull } from "./dom.js";
 import { state, on, emit, firstReadiness, totalFaults, pendingFaults } from "./state.js";
 import { go, back, currentRoute, anzeige, setzeAnzeige, resolvedDisplay, openDisplaySettings } from "./shell.js";
-import { SEITEN_TITEL, ladezustand, bordnetzTon } from "../kern/einstellungs-baum.js";
+import { SEITEN_TITEL, EINSTELLUNGEN, FARBE, ladezustand, bordnetzTon, zeilenFuer } from "../kern/einstellungs-baum.js";
 import { vehicles, plate } from "./garage.js";
 import { vehicleName } from "./fahrzeuge.js";
 import { historyOf } from "./recorder.js";
 import { buchLaenge } from "./service.js";
-import { schreibschutzAn } from "./liste.js";
+import { schreibschutzAn, oeffneZeile } from "./liste.js";
+import { kundenfassung } from "./mandant.js";
+import { gruppe as gruppeMitIcon } from "./bausteine.js";
 import { setzeModus, modus } from "./einfach.js";
 import { bild, kopf, zeile, gruppe, zahlen, balken, raster } from "./bausteine-seiten.js";
 import { seitenMehr, initSeitenMehr } from "./seiten-mehr.js";
@@ -110,6 +112,18 @@ const SEITEN = {
       gruppe({ zeilen: [{ label: "Niedrigster Wert dieser Sitzung", wert: min == null ? "–" : `${numFix(min, 2)} V`, ton: min != null && min < 9.6 ? "crit" : null }],
         fuss: "Beim Anlassen sollte die Spannung nicht unter 9,6 V fallen. Fällt sie tiefer, ist die Batterie oft am Ende." }),
       gruppe({ zeilen: [{ label: "Neue Batterie anmelden", ziel: () => go("service", { sub: "batterie" }) }] }),
+    ];
+  },
+  /* Übersicht hinter dem Zahnrad oben rechts: Einstellungen des Programms, KI und Dienste ganz oben */
+  einstellungen() {
+    const sichtbar = zeilenFuer({ kunde: kundenfassung(), einfach: modus() === "einfach" });
+    const unter = { dienste: "KI-Anbieter, API-Schlüssel, Werkhof", handbuch: "So funktioniert CANdor" };
+    return [
+      kopf({ icon: "zahnrad", farbe: FARBE.grau, titel: "Einstellungen", text: "KI und Dienste, Anzeige, Töne, Schutz und Handbuch. Die Diagnose-Werkzeuge stehen auf der Startseite." }),
+      ...EINSTELLUNGEN.map((g) => {
+        const zeilen = g.zeilen.filter(sichtbar);
+        return zeilen.length ? gruppeMitIcon({ titel: g.titel, zeilen: zeilen.map((z) => ({ label: z.label, unter: unter[z.id], bild: z.bild, icon: z.bild ? undefined : z.icon, farbe: z.farbe, ziel: () => oeffneZeile(z) })) }) : null;
+      }),
     ];
   },
   allgemein() {

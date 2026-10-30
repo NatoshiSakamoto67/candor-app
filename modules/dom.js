@@ -59,7 +59,7 @@ const SPRITE = {
   close: "i-schliessen", back: "i-zurueck", next: "i-weiter", share: "i-teilen", print: "i-drucken", download: "i-herunterladen",
   doc: "i-dokument", source: "i-quelle", delete: "i-loeschen", rec: "i-aufnahme", stop: "i-stopp", play: "i-abspielen",
   marker: "i-markierung", bolt: "i-trigger", lock: "i-schloss", ecu: "i-steuergeraet", bus: "i-bus", gateway: "i-gateway",
-  gauge: "i-drehzahl", exhaust: "i-abgas", battery: "i-batterie",
+  gauge: "i-drehzahl", exhaust: "i-abgas", battery: "i-batterie", zahnrad: "i-zahnrad",
 };
 const PATHS = {
   tick: "M5 12l4 4L19 6",

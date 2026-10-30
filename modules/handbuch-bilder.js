@@ -89,7 +89,7 @@ const BILDER = {
   ], [["s5", "core"], ["core", "ana"], ["ana", "ki"], ["ana", "ui"], ["ki", "rep"]]),
 
   ablauf: () => diagram("Ablauf einer Diagnose", 700, [
-    { id: "a", x: 30, y: 8, w: 300, h: 46, t: "Werkstattdaten", sub: "einmal beim ersten Start" },
+    { id: "a", x: 30, y: 8, w: 300, h: 46, t: "Eigenes Auto oder Werkstatt", sub: "einmal beim ersten Start" },
     { id: "b", x: 30, y: 84, w: 300, h: 46, t: "Fahrzeug anlegen oder wählen", sub: "Kennzeichen oder FIN, Marke, Modell" },
     { id: "c", x: 30, y: 160, w: 300, h: 46, t: "Verbinden", sub: "Server, Fahrzeug erkennen, Speicher lesen", tone: "info" },
     { id: "d", x: 30, y: 236, w: 300, h: 46, t: "Kilometerstand heute", sub: "Pflicht für den Bericht" },

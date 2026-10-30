@@ -5,6 +5,7 @@ import { $, h, icon, mark, storageGet, storageSet, toast } from "./dom.js";
 import { state, on, emit, firstReadiness, totalFaults, pendingFaults } from "./state.js";
 import { go, currentRoute, openDisplaySettings } from "./shell.js";
 import { BAUM, werte, zeilenFuer } from "../kern/einstellungs-baum.js";
+import { nutzungJetzt } from "./werkstatt.js";
 import { kundenfassung, MANDANT, zumPortal } from "./mandant.js";
 import { FUNKTIONEN } from "../kern/service-katalog.js";
 import { ablauf, weiterText } from "../kern/ablauf.js";
@@ -29,6 +30,10 @@ const AKTION = {
   portal: () => zumPortal(),
 };
 const einfach = () => document.documentElement.dataset.modus === "einfach";
+/** Zeile öffnen wie in der Liste: Aktion ausführen oder zur Seite gehen (auch für Einstellungen-Übersicht und Suche). */
+export function oeffneZeile(z) {
+  if (z.aktion && AKTION[z.aktion]) AKTION[z.aktion](); else if (z.ziel) go(z.ziel, z.sub ? { sub: z.sub } : {});
+}
 
 function stand() {
   const live = state.live || {}, r = firstReadiness();
@@ -42,7 +47,7 @@ function stand() {
     gespeichert: state.status ? totalFaults() : 0, vorlaeufig: state.status ? pendingFaults().length : 0,
     readinessOffen: r ? r.tests.filter((t) => !t.fertig).length : null, readinessGesamt: r ? r.tests.length : null,
     service: FUNKTIONEN.filter((f) => !einfach() || f.einfach).length, ki: st.ki || null, modus: modus(),
-    betriebsbuch: buchLaenge(), nachher: Boolean(state.postscan),
+    betriebsbuch: buchLaenge(), nachher: Boolean(state.postscan), nutzung: nutzungJetzt(),
   };
 }
 
@@ -68,7 +73,7 @@ function zeile(z, refs) {
   const el = h("a", { class: `li-row${z.bald ? " bald" : ""}`, href, "data-id": z.id, "aria-disabled": z.bald ? "true" : null, onclick: (ev) => {
     ev.preventDefault();
     if (z.bald) { toast(`${z.label} kommt später.`); return; }
-    if (z.aktion) AKTION[z.aktion](); else go(z.ziel, z.sub ? { sub: z.sub } : {});
+    oeffneZeile(z);
   } }, kachel(z), h("span", { class: "li-t" }, z.label), wert, h("span", { class: "li-chev", "aria-hidden": "true" }, "›"));
   refs.get(z.id).el = el;
   return el;

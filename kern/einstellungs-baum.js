@@ -1,6 +1,7 @@
 // @ts-check
 /* CANdor im Stil der Apple-Einstellungen (Konzept docs/APPLE_EINSTELLUNGEN_KONZEPT.md): jede Zeile der iOS-Einstellungen
    hat eine Auto- oder Tester-Funktion. Reine Daten und reine Funktionen; gezeichnet wird in modules/liste.js. */
+import { nutzungText } from "./erststart.js";
 
 /* Farben der Icon-Kacheln wie bei Apple (Systemfarben, dunkle Variante), nur mit Bedeutung. */
 export const FARBE = { orange: "#FF9F0A", blau: "#0A84FF", gruen: "#30D158", grau: "#8E8E93", rot: "#FF453A", lila: "#5E5CE6", indigo: "#BF5AF2", tuerkis: "#40C8E0", pink: "#FF375F", gelb: "#FFD60A", dunkel: "#3A3A3C" };
@@ -56,12 +57,49 @@ export const BAUM = [
   { id: "werkstatt", zeilen: [
     { id: "meinewerkstatt", label: "Meine Werkstatt", icon: "werkstatt", farbe: FARBE.blau, aktion: "portal", kunde: true, nurKunde: true, apple: "Apps (Werkstatt-Portal)" },
     { id: "werkhof", label: "Werkhof und KI", icon: "werkstatt", farbe: FARBE.orange, aktion: "werkhof", apple: "Apps (verbundene Dienste)" },
-    { id: "werkstattdaten", label: "Werkstatt & Handbuch", icon: "buch", bild: "handbuch", farbe: FARBE.lila, ziel: "werkstatt", apple: "Apps" },
+    { id: "werkstattdaten", label: "Werkstattangaben", icon: "werkstatt", farbe: FARBE.blau, ziel: "werkstatt", apple: "Apps" },
+    { id: "nutzung", label: "Nutzung", icon: "car", farbe: FARBE.gruen, ziel: "werkstatt", sub: "wahl", apple: "Apps (Profil)" },
+    { id: "handbuch", label: "Handbuch", icon: "buch", bild: "handbuch", farbe: FARBE.lila, ziel: "handbuch", apple: "Tipps" },
   ] },
 ];
 
 /** Alle Zeilen flach. */
 export const ZEILEN = BAUM.flatMap((g) => g.zeilen);
+
+/* Übersicht »Einstellungen« hinter dem Zahnrad oben rechts (#seite/einstellungen): alles, was das Programm selbst einstellt,
+   ohne die Diagnose-Werkzeuge. Zeilen aus BAUM per id, damit Icon und Fassung gleich bleiben; dazu eigene Zeilen. */
+const ausBaum = (id, aenderung = {}) => {
+  const z = ZEILEN.find((x) => x.id === id);
+  if (!z) throw new Error(`Zeile ${id} fehlt im Einstellungsbaum`);
+  return { ...z, ...aenderung };
+};
+/** @type {{id: string, titel?: string, zeilen: Zeile[]}[]} */
+export const EINSTELLUNGEN = [
+  { id: "dienste", titel: "KI und Dienste", zeilen: [
+    { id: "dienste", label: "KI und Dienste", icon: "stern", bild: "ki", farbe: FARBE.indigo, ziel: "einstellungen", kunde: true, apple: "Apps (verbundene Dienste)" },
+    ausBaum("werkhof", { label: "Werkhof", aktion: "werkhof" }),
+    ausBaum("fernzugriff"),
+  ] },
+  { id: "geraet", titel: "Gerät", zeilen: [
+    ausBaum("allgemein"),
+    { id: "einheiten", label: "Sprache & Einheiten", icon: "globus", farbe: FARBE.blau, ziel: "seite", sub: "einheiten", kunde: true, apple: "Sprache & Region" },
+    ausBaum("anzeige"), ausBaum("bedienung"), ausBaum("toene"), ausBaum("statusleiste"), ausBaum("suche"),
+  ] },
+  { id: "schutz", titel: "Schutz und Daten", zeilen: [ausBaum("freigabe"), ausBaum("sicherung"), ausBaum("datenschutz")] },
+  { id: "hilfe", titel: "Hilfe", zeilen: [
+    { id: "handbuch", label: "Handbuch", icon: "buch", bild: "handbuch", farbe: FARBE.lila, ziel: "handbuch", kunde: true, apple: "Tipps" },
+    { id: "werkstattdaten", label: "Werkstattdaten", icon: "werkstatt", farbe: FARBE.blau, ziel: "werkstatt", apple: "Name und Adresse" },
+  ] },
+];
+
+/* Unterseiten zweiter Ebene, damit die Suche auch »Einstellungen → Allgemein → Info« findet. Schlüssel: id der Elternzeile. */
+/** @type {Record<string, Zeile[]>} */
+export const UNTERZEILEN = {
+  allgemein: [
+    { id: "info", label: "Info", icon: "regler", bild: "kennung", farbe: FARBE.grau, ziel: "seite", sub: "info", kunde: true, apple: "Info" },
+    { id: "batteriezustand", label: "Batteriezustand", icon: "battery", bild: "messgeraet", farbe: FARBE.gruen, ziel: "seite", sub: "batteriezustand", kunde: true, apple: "Batteriezustand" },
+  ],
+};
 
 /** Ladezustand aus der Ruhespannung (Motor aus, mindestens 2 h Ruhe, Bleibatterie 12 V). Nur Schätzung. @param {number|null|undefined} v */
 export function ladezustand(v) {
@@ -84,7 +122,7 @@ export function bordnetzTon(v, motorLaeuft) {
  * Werte rechts in der Liste, wie »Nicht verbunden«, »Ein«, »12,6 V«.
  * @param {{verbunden: boolean, quelle?: string, protokoll?: string, steuergeraete: number, scanned: boolean, scanning?: boolean, scanPct?: number,
  *   spannung?: number|null, motorLaeuft?: boolean, gespeichert: number, vorlaeufig: number, readinessOffen?: number|null, readinessGesamt?: number|null,
- *   service: number, ki?: string|null, modus: string, betriebsbuch: number, nachher: boolean}} s
+ *   service: number, ki?: string|null, modus: string, betriebsbuch: number, nachher: boolean, nutzung?: string|null}} s
  * @returns {Record<string, {text: string, ton?: string|null}>}
  */
 export function werte(s) {
@@ -106,6 +144,7 @@ export function werte(s) {
     ki: { text: s.ki ? (s.ki === "beispiel" ? "Beispiel" : "bereit") : "aus" },
     modus: { text: s.modus === "einfach" ? "Einfach" : "Profi" },
     betriebsbuch: { text: s.betriebsbuch ? String(s.betriebsbuch) : "leer" },
+    nutzung: { text: nutzungText(s.nutzung) },
   };
 }
 
@@ -121,5 +160,5 @@ export const SEITEN_TITEL = Object.freeze({
   profil: "Fahrzeug", bluetooth: "Bluetooth-Adapter", wlan: "WLAN-Adapter", bus: "Fahrzeugbus", takt: "Abfrage-Takt",
   batteriezustand: "Batteriezustand", allgemein: "Allgemein", info: "Info", einheiten: "Sprache & Einheiten", anzeige: "Anzeige",
   bedienung: "Bedienungshilfen", suche: "Suche", sicherung: "Sicherung", statusleiste: "Statusleiste", freigabe: "Freigabe",
-  panne: "Pannenhilfe", toene: "Töne & Haptik", papiere: "Papiere", fernzugriff: "Fernzugriff",
+  panne: "Pannenhilfe", toene: "Töne & Haptik", papiere: "Papiere", fernzugriff: "Fernzugriff", einstellungen: "Einstellungen",
 });

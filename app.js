@@ -13,7 +13,7 @@ import { initWidgets } from "./modules/widgets.js";
 import { initEinfach } from "./modules/einfach.js";
 import { initHistory } from "./modules/history.js";
 import { initGarage, vehicles } from "./modules/garage.js";
-import { initWerkstatt, setupDone } from "./modules/werkstatt.js";
+import { initWerkstatt, erstSeite } from "./modules/werkstatt.js";
 import { initHandbuch } from "./modules/handbuch.js";
 import { initEinstellungen } from "./modules/einstellungen.js";
 import { initInfo } from "./modules/info.js";
@@ -80,8 +80,9 @@ async function start() {
   on("connected", () => { renderAll(); startLive(); });
   setWissen(await getJson("wissen.json").catch(() => null));
   renderStatus();
-  /* Allererster Start: Werkstattdaten (überspringbar), dann Fahrzeug. */
-  if (!setupDone() && !kundenfassung()) { openRoute({ page: "werkstatt" }); return; }
+  /* Allererster Start: »Wofür nutzt du CANdor?«, bei Werkstatt die freiwilligen Werkstattangaben, dann Fahrzeug (kern/erststart.js). */
+  const erst = erstSeite(kundenfassung());
+  if (erst) { openRoute(erst === "wahl" ? { page: "werkstatt", sub: "wahl" } : { page: "werkstatt" }); return; }
   /* Erster Start ohne Fahrzeug: zuerst anlegen. Sonst ist das zuletzt gewählte Fahrzeug wieder aktiv und wird verbunden. */
   if (!state.fahrzeug) { openRoute(wanted && ["fahrzeuge", "fahrzeug", "history", "werkstatt", "handbuch", "einstellungen"].includes(wanted.page) ? wanted : { page: vehicles().length ? "start" : "fahrzeug" }); return; }
   /* »Automatisch verbinden« (Unterseite Bluetooth-/WLAN-Adapter): aus heißt, erst auf Tippen verbinden. */

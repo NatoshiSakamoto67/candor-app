@@ -8,6 +8,8 @@ import { go, back, openPane, currentRoute } from "./shell.js";
 import { connect } from "./connect.js";
 import { fahrzeugAusWerkhof } from "./werkhof.js";
 import { kundenfassung } from "./mandant.js";
+import { nutzungJetzt } from "./werkstatt.js";
+import { schritt } from "../kern/erststart.js";
 import { historyFor } from "./history.js";
 import { formField } from "./formular.js";
 import { checkVehicle, upsertVehicle, removeVehicle, touchVehicle, findVehicle, sortVehicles, searchVehicles, vehicleName, finMatches, KRAFTSTOFFE, BAUARTEN, SORTIERUNG } from "./fahrzeuge.js";
@@ -162,7 +164,8 @@ function renderForm(errors = {}) {
     draft = { ...readForm(), ...Object.fromEntries(Object.entries(r.werte).filter(([, v]) => v)) }; renderForm(); toast("Aus Werkhof übernommen. Bitte prüfen und speichern.");
   };
   const titel = editing ? "Fahrzeug bearbeiten" : first ? "Zuerst das Fahrzeug anlegen" : "Fahrzeug anlegen";
-  const text = first ? `${kundenfassung() ? "Willkommen." : "Willkommen, Schritt 2 von 2."} So wie in der Werkstatt: Jede Diagnose gehört zu einem Fahrzeug. Trag das Nötigste ein, den Rest kannst du später ergänzen. Die Daten bleiben auf diesem Gerät.`
+  const zaehler = kundenfassung() ? "" : schritt("fahrzeug", nutzungJetzt());
+  const text = first ? `${zaehler ? `${zaehler}. ` : "Willkommen. "}Jede Diagnose gehört zu einem Fahrzeug. Trag das Nötigste ein, den Rest kannst du später ergänzen. Die Daten bleiben auf diesem Gerät.`
     : editing ? "Kennzeichen, FIN und Notiz bleiben auf diesem Gerät und gehen nicht an die KI." : "Marke und Modell, dazu Kennzeichen oder FIN, damit du das Fahrzeug wiederfindest. Alles bleibt auf diesem Gerät.";
   $("garage-form").replaceChildren(...[
     first ? null : zurueckZeile(),

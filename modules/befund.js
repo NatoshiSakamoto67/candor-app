@@ -7,7 +7,7 @@ const MAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^[+0-9 ()/-]{5,25}$/;
 const PLZ_RE = /^\d{5}$/;
 
-/* Werkstattdaten: Name ist Pflicht, der Rest freiwillig, aber wenn eingetragen, dann sinnvoll. */
+/* Werkstattangaben: alles freiwillig (seit 30.10.2026 auch der Name), aber wenn eingetragen, dann sinnvoll. */
 export function checkWorkshop(input) {
   const werte = {
     name: clean(input.name).slice(0, 80),
@@ -19,12 +19,13 @@ export function checkWorkshop(input) {
     mechaniker: clean(input.mechaniker).slice(0, 60),
   };
   const fehler = {};
-  if (!werte.name) fehler.name = "Bitte den Namen der Werkstatt eintragen.";
   if (werte.plz && !PLZ_RE.test(werte.plz)) fehler.plz = "Postleitzahl mit 5 Ziffern.";
   if (werte.telefon && !PHONE_RE.test(werte.telefon)) fehler.telefon = "Nur Ziffern, Leerzeichen, +, /, - und Klammern.";
   if (werte.email && !MAIL_RE.test(werte.email)) fehler.email = "Die E-Mail-Adresse sieht unvollständig aus.";
   return { werte, fehler };
 }
+/* Irgendetwas eingetragen? Ein leeres Formular zählt wie Überspringen. */
+export const hasWorkshopData = (w) => Boolean(w) && ["name", "strasse", "plz", "ort", "telefon", "email", "mechaniker"].some((k) => clean(w[k]));
 export const workshopLines = (w) => (w ? [w.name, w.strasse, [w.plz, w.ort].filter(Boolean).join(" "), [w.telefon, w.email].filter(Boolean).join(" · ")].filter(Boolean) : []);
 
 /* Kilometerstand heute. Kleiner als zuletzt ist möglich (Tacho getauscht, Tippfehler beim letzten Mal),

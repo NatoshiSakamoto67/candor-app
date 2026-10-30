@@ -112,7 +112,7 @@ export function seitenMehr(render) {
         ] : [{ label: "Kein Fahrzeug verbunden", unter: "Die Hilfe unten geht auch so", ziel: () => go("connect") }],
           fuss: verbunden() ? "Tippe einen Fehler für den Fall oder das Infoblatt." : null }),
         gruppe({ titel: "Anrufen", zeilen: [...RUFNUMMERN.map((r) => tel(r.label, r.nummer, r.unter)),
-          ws && ws.telefon && telHref(ws.telefon) ? tel(ws.name, ws.telefon, "Meine Werkstatt") : { label: "Eigene Werkstatt", unter: "Telefon in den Werkstattdaten hinterlegen", ziel: () => go("werkstatt") }],
+          ws && ws.telefon && telHref(ws.telefon) ? tel(ws.name || "Meine Werkstatt", ws.telefon, ws.name ? "Meine Werkstatt" : "Werkstatt") : { label: "Eigene Werkstatt", unter: "Telefon in den Werkstattdaten hinterlegen", ziel: () => go("werkstatt") }],
           fuss: "Aus dem Mobilfunk kostet die ADAC-Nummer höchstens 42 Cent je Minute. ADAC und ACE helfen Mitgliedern kostenlos, sonst gegen Rechnung." }),
         gruppe({ titel: "Standort teilen", zeilen: [
           { typ: "aktion", label: standort ? "Standort neu bestimmen" : "Standort bestimmen", tun: () => standortHolen(render) },

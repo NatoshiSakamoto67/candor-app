@@ -25,7 +25,7 @@ export async function werkhofSektion(neuZeichnen) {
   if (!src) return h("section", { class: "sk-block", id: "werkhof-einrichten" }, h("h3", { class: "li-k" }, "Werkhof"), h("div", { class: "li-gruppe" }, h("div", { class: "sk-form" }, h("p", { class: "sm" }, nurServer.meldung))));
   if (!stand) { stand = await src.werkhof().catch(() => ({ ok: false })); }
   const url = h("input", { class: "inp", id: "wh-url", value: stand.url || "", placeholder: "http://100.x.y.z:8200", autocomplete: "off", spellcheck: "false" });
-  const mandant = h("input", { class: "inp", id: "wh-mandant", value: stand.mandant || "", placeholder: "kfz-gorski", autocomplete: "off", spellcheck: "false" });
+  const mandant = h("input", { class: "inp", id: "wh-mandant", value: stand.mandant || "", placeholder: "autoservice-muster", autocomplete: "off", spellcheck: "false" });
   const key = h("input", { class: "inp mono", id: "wh-key", type: "password", autocomplete: "off", spellcheck: "false", placeholder: stand.schluessel ? `gespeichert ${stand.schluessel}, leer = behalten` : "API-Schlüssel von Werkhof" });
   const feld = (id, lab, el, hint) => h("label", { class: "fld", for: id }, h("span", { class: "lab" }, lab), el, fehler[id.slice(3)] ? h("span", { class: "fld-err" }, mark("crit"), fehler[id.slice(3)]) : hint ? h("span", { class: "fld-hint" }, hint) : null);
   const speichern = h("button", { class: "btn pri", type: "button", disabled: laeuft || null, onclick: async () => {

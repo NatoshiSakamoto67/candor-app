@@ -7,6 +7,8 @@ import { lockup } from "./marke.js";
 import { buildCase, addCase } from "./faelle.js";
 import { state, on, emit, logEvent, faultSet, firstReadiness, signalTitle, captureBefund } from "./state.js";
 import { compareFaults, unscannedBefore, workshopLines } from "./befund.js";
+import { unterschriften, berichtFassung, fassungTitel, fassungKnoepfe } from "../kern/erststart.js";
+import { nutzungJetzt } from "./werkstatt.js";
 import { runScan } from "./vehicle.js";
 import { go } from "./shell.js";
 import { busy, withTimeout } from "./vorgang.js";
@@ -16,12 +18,14 @@ import { befundSenden } from "./werkhof.js";
 import { zurueckZeile, kopfkarte } from "./bausteine.js";
 import { pruefberichtAbschnitt } from "./pruefbericht.js";
 
-const opts = { auftrag: "", vin: true, fassung: "werkstatt", art: "vergleich", abschnitte: null, ...storageGet("kfzdiag-bericht", {}) };
+/* fassung fehlt, solange niemand ausdrücklich gewählt hat: dann entscheidet die Nutzung (kern/erststart.js). */
+const opts = { auftrag: "", vin: true, art: "vergleich", abschnitte: null, ...storageGet("kfzdiag-bericht", {}) };
+const fassung = () => berichtFassung({ gewaehlt: opts.fassung, nutzung: nutzungJetzt() });
 const ARTEN = [["vorher", "Eingangsbefund", "vor der Reparatur"], ["nachher", "Ausgangsbefund", "nach der Reparatur"], ["vergleich", "Vergleich", "vorher und nachher"]];
 /* Abschnitte je Fassung: Kunde bekommt das Verständliche, Werkstatt alles. Die Wahl lässt sich vor dem Druck ändern. */
 const SECTIONS = [
   ["diff", "Befund", befundSection, true],
-  ["pruef", "Prüfbericht", () => pruefberichtAbschnitt(opts.fassung, renderReport), true],
+  ["pruef", "Prüfbericht", () => pruefberichtAbschnitt(fassung(), renderReport), true],
   ["readiness", "Readiness", readinessSection, true],
   ["soll", "Ist gegen Soll", sollSection, false],
   ["ki", "KI-Bewertung", kiSection, true],
@@ -30,7 +34,7 @@ const SECTIONS = [
   ["rec", "Aufnahmen", recSection, false],
   ["log", "Verlauf und Schreibprotokoll", logSection, false],
 ];
-const activeSections = () => opts.abschnitte || SECTIONS.filter(([, , , kunde]) => opts.fassung === "werkstatt" || kunde).map(([id]) => id);
+const activeSections = () => opts.abschnitte || SECTIONS.filter(([, , , kunde]) => fassung() === "werkstatt" || kunde).map(([id]) => id);
 const saveOpts = () => storageSet("kfzdiag-bericht", opts);
 const SICHER = { belegt: "belegt", plausibel: "plausibel", vermutung: "Vermutung" };
 
@@ -51,7 +55,7 @@ function singleBefund(b, title) {
       h("div", { class: "box" }, h("h3", {}, "Steuergeräte"), h("span", { class: "n" }, b.ecus || "–")),
       h("div", { class: "box" }, h("h3", {}, "Motorlampe"), h("span", { class: "n" }, b.readiness ? (b.readiness.mil ? "AN" : "AUS") : "–"))),
     faults.length ? table(["Code", "Steuergerät", "Bedeutung", "Art"], faults.map((f) => faultRow(f))) : h("p", { class: "hint" }, "Kein Fehler gespeichert."),
-    b.ecuList && b.ecuList.length && opts.fassung === "werkstatt" ? table(["Steuergerät", "Adresse", "Fehler"], b.ecuList.map((e) => [e.name, e.adresse, e.fehler || "keine"])) : null,
+    b.ecuList && b.ecuList.length && fassung() === "werkstatt" ? table(["Steuergerät", "Adresse", "Fehler"], b.ecuList.map((e) => [e.name, e.adresse, e.fehler || "keine"])) : null,
     b.ecus ? null : h("p", { class: "hint" }, "Ohne Vollscan: nur die OBD-Fehler aus Motor und Getriebe."));
 }
 
@@ -167,16 +171,17 @@ function logSection() {
 export function renderReport() {
   const st = state.status || {}, v = state.vehicle || {};
   const art = ARTEN.find(([id]) => id === opts.art) || ARTEN[2];
-  const mech = state.werkstatt && state.werkstatt.mechaniker;
+  const kopf = workshopLines(state.werkstatt);
   const paper = $("report");
   paper.replaceChildren(
-    h("header", {}, h("div", { class: "letterhead" }, ...(workshopLines(state.werkstatt).length ? workshopLines(state.werkstatt) : ["Werkstatt"]).map((line, i) => h("p", { class: i ? "hint" : "eyebrow" }, line))),
-      h("h2", {}, `${art[1]} ${art[2]}`), h("p", { class: "hint" }, opts.fassung === "kunde" ? "Fassung für Kundin oder Kunde" : "Werkstattfassung"),
+    /* Briefkopf nur mit echten Angaben: ohne Werkstatt kein leeres Feld und kein Platzhalter. */
+    h("header", {}, kopf.length ? h("div", { class: "letterhead" }, ...kopf.map((line, i) => h("p", { class: i ? "hint" : "eyebrow" }, line))) : null,
+      h("h2", {}, `${art[1]} ${art[2]}`), h("p", { class: "hint" }, fassungTitel(fassung(), nutzungJetzt())),
       h("p", {}, `${state.fahrzeug ? `${vehicleLabel(state.fahrzeug)} · ${kmText(state.sitzung.km)} · erkannt als ` : ""}${st.fahrzeug || "Fahrzeug"}${v.marke && v.marke !== "unbekannt" ? ` · ${v.marke}` : ""} · FIN ${opts.vin ? ((state.fahrzeug && state.fahrzeug.fin) || v.vin_maskiert || "–") : "geschwärzt"}${opts.auftrag ? ` · Auftrag ${opts.auftrag}` : ""}`),
       h("p", { class: "hint" }, `${clockFull(new Date())} · ${st.protokoll || "Protokoll automatisch"} · ${state.ecus.length ? `${state.ecus.length} Steuergeräte gescannt` : "kein Vollscan"}${st.simuliert ? " · SIMULATOR, synthetische Werte" : ""}`)),
     ...SECTIONS.filter(([id]) => activeSections().includes(id)).map(([, , fn]) => fn()).filter(Boolean),
     h("div", { class: "report-brand" }, lockup(22, "small")),
-    h("div", { class: "sign" }, h("div", {}, `Datum, Unterschrift Werkstatt${mech ? ` (${mech})` : ""}`), h("div", {}, "Datum, Unterschrift Kunde")),
+    h("div", { class: "sign" }, ...unterschriften({ werkstatt: state.werkstatt, nutzung: nutzungJetzt() }).map((t) => h("div", {}, t))),
     h("p", { class: "foot" }, "Richtwerte sind allgemeine Werkstattwerte ohne Herstellerbezug, Herstellerwerte sind mit Quelle gekennzeichnet. Unbekannte Herstellercodes werden als unbekannt geführt, nichts wird geraten. Der Diagnose-Server speichert die FIN nur als Hash. Erstellt lokal mit CANdor, keine Übertragung an Dritte."));
 }
 
@@ -207,11 +212,11 @@ async function share() {
 }
 
 function renderTools() {
-  const werkstatt = h("button", { class: "btn sec", type: "button", onclick: () => go("werkstatt") }, state.werkstatt ? `Werkstatt: ${state.werkstatt.name}` : "Werkstattdaten eintragen");
+  const werkstatt = h("button", { class: "btn sec", type: "button", onclick: () => go("werkstatt") }, state.werkstatt ? `Werkstatt: ${state.werkstatt.name || "Angaben"}` : "Werkstattdaten eintragen");
   const auftrag = h("input", { class: "inp txt", value: opts.auftrag, placeholder: "Auftrag oder Kennzeichen", "aria-label": "Auftrag" });
   auftrag.addEventListener("input", () => { opts.auftrag = auftrag.value; saveOpts(); renderReport(); });
-  const version = h("div", { class: "seg", id: "report-version", role: "group", "aria-label": "Fassung" }, ...[["kunde", "Kunde"], ["werkstatt", "Werkstatt"]].map(([id, label]) =>
-    h("button", { type: "button", "aria-pressed": String(opts.fassung === id), onclick: () => set({ fassung: id, abschnitte: null }) }, label)));
+  const version = h("div", { class: "seg", id: "report-version", role: "group", "aria-label": "Fassung" }, ...fassungKnoepfe(nutzungJetzt()).map(([id, label]) =>
+    h("button", { type: "button", "aria-pressed": String(fassung() === id), onclick: () => set({ fassung: id, abschnitte: null }) }, label)));
   const vin = h("div", { class: "seg", role: "group", "aria-label": "FIN" }, ...[[true, "FIN zeigen"], [false, "FIN geschwärzt"]].map(([val, label]) =>
     h("button", { type: "button", "aria-pressed": String(opts.vin === val), onclick: () => set({ vin: val }) }, label)));
   const active = activeSections();

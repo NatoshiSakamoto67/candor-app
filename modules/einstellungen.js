@@ -1,14 +1,15 @@
-/* Einstellungen, oben über das Zahnrad erreichbar: KI und API-Schlüssel, Werkstatt, Anzeige, Verbindung, Daten.
+/* KI und Dienste (erste Zeile der Übersicht hinter dem Zahnrad): KI und API-Schlüssel, Werkhof, Verbindung.
    Der API-Schlüssel geht einmal an den Diagnose-Server und kommt nie zurück, die Seite zeigt nur »sk-ant-…abcd«.
    Anbieter: Aus, Claude, Ollama, OpenAI-kompatibel (DeepSeek, OpenAI, Mistral, LM Studio: Adresse, Modell, Schlüssel). */
 import { $, h, icon, mark, toast, storageGet } from "./dom.js";
 import { state, on, emit, logEvent } from "./state.js";
 import { werkhofSektion } from "./werkhof.js";
 import { zurueckZeile, kopfkarte, gruppe, formBlock } from "./bausteine.js";
+import { go } from "./shell.js";
 
 const ANBIETER = [["aus", "Aus"], ["anthropic", "Claude (Anthropic)"], ["ollama", "Ollama, lokal"], ["openai_kompatibel", "OpenAI-kompatibel"]];
 const hostVon = (u) => { try { return new URL(u).host; } catch { return u || "?"; } };
-let data = null, choice = null, errors = {}, busy = false, testResult = null;
+let data = null, choice = null, errors = {}, busy = false, testResult = null, leeren = false;
 
 const isServer = () => state.src && state.src.mode === "server";
 
@@ -26,8 +27,7 @@ const fieldErr = (k) => (errors[k] ? h("span", { class: "fld-err", id: `set-${k}
 
 /* KI: Anbieter, Modell, Schlüssel; Speichern und Testen gehen an den Server. */
 function kiSection() {
-  if (!isServer()) return section("KI und API-Schlüssel", "robot", null,
-    h("p", { class: "p" }, "Diese Einstellung braucht den Diagnose-Server (kfzdiag web). In der Vorschau mit Beispieldaten ist sie gesperrt, damit kein Schlüssel im Browser landet."));
+  if (!isServer()) return ohneServer();
   if (!data) return section("KI und API-Schlüssel", "robot", null, h("p", { class: "sm" }, "Lade …"));
   if (!data.ok) return section("KI und API-Schlüssel", "robot", null, h("p", { class: "p" }, data.meldung));
   const ki = data.ki, sel = choice || ki.anbieter || "aus";
@@ -41,7 +41,7 @@ function kiSection() {
         h("div", { class: `fld${errors.modell ? " bad" : ""}` }, h("label", { for: "set-modell" }, "Modell"),
           h("select", { class: "inp", id: "set-modell" }, ...data.modelle.map((m) => h("option", { value: m.id, selected: (ki.modell || data.modelle[0].id) === m.id || null }, `${m.name} · ${m.hinweis}`))), fieldErr("modell")),
         h("div", { class: `fld${errors.schluessel ? " bad" : ""}` }, h("label", { for: "set-key" }, "API-Schlüssel"),
-          h("input", { class: "inp mono", id: "set-key", type: "password", autocomplete: "off", spellcheck: "false", placeholder: key.gesetzt ? "leer = gespeicherten behalten" : "sk-ant-…", "aria-invalid": errors.schluessel ? "true" : null, "aria-describedby": "set-key-state" }),
+          h("input", { class: "inp mono", id: "set-key", type: "password", autocomplete: "off", autocapitalize: "off", autocorrect: "off", spellcheck: "false", enterkeyhint: "done", placeholder: key.gesetzt ? "leer = gespeicherten behalten" : "sk-ant-…", "aria-invalid": errors.schluessel ? "true" : null, "aria-describedby": "set-key-state" }),
           errors.schluessel ? fieldErr("schluessel") : h("span", { class: "fld-hint", id: "set-key-state" }, key.gesetzt ? `Gespeichert: ${key.maske}${key.quelle === "umgebung" ? " (aus der Umgebungsvariable)" : ""}` : "Noch kein Schlüssel gespeichert."))),
       budgetFeld(),
       h("p", { class: "sm" }, "Den Schlüssel erstellst du in der Console von Anthropic unter »API Keys«. Er wird nur auf diesem Rechner in der Datei ki.key gespeichert (nur für dich lesbar) und nie an den Browser zurückgegeben. Die KI bekommt Messwerte und Fehlercodes, nie die FIN. Mit Kundendaten nur mit Auftragsverarbeitungsvertrag."),
@@ -53,7 +53,7 @@ function kiSection() {
       h("p", { class: "sm" }, "Ollama läuft auf diesem Rechner oder im eigenen Netz. Nichts verlässt das Netz. Modell vorher mit »ollama pull qwen3:8b« laden."));
   } else if (sel === "openai_kompatibel") {
     parts.push(...offenFelder(ki));
-  } else parts.push(h("p", { class: "sm" }, "Ohne KI funktionieren alle Diagnosefunktionen, nur Assistent und KI-Bewertung bleiben aus."));
+  } else parts.push(h("p", { class: "sm" }, "Ohne KI funktionieren alle Diagnosefunktionen, nur Assistent und KI-Bewertung bleiben aus. Für den API-Schlüssel oben »Claude (Anthropic)« oder »OpenAI-kompatibel« wählen, dann erscheint das Feld."));
   parts.push(
     testResult ? h("div", { class: `set-result t-${testResult.ok ? "ok" : "crit"}`, role: "status" }, mark(testResult.ok ? "ok" : "crit"), testResult.meldung) : null,
     h("div", { class: "form-actions" },
@@ -65,6 +65,19 @@ function kiSection() {
   return section("KI und API-Schlüssel", "robot", `Aktiv: ${aktiv}`, ...parts);
 }
 
+/* Vorschau ohne Server (Regel R6: Schlüssel nur serverseitig): ehrlich sagen, warum hier nichts gespeichert wird.
+   Das Feld steht sichtbar, aber gesperrt da, damit man weiß, wo der Schlüssel später hingehört. */
+function ohneServer() {
+  return gruppe({ titel: "KI und API-Schlüssel", id: "set-robot", zeilen: [
+    formBlock(
+      h("div", { class: "fld" }, h("label", { for: "set-key-aus" }, "API-Schlüssel"),
+        h("input", { class: "inp mono", id: "set-key-aus", type: "text", disabled: true, value: "", placeholder: "nur mit eigenem Diagnose-Server", "aria-describedby": "set-key-aus-hint" }),
+        h("span", { class: "fld-hint", id: "set-key-aus-hint" }, mark("locked"), "In dieser Vorschau gibt es keinen Diagnose-Server. Schlüssel speichert CANdor nur auf deinem eigenen Server, nie im Browser. Deshalb lässt sich hier nichts eingeben."))),
+    { label: "Diagnose-Server einrichten", unter: "Handbuch, Installation", icon: "buch", farbe: "#5E5CE6", ziel: () => go("handbuch", { sub: "installation" }) },
+    { label: "Vom Handy auf den Server", unter: "Fernzugriff über VPN und Tunnel", icon: "globus", farbe: "#0A84FF", ziel: () => go("seite", { sub: "fernzugriff" }) },
+  ], fuss: "Mit Server: hier Anbieter wählen, Schlüssel einfügen, speichern und die Verbindung testen. Angezeigt werden danach nur die letzten vier Zeichen." });
+}
+
 /* OpenAI-kompatibel: Voreinstellung antippen füllt Adresse und Modell, der Schlüssel ist optional (lokale Server). */
 function offenFelder(ki) {
   const offen = ki.anbieter === "openai_kompatibel", key = ki.schluessel_offen || {};
@@ -72,14 +85,14 @@ function offenFelder(ki) {
   const chips = h("div", { class: "ki-chips", role: "group", "aria-label": "Voreinstellungen" }, ...(data.voreinstellungen || []).map((v) =>
     h("button", { class: "ki-chip", type: "button", "aria-pressed": String(offen && ki.basis_url === v.basis_url), onclick: () => waehlen(v) }, h("b", {}, v.name), h("span", {}, v.hinweis))));
   const feld = (k, id, label, attrs) => h("div", { class: `fld${errors[k] ? " bad" : ""}` }, h("label", { for: id }, label),
-    h("input", { class: "inp mono", id, spellcheck: "false", "aria-invalid": errors[k] ? "true" : null, ...attrs }), fieldErr(k));
+    h("input", { class: "inp mono", id, spellcheck: "false", autocapitalize: "off", autocorrect: "off", "aria-invalid": errors[k] ? "true" : null, ...attrs }), fieldErr(k));
   return [
     h("div", { class: "blk" }, h("p", { class: "eyebrow" }, "Voreinstellung antippen"), chips),
     h("div", { class: "fgrid set-grid" },
       feld("basis_url", "set-burl", "Adresse", { type: "url", value: offen ? ki.basis_url || "" : "", placeholder: "https://api.deepseek.com/v1" }),
       feld("modell", "set-bmodell", "Modell", { value: offen ? ki.modell || "" : "", placeholder: "deepseek-chat" }),
       h("div", { class: `fld${errors.schluessel ? " bad" : ""}` }, h("label", { for: "set-bkey" }, "Schlüssel"),
-        h("input", { class: "inp mono", id: "set-bkey", type: "password", autocomplete: "off", spellcheck: "false", placeholder: key.gesetzt ? "leer = gespeicherten behalten" : "optional bei lokalen Servern", "aria-invalid": errors.schluessel ? "true" : null, "aria-describedby": "set-bkey-state" }),
+        h("input", { class: "inp mono", id: "set-bkey", type: "password", autocomplete: "off", autocapitalize: "off", autocorrect: "off", spellcheck: "false", enterkeyhint: "done", placeholder: key.gesetzt ? "leer = gespeicherten behalten" : "optional bei lokalen Servern", "aria-invalid": errors.schluessel ? "true" : null, "aria-describedby": "set-bkey-state" }),
         errors.schluessel ? fieldErr("schluessel") : h("span", { class: "fld-hint", id: "set-bkey-state" }, key.gesetzt ? `Gespeichert: ${key.maske}` : "Noch kein Schlüssel gespeichert."))),
     budgetFeld(),
     h("p", { class: "sm" }, "Der Schlüssel liegt nur auf diesem Rechner. Du akzeptierst die Bedingungen deines Anbieters selbst. Kennzeichen und FIN werden vor dem Senden entfernt. Websuche und PDF-Anhänge gibt es nur mit Claude."),
@@ -115,24 +128,39 @@ async function save(extra = {}) {
   busy = true; render();
   try {
     const r = await state.src.saveKi(payload);
-    if (!r.ok) { errors = r.fehler || {}; toast(r.meldung || "Bitte die markierten Angaben prüfen."); return; }
-    data = r; choice = null; errors = {}; testResult = null;
+    if (!r.ok) { errors = r.fehler || {}; toast(r.meldung || "Bitte die markierten Angaben prüfen."); return false; }
+    data = r; choice = null; errors = {}; testResult = null; leeren = true;
     state.status = await state.src.status();
     logEvent(`KI-Einstellung: ${r.ki.anbieter === "aus" ? "aus" : `${r.ki.anbieter} ${r.ki.modell}`}`);
     toast(extra.schluessel_loeschen ? "Schlüssel entfernt." : "Gespeichert.");
     emit("status"); emit("render");
-  } catch (err) { toast(`Speichern gescheitert: ${err.message}`); } finally { busy = false; render(); }
+    return true;
+  } catch (err) { toast(`Speichern gescheitert: ${err.message}`); return false; } finally { busy = false; render(); }
 }
 
+/* Noch nicht gespeichert: anderer Anbieter gewählt oder ein Schlüssel im Feld. Der Test prüft immer den gespeicherten Stand. */
+const ungespeichert = () => (choice && choice !== (data.ki.anbieter || "aus")) || ["set-key", "set-bkey"].some((id) => $(id) && $(id).value.trim());
+
 async function test() {
+  if (ungespeichert() && !(await save())) return;
   busy = true; testResult = null; render();
   try { testResult = await state.src.testKi(); } catch (err) { testResult = { ok: false, meldung: `Test gescheitert: ${err.message}` }; } finally { busy = false; render(); }
 }
 
 
+/* Eingaben überleben das Neuzeichnen (Fehlermeldung, Speichern läuft); nach erfolgreichem Speichern bleiben die Felder leer. */
+function eingabenMerken(box) {
+  if (leeren) { leeren = false; return {}; }
+  return Object.fromEntries([...box.querySelectorAll("#set-robot input:not([type=checkbox])")].filter((i) => i.id && i.value !== i.defaultValue).map((i) => [i.id, i.value]));
+}
+function eingabenSetzen(werte) {
+  for (const [id, v] of Object.entries(werte)) { const i = $(id); if (i) i.value = v; }
+}
+
 function render() {
   const box = $("einstellungen");
   if (!box || $("view-einstellungen").hidden) return;
+  const merk = eingabenMerken(box), fokus = document.activeElement && box.contains(document.activeElement) ? document.activeElement.id : null;
   const st = state.status || {}, w = state.werkstatt;
   /* Werkhof-Abschnitt kommt nach, sobald der Stand vom Server da ist. */
   werkhofSektion(render).then((el) => { const alt = $("werkhof-einrichten"); if (alt) alt.replaceWith(el); else { const ki = $("set-robot"); if (ki) ki.after(el); else box.append(el); } });
@@ -144,6 +172,8 @@ function render() {
       h("dl", { class: "facts" }, ...[["Quelle", isServer() ? (st.simuliert ? "Diagnose-Server mit Simulator" : "Diagnose-Server mit Adapter") : "Vorschau mit Beispieldaten"],
         ["Profil", st.fahrzeug], ["Version", st.version === "intern" ? "intern" : st.version ? "Markt" : null], ["Schreiben", st.schreiben_an == null ? null : st.schreiben_an ? "an, nur mit Freigabe" : "aus"]]
         .filter(([, v]) => v).flatMap(([k, v]) => [h("dt", {}, k), h("dd", {}, v)]))));
+  eingabenSetzen(merk);
+  if (fokus && $(fokus) && !$(fokus).disabled) $(fokus).focus({ preventScroll: true });
 }
 
 export function initEinstellungen() {
