@@ -1,7 +1,7 @@
 /* Bereich Fahrzeug: Fahrzeugkopf, Topologie (Bauart-Vorlage oder Bus-Schema) mit Legende und Zoom,
    Vollscan mit Fortschritt im Knopf, Zustandskacheln, Steuergeräteliste nach Domäne, Akte. */
-import { $, h, s, icon, mark, glyphId, chev, clockTime, storageGet, storageSet, toast, infoBtn, statusChip, reducedMotion } from "./dom.js";
-import { state, on, emit, logEvent, firstReadiness, totalFaults, takeSnapshot, completeSnapshot, faultSet } from "./state.js";
+import { $, h, s, icon, mark, glyphId, chev, clockTime, storageGet, storageSet, toast, infoBtn, statusChip, reducedMotion, num, jump } from "./dom.js";
+import { state, on, emit, logEvent, firstReadiness, totalFaults, takeSnapshot, completeSnapshot, faultSet, signalTitle } from "./state.js";
 import { UNASSIGNED, ZONE_ORDER, domainOf, domainName, byAddress } from "./topology.js";
 import { busy, showFailure, withTimeout, HILFE } from "./vorgang.js";
 import { icon3d } from "./icons3d.js";
@@ -9,7 +9,10 @@ import { go } from "./shell.js";
 import { plate, vehicleFacts } from "./garage.js";
 import { vehicleName, BAUARTEN } from "./fahrzeuge.js";
 import { erstelle3d, webglMoeglich, GRUPPE_BAUTEILE } from "./auto3d.js";
-import { bauteileFuer, kontextFuer, ersatzFuer, bauteilFuerSteuergeraet } from "../kern/bauteilfehler.js";
+import { systemeImModell } from "../kern/systeme.js";
+import { bauteileFuer, kontextFuer, ersatzFuer, bauteilFuerSteuergeraet, codesFuerBauteil, codeBereiche } from "../kern/bauteilfehler.js";
+import { bauteilWissen } from "../kern/bauteilwissen.js";
+import { anschluesse } from "../kern/kabel.js";
 
 /* ---------- Fahrzeugkopf: gewähltes Fahrzeug aus dem Bestand, darunter was der Adapter erkannt hat ---------- */
 export function renderVehicleCard() {
@@ -224,6 +227,12 @@ function box3d() {
     h("div", { class: "t3-card card", id: "t3-card", hidden: true }));
   $("topo-stage").querySelector(".topo-canvas").after(box);
   box.after(h("div", { class: "t3-fehler", id: "t3-fehler", role: "group", "aria-label": "Fehler im Modell zeigen" }));
+  $("t3-fehler").after(h("div", { class: "t3-fehler t3-systeme", id: "t3-systeme", role: "group", "aria-label": "Systemebene", hidden: true }));
+  $("t3-systeme").after(h("div", { class: "t3-fehler t3-explosion", id: "t3-explosion", hidden: true },
+    h("span", { class: "eyebrow" }, "Explosionsansicht"),
+    h("label", { class: "t3-explosion-zeile" }, h("span", { class: "sm" }, "zusammen"),
+      h("input", { type: "range", min: 0, max: 100, value: 0, "aria-label": "Bauteile auseinanderziehen", oninput: (e) => { if (v3) v3.explosion(Number(e.target.value) / 100); } }),
+      h("span", { class: "sm" }, "auseinander"))));
   return box;
 }
 /* Gefundene Probleme: jeder Fehlercode (Fahrzeug-OBD und Steuergeräte) mit den Bauteilen, die er betrifft */
@@ -284,6 +293,24 @@ function t3Modes() {
       onclick: () => { if (!v3) return; if (id === "fehler") { t3FehlerZeigen(t3Wahl); return; } v3.ansicht(id); t3Modes(); t3FehlerLeiste(); t3Labels(); $("t3-card").hidden = true; } }, label)));
   }
   for (const b of box.children) b.setAttribute("aria-pressed", String(Boolean(v3) && v3.modus === b.dataset.ansicht));
+  t3Systeme();
+}
+/* Systemebene: Chips »Alle«, »Motor«, »Abgas« … nur in Technik und Unten; blendet alle anderen Bauteile gläsern aus */
+function t3Systeme() {
+  const box = $("t3-systeme");
+  if (!box) return;
+  const offen = Boolean(v3) && (v3.modus === "technik" || v3.modus === "unten");
+  box.hidden = !offen;
+  const ex = $("t3-explosion");
+  if (ex) { ex.hidden = !offen; const r = ex.querySelector("input"); if (r && v3) r.value = String(Math.round(v3.explosionAnteil * 100)); }
+  if (!offen) return;
+  const wahl = v3.systemWahl;
+  const chip = (id, label) => h("button", { type: "button", class: "t3-chip", "aria-pressed": String((wahl || "") === id),
+    onclick: () => { v3.system(id || null); t3Systeme(); $("t3-card").hidden = true; } }, h("b", {}, label));
+  const kabelChip = h("button", { type: "button", class: "t3-chip t3-kabel", id: "t3-kabel", "aria-pressed": String(v3.kabelAn),
+    onclick: () => { v3.kabel(); t3Systeme(); } }, h("b", {}, "Kabelwege"), h("span", {}, "schematisch"));
+  box.replaceChildren(h("span", { class: "eyebrow" }, "System"),
+    h("div", { class: "t3-chips" }, chip("", "Alle"), ...systemeImModell(v3.bauteile.values()).map(([id, label]) => chip(id, label)), kabelChip));
 }
 function t3Toene(nodes) {
   const toene = {};
@@ -336,9 +363,25 @@ function t3Karte(bt, at) {
   const d = Object.keys(GRUPPE_BAUTEILE).find((k) => GRUPPE_BAUTEILE[k].includes(bt.id)) || bt.gruppe;
   const list = topoNodes().filter((e) => domainOf(e) === d);
   const sum = list.length ? groupSummary(list) : null;
+  /* Bauteilkarte: Funktion, Anschlüsse (Kabelwege), passende Messwerte (live), Fehlercodes, die auf das Teil zeigen */
+  const wissen = bauteilWissen(bt.id);
+  const an = v3 ? anschluesse(bt.id, v3.bauteile) : { als: "teil", ids: [] };
+  const nameVon = (id) => (v3 && v3.bauteile.get(id) ? v3.bauteile.get(id).name : id);
+  const messwerte = wissen.signale.map((sig) => ({ sig, v: state.live[sig] })).filter((m) => m.v && typeof m.v.wert === "number");
+  const codes = codesFuerBauteil(bt.id), aktiv = new Set([...faultSet().values()].map((f) => f.code));
+  const codeChip = (c) => jump({ class: `t3-code${aktiv.has(c) ? " ist-aktiv" : ""}`, "data-info": `dtc:${c}` }, c);
+  /* replaceChildren macht aus null den Text »null«, darum leere Fragmente statt null */
+  const leer = () => document.createDocumentFragment();
+  const abschnitt = (titel, inhalt) => (inhalt ? h("div", { class: "t3-abschnitt" }, h("span", { class: "eyebrow" }, titel), inhalt) : leer());
   card.replaceChildren(h("p", { class: "eyebrow" }, domainName(d)), h("h3", { class: "h3" }, bt.name),
+    wissen.funktion ? h("p", { class: "sm t3-funktion" }, wissen.funktion) : leer(),
     h("p", { class: "sm" }, sum ? `${list.length} Steuergerät${list.length === 1 ? "" : "e"} dieser Gruppe, ${sum.text}` : "Kein Steuergerät dieser Gruppe gemeldet"),
-    h("div", { class: "row-actions" }, list.length ? h("button", { class: "btn sec small", type: "button", onclick: () => jumpToGroup(d) }, "Zur Liste") : null,
+    abschnitt(an.als === "steuergeraet" ? "Angeschlossen" : "Steuergerät", an.ids.length ? h("p", { class: "sm" }, an.ids.map(nameVon).join(", ")) : null),
+    abschnitt("Messwerte jetzt", messwerte.length ? h("ul", { class: "t3-messwerte" }, ...messwerte.map((m) => h("li", {}, h("span", {}, signalTitle(m.sig)), h("b", { class: "num" }, `${num(m.v.wert, 1)} ${m.v.einheit || ""}`)))) : null),
+    abschnitt("Fehlercodes dieses Teils", codes.length ? h("div", { class: "t3-codes" }, ...codes.filter((c) => aktiv.has(c)).map(codeChip), ...codeBereiche(codes.filter((c) => !aktiv.has(c))).slice(0, 4).map((b) => h("span", { class: "t3-code muted" }, b)), codes.length > 8 ? h("span", { class: "muted sm" }, `${codes.length} Codes`) : null) : null),
+    h("div", { class: "row-actions" }, ...t3Probleme().filter((p) => t3Aufloesen(p.ids).includes(bt.id)).map((p) =>
+        h("button", { class: "btn sec small", type: "button", onclick: () => emit("open-info", `dtc:${p.code}`) }, `Diagnosepfad ${p.code}`)),
+      list.length ? h("button", { class: "btn sec small", type: "button", onclick: () => jumpToGroup(d) }, "Zur Liste") : null,
       h("button", { class: "btn qt small", type: "button", onclick: () => { card.hidden = true; } }, "Schließen")));
   card.hidden = false;
   card.style.setProperty("--x", `${Math.round(at.x || 0)}px`);
@@ -360,8 +403,9 @@ async function render3dView() {
     if (modellFuer(bauart) !== modell) { v3.entsorgen(); v3 = null; v3Modell = null; return render3dView(); }
     $("t3-canvas").addEventListener("bild", t3PinsSetzen);
     v3.zustand(t3Toene(topoNodes()));
-    if (t3Probleme().length) t3FehlerZeigen("alle");
+    if (t3Probleme().length && !state.fokusCode) t3FehlerZeigen("alle");
   }
+  if (state.fokusCode) { const code = state.fokusCode; state.fokusCode = null; if (t3Probleme().some((p) => p.code === code)) t3FehlerZeigen(code); }
   v3.zustand(t3Toene(topoNodes()));
   t3Modes(); t3Pins(); t3FehlerLeiste(); t3Labels();
   const nodes = topoNodes();
@@ -548,5 +592,7 @@ export function initVehicle() {
   new ResizeObserver(() => { const w = $("topo-stage").clientWidth; if (Math.abs(w - lastW) > 8) { lastW = w; if (view === "bus") renderBusView(); } }).observe($("topo-stage"));
   on("events", renderTimeline);
   on("run-scan", runScan);
+  /* Aus dem Diagnosepfad: 3D-Ansicht öffnen und das Bauteil des Codes hervorheben */
+  on("zeige-3d", (code) => { state.fokusCode = code; go("car"); if (view !== "3d") setView("3d"); else renderTopo(); });
   on("render", renderVehicle);
 }

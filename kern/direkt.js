@@ -9,6 +9,7 @@ import { markeAusFin, grundmarke, istGueltigeFin } from "./wmi.js";
 import { leseSollwerte, vergleiche } from "./sollwerte.js";
 import { toHex, toAscii } from "./bytes.js";
 import { KernFehler } from "./fehler.js";
+import { createMitschnitt, adresseAusKopf } from "./mitschnitt.js";
 
 const NUR_LESEN = "In der App liest CANdor bisher nur. Löschen und Funktionen kommen mit eigener Freigabe.";
 /** Bevorzugt das Motorsteuergerät. @param {Record<string, Uint8Array>} antworten */
@@ -21,6 +22,15 @@ const runde = (wert, stellen) => Math.round(wert * 10 ** stellen) / 10 ** stelle
  */
 export function createDirect({ anschluss, ladeJson = (p) => fetch(p).then((r) => r.json()), elmOptionen }) {
   const elm = new Elm327(anschluss, elmOptionen);
+  /* Mitschnitt (CAN-Werkbank): jede Anfrage und Antwort über den Adapter, nur wenn gestartet */
+  const mitschnitt = createMitschnitt();
+  const frageRoh = elm.frage.bind(elm);
+  elm.frage = async (payload, kopf, zeit) => {
+    const antworten = await frageRoh(payload, kopf, zeit);   // gesperrte Anfragen werfen hier und erscheinen nicht im Mitschnitt
+    mitschnitt.aufzeichnen("aus", adresseAusKopf(kopf), payload);
+    for (const f of antworten) mitschnitt.aufzeichnen("ein", f.sender, f.data);
+    return antworten;
+  };
   const obd = new ObdClient(elmAnfrager(elm));
   /** @type {number[] | null} */ let unterstuetzt = null;
   /** @type {Promise<import("./sollwerte.js").Sollwert[]> | null} */ let sollwerte = null;
@@ -142,6 +152,18 @@ export function createDirect({ anschluss, ladeJson = (p) => fetch(p).then((r) =>
       };
     },
     vehicle, obdFaults, live, readiness, freeze, analysis, did,
+    /* CAN-Werkbank im Direktmodus: nur der Mitschnitt; DBC, Erkunder und Abgleich brauchen den Server.
+       Die Zustimmung »eigenes Fahrzeug« merkt sich die Oberfläche je Fahrzeug. */
+    werkbank: {
+      start: async (/** @type {{ eigenes_fahrzeug?: boolean }} */ b) => (b && b.eigenes_fahrzeug === true ? (mitschnitt.start(), { ok: true, aktiv: true })
+        : { ok: false, fehler: "zustimmung", meldung: "Nur am eigenen Fahrzeug. Bitte bestätigen, dass es dein eigenes ist." }),
+      stop: async () => { mitschnitt.stop(); return { ok: true, aktiv: false, anzahl: mitschnitt.eintraege().length }; },
+      widerrufen: async () => { mitschnitt.stop(); return { ok: true, eigenes_fahrzeug: false }; },
+      lesen: async () => ({ ok: true, aktiv: mitschnitt.aktiv, eintraege: mitschnitt.eintraege() }),
+      csv: async () => mitschnitt.csv(),
+      ...Object.fromEntries(["dbc", "dekodiert", "erkunden", "wissen", "beobachten"].map((k) =>
+        [k, async () => ({ ok: false, fehler: "server", meldung: "Das geht nur mit dem Diagnose-Server in der Werkstatt." })])),
+    },
     info: async () => { try { return { ok: true, steuergeraete: await obd.fahrzeugInfo() }; } catch (e) { return { ok: false, meldung: meldung(e) }; } },
     functions: async () => ({ ok: true, version: "app", verfuegbar: false, funktionen: [] }),
     ki: async () => ({ ok: false, meldung: "KI in der App folgt: Schlüssel kommt in den Schlüsselbund des Geräts." }),

@@ -1,0 +1,851 @@
+{
+ "P0300": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "zuendspule_1",
+   "zuendspule_2",
+   "zuendspule_3",
+   "zuendspule_4",
+   "injektor_1",
+   "injektor_2",
+   "injektor_3",
+   "injektor_4"
+  ],
+  "signale": [
+   {
+    "signal": "DREHZAHL",
+    "zustand": "motor_laeuft",
+    "min": 600,
+    "max": 950,
+    "einheit": "1/min",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "LAST",
+    "zustand": "motor_laeuft",
+    "min": 15,
+    "max": 35,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Leerlaufdrehzahl und Laufruhe",
+    "art": "auto",
+    "signal": "DREHZAHL",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Drehzahl zu niedrig, Motor läuft unrund: Aussetzer im Leerlauf aktiv",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Drehzahl erhöht: Steuergerät gleicht aus, Falschluft oder Leerlaufregelung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Drehzahl normal: Aussetzer eher unter Last, Probefahrt mit Aussetzerzählern",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Langzeit-Gemischanpassung",
+    "art": "auto",
+    "signal": "TRIM_LANG_B1",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Stark negativ: Gemisch zu fett, Injektor tropft möglich",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Stark positiv: Gemisch zu mager, Falschluft oder Einspritzung",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Gemisch in Ordnung: Ursache eher Zündung (Kerze, Spule)",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m3",
+    "titel": "Zündspule und Kerze mehrere Zylinder prüfen, bei Einzelzylinder Spule tauschen und schauen, ob der Fehler mitwandert",
+    "art": "manuell",
+    "werkzeug": "Kerzenschlüssel",
+    "minuten": 20,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Kerze verschlissen, Spule beschädigt oder Fehler wandert mit der Spule",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Fehler bleibt am Zylinder: Injektor und Kompression prüfen",
+      "sicherheit": "plausibel"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0171",
+   "P0301"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0301": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "zuendspule_1",
+   "injektor_1"
+  ],
+  "signale": [
+   {
+    "signal": "DREHZAHL",
+    "zustand": "motor_laeuft",
+    "min": 600,
+    "max": 950,
+    "einheit": "1/min",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "LAST",
+    "zustand": "motor_laeuft",
+    "min": 15,
+    "max": 35,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Leerlaufdrehzahl und Laufruhe",
+    "art": "auto",
+    "signal": "DREHZAHL",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Drehzahl zu niedrig, Motor läuft unrund: Aussetzer im Leerlauf aktiv",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Drehzahl erhöht: Steuergerät gleicht aus, Falschluft oder Leerlaufregelung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Drehzahl normal: Aussetzer eher unter Last, Probefahrt mit Aussetzerzählern",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Langzeit-Gemischanpassung",
+    "art": "auto",
+    "signal": "TRIM_LANG_B1",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Stark negativ: Gemisch zu fett, Injektor tropft möglich",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Stark positiv: Gemisch zu mager, Falschluft oder Einspritzung",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Gemisch in Ordnung: Ursache eher Zündung (Kerze, Spule)",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m3",
+    "titel": "Zündspule und Kerze Zylinder 1 prüfen, bei Einzelzylinder Spule tauschen und schauen, ob der Fehler mitwandert",
+    "art": "manuell",
+    "werkzeug": "Kerzenschlüssel",
+    "minuten": 20,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Kerze verschlissen, Spule beschädigt oder Fehler wandert mit der Spule",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Fehler bleibt am Zylinder: Injektor und Kompression prüfen",
+      "sicherheit": "plausibel"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0171"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0302": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "zuendspule_2",
+   "injektor_2"
+  ],
+  "signale": [
+   {
+    "signal": "DREHZAHL",
+    "zustand": "motor_laeuft",
+    "min": 600,
+    "max": 950,
+    "einheit": "1/min",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "LAST",
+    "zustand": "motor_laeuft",
+    "min": 15,
+    "max": 35,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Leerlaufdrehzahl und Laufruhe",
+    "art": "auto",
+    "signal": "DREHZAHL",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Drehzahl zu niedrig, Motor läuft unrund: Aussetzer im Leerlauf aktiv",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Drehzahl erhöht: Steuergerät gleicht aus, Falschluft oder Leerlaufregelung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Drehzahl normal: Aussetzer eher unter Last, Probefahrt mit Aussetzerzählern",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Langzeit-Gemischanpassung",
+    "art": "auto",
+    "signal": "TRIM_LANG_B1",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Stark negativ: Gemisch zu fett, Injektor tropft möglich",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Stark positiv: Gemisch zu mager, Falschluft oder Einspritzung",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Gemisch in Ordnung: Ursache eher Zündung (Kerze, Spule)",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m3",
+    "titel": "Zündspule und Kerze Zylinder 2 prüfen, bei Einzelzylinder Spule tauschen und schauen, ob der Fehler mitwandert",
+    "art": "manuell",
+    "werkzeug": "Kerzenschlüssel",
+    "minuten": 20,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Kerze verschlissen, Spule beschädigt oder Fehler wandert mit der Spule",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Fehler bleibt am Zylinder: Injektor und Kompression prüfen",
+      "sicherheit": "plausibel"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0171"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0303": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "zuendspule_3",
+   "injektor_3"
+  ],
+  "signale": [
+   {
+    "signal": "DREHZAHL",
+    "zustand": "motor_laeuft",
+    "min": 600,
+    "max": 950,
+    "einheit": "1/min",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "LAST",
+    "zustand": "motor_laeuft",
+    "min": 15,
+    "max": 35,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Leerlaufdrehzahl und Laufruhe",
+    "art": "auto",
+    "signal": "DREHZAHL",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Drehzahl zu niedrig, Motor läuft unrund: Aussetzer im Leerlauf aktiv",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Drehzahl erhöht: Steuergerät gleicht aus, Falschluft oder Leerlaufregelung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Drehzahl normal: Aussetzer eher unter Last, Probefahrt mit Aussetzerzählern",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Langzeit-Gemischanpassung",
+    "art": "auto",
+    "signal": "TRIM_LANG_B1",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Stark negativ: Gemisch zu fett, Injektor tropft möglich",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Stark positiv: Gemisch zu mager, Falschluft oder Einspritzung",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Gemisch in Ordnung: Ursache eher Zündung (Kerze, Spule)",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m3",
+    "titel": "Zündspule und Kerze Zylinder 3 prüfen, bei Einzelzylinder Spule tauschen und schauen, ob der Fehler mitwandert",
+    "art": "manuell",
+    "werkzeug": "Kerzenschlüssel",
+    "minuten": 20,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Kerze verschlissen, Spule beschädigt oder Fehler wandert mit der Spule",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Fehler bleibt am Zylinder: Injektor und Kompression prüfen",
+      "sicherheit": "plausibel"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0171"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0304": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "zuendspule_4",
+   "injektor_4"
+  ],
+  "signale": [
+   {
+    "signal": "DREHZAHL",
+    "zustand": "motor_laeuft",
+    "min": 600,
+    "max": 950,
+    "einheit": "1/min",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "LAST",
+    "zustand": "motor_laeuft",
+    "min": 15,
+    "max": 35,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Leerlaufdrehzahl und Laufruhe",
+    "art": "auto",
+    "signal": "DREHZAHL",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Drehzahl zu niedrig, Motor läuft unrund: Aussetzer im Leerlauf aktiv",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Drehzahl erhöht: Steuergerät gleicht aus, Falschluft oder Leerlaufregelung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Drehzahl normal: Aussetzer eher unter Last, Probefahrt mit Aussetzerzählern",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Langzeit-Gemischanpassung",
+    "art": "auto",
+    "signal": "TRIM_LANG_B1",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Stark negativ: Gemisch zu fett, Injektor tropft möglich",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Stark positiv: Gemisch zu mager, Falschluft oder Einspritzung",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Gemisch in Ordnung: Ursache eher Zündung (Kerze, Spule)",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m3",
+    "titel": "Zündspule und Kerze Zylinder 4 prüfen, bei Einzelzylinder Spule tauschen und schauen, ob der Fehler mitwandert",
+    "art": "manuell",
+    "werkzeug": "Kerzenschlüssel",
+    "minuten": 20,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Kerze verschlissen, Spule beschädigt oder Fehler wandert mit der Spule",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Fehler bleibt am Zylinder: Injektor und Kompression prüfen",
+      "sicherheit": "plausibel"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0171"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0335": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "kurbelwellensensor"
+  ],
+  "signale": [
+   {
+    "signal": "DREHZAHL",
+    "zustand": "motor_laeuft",
+    "min": 600,
+    "max": 950,
+    "einheit": "1/min",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "SPANNUNG",
+    "zustand": "motor_aus",
+    "min": 12.2,
+    "max": 12.9,
+    "einheit": "V",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (Zündung an, Motor aus), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Batteriespannung bei Zündung an, Motor aus",
+    "art": "auto",
+    "signal": "SPANNUNG",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Batterie schwach: beim Starten bricht die Spannung ein, erst laden",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Spannung ungewöhnlich hoch: Messung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Batterie in Ordnung: Geberkreis prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Zündung einschalten",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Kurbelwellensensor, Stecker und Geberrad sichtprüfen, Widerstand oder Signal messen",
+    "art": "manuell",
+    "werkzeug": "Multimeter oder Oszilloskop",
+    "minuten": 20,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Steckerschaden, Späne am Sensor oder beschädigtes Geberrad gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Sichtbar in Ordnung: Signal beim Anlassen mit Oszilloskop prüfen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0340"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0340": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "nockenwellensensor"
+  ],
+  "signale": [
+   {
+    "signal": "DREHZAHL",
+    "zustand": "motor_laeuft",
+    "min": 600,
+    "max": 950,
+    "einheit": "1/min",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "SPANNUNG",
+    "zustand": "motor_aus",
+    "min": 12.2,
+    "max": 12.9,
+    "einheit": "V",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (Zündung an, Motor aus), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Batteriespannung bei Zündung an, Motor aus",
+    "art": "auto",
+    "signal": "SPANNUNG",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Batterie schwach: Startprobleme verfälschen das Bild, erst laden",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Spannung ungewöhnlich hoch: Messung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Batterie in Ordnung: Geberkreis Nockenwelle prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Zündung einschalten",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Nockenwellensensor und Stecker prüfen; nach Zahnriemen- oder Kettenarbeit die Steuerzeiten",
+    "art": "manuell",
+    "werkzeug": "Multimeter, Taschenlampe",
+    "minuten": 20,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Steckerschaden oder falsche Steuerzeiten gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "In Ordnung: Signal mit Oszilloskop gegen Kurbelwelle prüfen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0335",
+   "P0016"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0351": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "zuendspule_1"
+  ],
+  "signale": [
+   {
+    "signal": "DREHZAHL",
+    "zustand": "motor_laeuft",
+    "min": 600,
+    "max": 950,
+    "einheit": "1/min",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "SPANNUNG",
+    "zustand": "motor_laeuft",
+    "min": 13.2,
+    "max": 14.8,
+    "einheit": "V",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Leerlaufdrehzahl und Laufruhe",
+    "art": "auto",
+    "signal": "DREHZAHL",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Drehzahl zu niedrig, Motor läuft unrund: Zylinder 1 fällt aus",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Drehzahl erhöht: Steuergerät gleicht aus",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Motor läuft rund: Fehler sporadisch, Stecker an Zündspule 1 prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Stecker und Leitung der Zündspule 1 prüfen, Spule mit Nachbarzylinder tauschen",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe",
+    "minuten": 15,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Steckerschaden gefunden oder Fehler wandert mit der Spule",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Fehler bleibt: Ansteuerleitung zum Steuergerät messen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0301"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ }
+}

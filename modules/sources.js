@@ -48,8 +48,27 @@ export function createServer() {
     settings: () => getJson("/api/einstellungen"),
     saveKi: (body) => getJson("/api/einstellungen/ki", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(body) }),
     testKi: () => getJson("/api/einstellungen/ki/test", { method: "POST" }),
+    /* Werkhof: der Schlüssel bleibt auf dem Diagnose-Server (kfzdiag/werkhof.py). */
+    werkhof: () => getJson("/api/werkhof"),
+    werkhofSpeichern: (body) => getJson("/api/werkhof", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(body) }),
+    werkhofFahrzeug: (kz) => getJson(`/api/werkhof/fahrzeug?kennzeichen=${encodeURIComponent(kz)}`),
+    werkhofBefund: (body) => getJson("/api/werkhof/befund", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(body) }),
     /* Chat als Strom: die Antwort kommt als Server-Sent Events, gelesen in chat.js. */
     chat: (body, signal) => fetch("/api/ki/chat", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json", Accept: "text/event-stream" }, body: JSON.stringify(body), signal }),
+    agent: (body, signal) => fetch("/api/ki/agent", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json", Accept: "text/event-stream" }, body: JSON.stringify(body), signal }),
+    /* CAN-Werkbank: Mitschnitt, eigene DBC, Erkunder, Abgleich. Zustimmung »eigenes Fahrzeug« prüft der Server. */
+    werkbank: {
+      start: (body) => getJson("/api/mitschnitt/start", sendeJson(body)),
+      stop: () => getJson("/api/mitschnitt/stop", sendeJson({})),
+      widerrufen: () => getJson("/api/zustimmung/widerrufen", sendeJson({})),
+      lesen: () => getJson("/api/mitschnitt"),
+      csv: () => fetch("/api/mitschnitt.csv", { credentials: "same-origin" }).then((r) => r.text()),
+      dbc: (text, name) => getJson("/api/dbc", sendeJson({ text, name })),
+      dekodiert: () => getJson("/api/mitschnitt/dekodiert"),
+      erkunden: (body) => getJson("/api/erkunder", sendeJson(body)),
+      wissen: () => getJson("/api/fahrzeugwissen"),
+      beobachten: (body) => getJson("/api/erkunder/beobachten", sendeJson(body)),
+    },
     async scan(onEvent) {
       const ws = await connect();
       return new Promise((resolve) => {
@@ -62,6 +81,9 @@ export function createServer() {
     stop: (funktion) => send({ typ: "funktion_stopp", funktion }),
   };
 }
+
+/* JSON senden mit Länge im Kopf (der Server lehnt Anfragen ohne Content-Length ab) */
+const sendeJson = (body) => ({ method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(body) });
 
 export function createDemo(data) {
   const d = structuredClone(data);
@@ -79,6 +101,8 @@ export function createDemo(data) {
   };
   return {
     mode: "demo",
+    werkbank: Object.fromEntries(["start", "stop", "widerrufen", "lesen", "csv", "dbc", "dekodiert", "erkunden", "wissen", "beobachten"].map((k) =>
+      [k, async () => ({ ok: false, fehler: "vorschau", meldung: "In der Vorschau gibt es kein Fahrzeug. Die Werkbank braucht ein echtes Auto oder den Simulator im Server." })])),
     status: async () => d.status,
     vehicle: async () => d.fahrzeug,
     obdFaults: async () => d.obd_fehler,

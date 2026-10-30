@@ -1,10 +1,11 @@
 // @ts-check
 /* Technische Sperre wie kfzdiag/guard.py: nur diese Dienste verlassen das Gerät.
    Im Direktmodus der App gibt es (noch) keine Profil-Funktionen, darum auch keine Ausnahmen:
-   kein Security Access (0x27), kein Schreiben (0x2E), keine Stellglieder, Routinen oder Flashen. */
+   kein Security Access (0x27), kein Schreiben (0x2E), keine Stellglieder, Routinen oder Flashen.
+   Seit dem Audit 29.10.2026 auch kein Löschen (OBD 0x04, UDS 0x14): der Direktmodus liest nur, technisch erzwungen. */
 import { SperrFehler, KernFehler } from "./fehler.js";
 
-export const ERLAUBTE_DIENSTE = Object.freeze(new Set([0x01, 0x02, 0x03, 0x04, 0x07, 0x09, 0x0a, 0x10, 0x14, 0x19, 0x22, 0x3e]));
+export const ERLAUBTE_DIENSTE = Object.freeze(new Set([0x01, 0x02, 0x03, 0x07, 0x09, 0x0a, 0x10, 0x19, 0x22, 0x3e]));
 export const ERLAUBTE_SITZUNGEN = Object.freeze(new Set([0x01, 0x03]));
 
 /** @param {Uint8Array} payload */

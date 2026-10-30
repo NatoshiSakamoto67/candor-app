@@ -6,6 +6,7 @@ import { openHistoryEntry } from "./history.js";
 import { lookup, isGeneric } from "./dtcwissen.js";
 import { similar } from "./faelle.js";
 import { startAction } from "./approval.js";
+import { renderDiagnosepfad } from "./diagnosepfad.js";
 import { historyOf } from "./live.js";
 
 export const facts = (pairs) => h("dl", { class: "facts" }, ...pairs.filter(([, v]) => v != null && v !== "").flatMap(([k, v]) => [h("dt", {}, k), h("dd", {}, v)]));
@@ -66,6 +67,13 @@ function wissenBox(code) {
   }).catch(() => box.replaceChildren(h("h3", {}, "Erklärung"), h("p", { class: "sm" }, "Fehlercode-Wissen nicht ladbar. In der Handy-Vorschau ist es nicht enthalten, in der Fassung auf dem Rechner schon.")));
   return box;
 }
+/* Geführter Diagnosepfad (Kette bis zur Deutung), nur für genormte Codes. Lädt im Hintergrund wie das Wissen. */
+function diagnosepfadBox(code) {
+  if (!isGeneric(code)) return null;
+  const box = h("div", { class: "dp-box" });
+  renderDiagnosepfad(box, code);
+  return box;
+}
 const ERGEBNIS = { behoben: ["ok", "behoben"], teilweise: ["warn", "teilweise"], offen: ["crit", "nicht behoben"] };
 function casesBox(code) {
   const fz = state.fahrzeug || {};
@@ -83,7 +91,12 @@ const SYSTEM = { P: "Antrieb", C: "Fahrwerk", B: "Karosserie", U: "Netzwerk" };
 const GROUP = { 0: "Kraftstoff/Luft", 1: "Gemisch", 2: "Einspritzung", 3: "Zündung", 4: "Abgas", 5: "Leerlauf/Geschw.", 6: "Steuergerät", 7: "Getriebe", 8: "Getriebe", 9: "Steuergerät", A: "Hybrid", B: "Hybrid", C: "Hybrid" };
 function infoDtc(key) {
   const entry = DTC_REG.get(key) || [...DTC_REG.values()].find((e) => e.dtc.code === key);
-  if (!entry) return [h("p", { class: "eyebrow" }, "Fehlercode"), h("h2", { class: "mono" }, key), h("p", { class: "lead" }, "Dieser Code steht gerade nicht im Fehlerspeicher.")];
+  if (!entry) {
+    /* Aus der Suche: Code steht nicht im Speicher, Erklärung und Diagnosepfad trotzdem zeigen */
+    const code = /^[PCBU][0-3][0-9A-F]{3}$/i.test(key) ? key.toUpperCase() : null;
+    return [h("p", { class: "eyebrow" }, "Fehlercode"), h("h2", { class: "mono" }, key), h("p", { class: "lead" }, "Dieser Code steht gerade nicht im Fehlerspeicher."),
+      code ? wissenBox(code) : null, code ? diagnosepfadBox(code) : null];
+  }
   const { dtc, where, kind, ecu } = entry;
   const c = dtc.code;
   const f = state.freeze && Object.values(state.freeze.steuergeraete || {}).find((x) => x.ausloeser === c);
@@ -100,6 +113,7 @@ function infoDtc(key) {
       dtc.aktiv ? jump({ "data-info": "begriff:aktiv" }, "aktiv?") : null,
       dtc.bekannt === false ? h("button", { class: "chip warn", type: "button", "data-info": "begriff:unbekannt" }, "keine Quelle, warum?") : null),
     wissenBox(c),
+    diagnosepfadBox(c),
     casesBox(c),
     f ? h("div", { class: "box" }, h("h3", {}, "Freeze-Frame beim Auftreten"), ...f.werte.map((v) => h("div", { class: "mono" }, `${signalTitle(v.signal)}: ${num(v.wert)} ${v.einheit}`))) : null,
     hits.length ? h("div", { class: "box" }, h("h3", {}, "Fundstellen in Herstellerdokumenten"), ...hits.map((t) => jump({ "data-info": `dok:${t.datei}|${t.seite}` }, `${t.datei}, S. ${t.seite}`))) : null,

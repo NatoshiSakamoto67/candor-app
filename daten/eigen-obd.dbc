@@ -1,0 +1,20 @@
+VERSION ""
+
+NS_ :
+
+BS_:
+
+BU_: Motor
+
+BO_ 2024 OBD_Antwort_Motor: 8 Motor
+ SG_ Laenge : 7|8@0+ (1,0) [0|7] "" Vector__XXX
+ SG_ Modus : 15|8@0+ (1,0) [65|65] "" Vector__XXX
+ SG_ PID M : 23|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ KUEHLMITTEL m5 : 31|8@0+ (1,-40) [-40|215] "degC" Vector__XXX
+ SG_ DREHZAHL m12 : 31|16@0+ (0.25,0) [0|16383.75] "1/min" Vector__XXX
+ SG_ GESCHWINDIGKEIT m13 : 31|8@0+ (1,0) [0|255] "km/h" Vector__XXX
+ SG_ LUFTMASSE m16 : 31|16@0+ (0.01,0) [0|655.35] "g/s" Vector__XXX
+ SG_ SPANNUNG m66 : 31|16@0+ (0.001,0) [0|65.535] "V" Vector__XXX
+
+CM_ "Selbst geschrieben fuer CANdor: genormte OBD-Antworten Modus 01 nach SAE J1979, keine Herstellerbotschaften.";
+CM_ BO_ 2024 "Antwort des Motorsteuergeraets 0x7E8 als Einzelrahmen: Laengenbyte, 0x41, PID, Daten.";

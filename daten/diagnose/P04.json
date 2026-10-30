@@ -1,0 +1,339 @@
+{
+ "P0401": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "agr_ventil"
+  ],
+  "signale": [
+   {
+    "signal": "SAUGROHRDRUCK",
+    "zustand": "motor_laeuft",
+    "min": 25,
+    "max": 45,
+    "einheit": "kPa",
+    "quelle": "Typischer Bereich aus wissen.json (warmer Leerlauf), kein Herstellerwert, Saugmotor"
+   },
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Saugrohrdruck im warmen Leerlauf",
+    "art": "auto",
+    "signal": "SAUGROHRDRUCK",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Unterdruck normal bis hoch: kein Hinweis auf offenes Ventil, AGR-Kanäle auf Verkokung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Druck zu hoch: Falschluft oder Ventil hängt offen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Druck normal: AGR-Ventil und Kanäle auf Verkokung prüfen",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "AGR-Ventil ausbauen oder Kanäle prüfen",
+    "art": "manuell",
+    "werkzeug": "Werkzeugsatz, Taschenlampe",
+    "minuten": 45,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Starke Verkokung oder klemmendes Ventil gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Sauber und beweglich: Ansteuerung und Stellungsgeber prüfen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0400"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0420": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "kat"
+  ],
+  "signale": [
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "KAT_TEMP_B1",
+    "zustand": "motor_laeuft",
+    "min": 300,
+    "max": 750,
+    "einheit": "°C",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json; Modellwert des Steuergeräts, kein Herstellerwert"
+   },
+   {
+    "signal": "LAMBDA_SOLL",
+    "zustand": "motor_laeuft",
+    "min": 0.98,
+    "max": 1.02,
+    "einheit": "λ",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Langzeit-Gemischanpassung",
+    "art": "auto",
+    "signal": "TRIM_LANG_B1",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Gemisch zu fett: belastet den Kat, erst Gemisch klären",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Gemisch zu mager: Falschluft vor der Sonde kann Kat-Fehler vortäuschen",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Gemisch in Ordnung: Kat gealtert oder Sonde nach Kat träge",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Abgasanlage vor und nach dem Kat auf Undichtigkeit prüfen, Aussetzer ausschließen",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe",
+    "minuten": 15,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Abgasleck gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Dicht: Kat-Wirkung über beide Lambdasonden bei der AU prüfen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0300",
+   "P0171"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0441": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "tank"
+  ],
+  "signale": [
+   {
+    "signal": "TRIM_KURZ_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Kurzzeit-Gemischanpassung im warmen Leerlauf",
+    "art": "auto",
+    "signal": "TRIM_KURZ_B1",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Regelung negativ: Tankentlüftung spült, Ventil öffnet",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Regelung positiv: Ventil hängt offen und zieht Falschluft",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Regelung ruhig: Spülfluss gering, Ventil und Schläuche prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Tankentlüftungsventil und Schläuche zum Aktivkohlefilter prüfen",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe, Handvakuumpumpe",
+    "minuten": 20,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Ventil hängt oder Schlauch lose",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Ventil schaltet und Schläuche dicht: Ansteuerung prüfen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0455"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0455": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "tank"
+  ],
+  "signale": [
+   {
+    "signal": "TRIM_KURZ_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Kurzzeit-Gemischanpassung im warmen Leerlauf",
+    "art": "auto",
+    "signal": "TRIM_KURZ_B1",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Regelung negativ: Tankentlüftung spült, System grundsätzlich aktiv",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Regelung positiv: Ventil hängt offen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Regelung ruhig: großes Leck möglich, Tankdeckel zuerst",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Tankdeckel, Dichtung und Schläuche der Tankentlüftung prüfen",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe, Rauchtester",
+    "minuten": 15,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Tankdeckel undicht oder Schlauch lose",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Dicht: Rauchtest am gesamten System",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0441"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ }
+}

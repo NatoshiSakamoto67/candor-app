@@ -101,8 +101,10 @@ export const KAPITEL = [
       wie: "UDS-Anfrage an 0x700 bis 0x7F7, Fortschritt über den WebSocket. Ein Wachhund bricht nach 15 Sekunden ohne Lebenszeichen ab und bietet »Erneut versuchen«. Die Platzierung nach Funktionsdomäne steckt in topology.js.", dateien: "kfzdiag/uds.py, modules/vehicle.js, modules/topology.js, topologie/*.svg" }],
     ["funktion", { titel: "Live-Werte, Diagramm, Aufnahme", icon: "scope", was: "Messwerte als Liste mit Richtwert, als Diagramm mit mehreren Kanälen und als Aufnahme mit Markierungen.",
       wie: "OBD-Dienst 01 jede Sekunde, Plausibilitätsprüfung in pids.py. Das Diagramm nutzt uPlot (lokal unter vendor/, MIT-Lizenz).", dateien: "kfzdiag/pids.py, modules/live.js, modules/recorder.js" }],
-    ["funktion", { titel: "Prüfen und Service", icon: "clipboard", was: "Geführte Prüfpfade bis Pass oder Fail, Ist gegen Soll, AU-Bereitschaft, Freeze-Frame, Service-Funktionen, Kennung lesen (DID), Suche in Herstellerdokumenten.",
+    ["funktion", { titel: "Prüfungen", icon: "clipboard", was: "Unter Messen: geführte Prüfpfade bis Pass oder Fail, Ist gegen Soll, AU-Bereitschaft, Freeze-Frame, Kennung lesen (DID), Suche in Herstellerdokumenten.",
       wie: "Prüfpfade und Erklärungen liegen in wissen.json. Ist gegen Soll vergleicht mit Herstellerwerten (mit Quelle) oder allgemeinen Richtwerten, nie gemischt. Kennungen über UDS-Dienst 22.", dateien: "frontend/wissen.json, kfzdiag/rmi.py, modules/check.js, modules/pfade.js" }],
+    ["funktion", { titel: "Service und Anlernen", icon: "gear", was: "23 Arbeiten nach Anlass geordnet (Ölservice, Feststellbremse, Batterie, Drosselklappe, Lenkwinkel …). Suche mit Alltagswörtern wie »neue Batterie«. Jede Arbeit zeigt Risiko, Dauer, ob sie schreibt, und die Vorbedingungen live gemessen. Wegfahrsperre, Schlüssel, Tacho und Abgas-Abschaltung gibt es nicht; die Suche nennt den Grund.",
+      wie: "Schreiben nur, wenn das Fahrzeugprofil eine Anfrage mit Quelle hat, nur nach der Halte-Freigabe und nach einer letzten Messung direkt davor. Jede Freigabe und jedes Ergebnis kommt ins Betriebsbuch, eine SHA-256-Kette wie im XDAB-Leitstand: wer einen alten Eintrag ändert, bricht die Kette.", dateien: "kern/service-katalog.js, kern/betriebsbuch.js, modules/service.js, modules/approval.js" }],
     ["funktion", { titel: "Fehlercode-Wissen", icon: "book", was: "Zu allen 9.533 genormten Codes eine deutsche Erklärung mit möglichen Ursachen nach Wahrscheinlichkeit, typischen Anzeichen, Aufwand, verwandten Codes und Quellen. Steht im Infoblatt jedes Fehlercodes und geht an die KI.",
       wie: "Daten aus OBDex (CC0), mit tools/obdex_import.py in 61 kleine Pakete umgebaut, die erst bei Bedarf geladen werden. Herstellerspezifische Codes bleiben ausdrücklich unbekannt; dafür gibt es die Websuche im Chat und die RMI-Daten.", dateien: "frontend/daten/dtc/, modules/dtcwissen.js, kfzdiag/dtcwissen.py" }],
     ["funktion", { titel: "Belegte Fälle", icon: "report", was: "Nach dem Nachher-Scan trägst du ein, was gemacht wurde. Der Vergleich von Eingangs- und Ausgangsbefund belegt, ob es geholfen hat: behoben, teilweise oder nicht behoben. Taucht derselbe Code wieder auf, zeigen Infoblatt und KI diese Fälle, ähnliche Modelle zuerst.",
@@ -115,6 +117,47 @@ export const KAPITEL = [
       wie: "Ein Eintrag je Sitzung, der sich bei jedem neuen Stand aktualisiert. Die FIN steht nur maskiert drin.", dateien: "modules/history.js" }],
     ["funktion", { titel: "Anzeige", icon: "palette", was: "Eigene Akzentfarbe, Symbolfarben je Funktion oder in der Akzentfarbe, hell und dunkel, hoher Kontrast, Dichte bis zum Werkstatt-Modus mit 60-px-Zielen für Handschuhe.",
       wie: "farbe.js dunkelt oder hellt die gewählte Farbe so weit nach, bis sie gegen die Fläche 4,5 : 1 erreicht (bei hohem Kontrast 7 : 1), und warnt nahe der Fehlerfarbe. Alle Farben kommen aus tokens.css.", dateien: "modules/farbe.js, modules/shell.js, tokens.css" }],
+  ] },
+
+  { id: "diagnosepfad", titel: "Diagnosepfad", icon: "mil", kurz: "Vom Fehlercode bis zur Deutung", bloecke: [
+    ["p", "Zu häufigen genormten Fehlercodes zeigt CANdor in der Detailansicht eine Kette: welcher Code, welches Steuergerät ihn gespeichert hat, welche Messwerte dazu passen und ob sie im Sollbereich liegen, welches Bauteil betroffen ist, welche Messung als Nächstes sinnvoll ist und was das Ergebnis bedeutet."],
+    ["schritte", [
+      "Fehlercode in der Fehlerliste antippen oder in der Suche eingeben.",
+      "Messwerte lesen: Häkchen heißt im Bereich, Kreuz heißt außerhalb, Strich heißt noch kein Wert oder falscher Motorzustand.",
+      "Mit »Im 3D zeigen« das Bauteil im Fahrzeug ansehen.",
+      "Die nächste Messung machen. Die Deutung ändert sich mit dem Ergebnis.",
+    ]],
+    ["tabelle", ["Stufe", "Bedeutung"], [
+      ["belegt", "Befund direkt gesehen, etwa ein gerissener Schlauch"],
+      ["plausibel", "Messwert passt eindeutig zu dieser Ursache"],
+      ["Vermutung", "Hinweis, der weitere Prüfung braucht"],
+    ]],
+    ["p", "Die Sollbereiche sind allgemeine Richtwerte für betriebswarme Pkw-Ottomotoren im Leerlauf, keine Herstellerwerte. Quellen sind die genormte Codebedeutung (SAE J2012), OBDex (CC0) und die eigenen Richtwerte in sollwerte-allgemein.json. Jede Zahl nennt ihre Quelle, wenn du mit der Maus darauf zeigst."],
+    ["hinweis", "warn", "Der Diagnosepfad ist eine Hilfe, keine Diagnose. Er liest nur und schreibt nichts ins Auto. Herstellerwerte aus RMI-Daten haben immer Vorrang."],
+  ] },
+
+  { id: "agent", titel: "Diagnose-Agent", icon: "robot", kurz: "Claude liest selbst am Auto, nur lesend", bloecke: [
+    ["p", "Im KI-Assistenten gibt es im Plus-Menü den Schalter »Selbst am Auto lesen«. Ist er an, beantwortet Claude deine Frage nicht nur aus dem Stand beim Öffnen, sondern liest selbst nach: Fehler, Freeze-Frame, Live-Werte, Bereitschaftstests, genormte Kennungen und den Diagnosepfad. Jede gelesene Quelle steht als Zeile über der Antwort und im Verlauf."],
+    ["tabelle", ["Darf der Agent", "Antwort"], [
+      ["Fehler, Messwerte, Readiness, Freeze-Frame lesen", "ja"],
+      ["Software- und Hardwarekennungen lesen (F180 bis F19F)", "ja, außer der FIN"],
+      ["Fehler löschen, Stellglieder, Anlernen, Flashen", "nein, dafür gibt es kein Werkzeug"],
+      ["Eine Aktion vorschlagen", "ja, ausführen kannst nur du über die Freigabe"],
+    ]],
+    ["p", "Der Schalter erscheint nur, wenn der Diagnose-Server läuft und als Anbieter Claude eingetragen ist. FIN und Kennzeichen gehen nicht an die KI. Je Frage liest der Agent höchstens zwölfmal, und ein Tagesbudget in Token schützt vor Dauerläufen."],
+    ["hinweis", "warn", "Anhänge (Bilder, PDF) gehen nicht an den Agenten, sondern an den normalen Chat."],
+  ] },
+
+  { id: "werkbank", titel: "CAN-Werkbank", icon: "scope", kurz: "Mitschnitt, eigene DBC, Kennungen, Abgleich", bloecke: [
+    ["p", "Die CAN-Werkbank im Profi-Modus ist für das eigene Fahrzeug gedacht. Sie liest nur und schreibt nichts ins Auto. Bevor sie mitschneidet oder Kennungen sammelt, bestätigst du einmal, dass es dein eigenes Fahrzeug ist. Der Server merkt sich das je Fahrzeug, ohne die FIN zu speichern."],
+    ["tabelle", ["Werkzeug", "Was es tut"], [
+      ["Mitschnitt", "zeichnet die Anfragen und Antworten auf, die CANdor mit dem Auto austauscht, mit Zeit und Adresse; Export als CSV"],
+      ["Eigene DBC-Datei", "liest eine selbst geschriebene DBC und dekodiert damit den Mitschnitt; ein Beispiel für genormte OBD-Antworten liegt bei"],
+      ["Kennungen", "liest genormte Kennungen F180 bis F19F je Steuergerät und merkt sie sich für dieses Fahrzeug"],
+      ["Bedeutung abgleichen", "liest ein Byte einer Kennung mehrfach und vergleicht den Verlauf mit bekannten Messwerten"],
+    ]],
+    ["hinweis", "warn", "Ein ELM327 liefert die Nutzdaten der Diagnosebotschaften, nicht jeden Rahmen auf dem Bus. Hersteller-DBC-Dateien gehören nicht in CANdor. Ein Abgleich ist ein Vorschlag, kein Beleg: mit einer gezielten Änderung gegenprüfen, etwa Gas geben."],
+    ["p", "Für DBC-Dateien braucht der Server das Zusatzpaket cantools: pip install kfzdiag[can]. Ohne es laufen Mitschnitt, Kennungen und Abgleich trotzdem."],
   ] },
 
   { id: "schreibschutz", titel: "Sicherheit beim Schreiben", icon: "lock", kurz: "Warum nichts ohne dich ins Auto geht", bloecke: [
@@ -146,7 +189,7 @@ export const KAPITEL = [
     ["funktion", { titel: "1 · Sollwerte als Datei", icon: "gauge", was: "Herstellerwerte aus deinen RMI-Unterlagen als JSON in sollwerte/. Jeder Wert hat Signal, Zustand, min und max und die Art »hersteller« mit Pflichtfeld »quelle« (Dokument, Seite oder Datensatz).",
       wie: "rmi.py lädt die Dateien, lehnt Herstellerwerte ohne Quelle ab und hält sie strikt getrennt von den allgemeinen Richtwerten in allgemein.json. Herstellerwerte haben immer Vorrang.", dateien: "sollwerte/*.json, kfzdiag/rmi.py" }],
     ["code", "{\n  \"signal\": \"DREHZAHL\",\n  \"zustand\": \"leerlauf_warm\",\n  \"min\": 650, \"max\": 750,\n  \"art\": \"hersteller\",\n  \"quelle\": \"Werkstatthandbuch Motor, S. 42\"\n}"],
-    ["funktion", { titel: "2 · Dokumente durchsuchen", icon: "book", was: "PDFs oder Texte aus den Portalen in den Ordner rmi_dokumente/ legen. Die Suche unter Prüfen und Service findet Treffer mit Datei und Seite.",
+    ["funktion", { titel: "2 · Dokumente durchsuchen", icon: "book", was: "PDFs oder Texte aus den Portalen in den Ordner rmi_dokumente/ legen. Die Suche unter Messen, Prüfungen findet Treffer mit Datei und Seite.",
       wie: "Lesen mit pypdf, Index lokal. Der Ordner ist nicht im Git, nichts wird kopiert oder weitergegeben: Das Material bleibt beim Lizenznehmer.", dateien: "rmi_dokumente/, kfzdiag/rmi.py" }],
     ["funktion", { titel: "3 · Datenanbieter anschließen", icon: "plug", was: "Lizenzierte Anbieter wie TecRMI oder HaynesPro liefern Sollwerte je Fahrzeug.",
       wie: "Schnittstelle SollwertAnbieter mit einer Methode sollwerte(profil, marke). Eine echte Anbindung braucht Lizenz und Zugangsdaten des Anbieters.", dateien: "kfzdiag/rmi.py" }],

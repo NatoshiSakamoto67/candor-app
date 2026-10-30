@@ -12,6 +12,7 @@ import { go } from "./shell.js";
 import { busy, withTimeout } from "./vorgang.js";
 import { recordings, stats } from "./recorder.js";
 import { pfadResults } from "./pfade.js";
+import { befundSenden } from "./werkhof.js";
 
 const opts = { auftrag: "", vin: true, fassung: "werkstatt", art: "vergleich", abschnitte: null, ...storageGet("kfzdiag-bericht", {}) };
 const ARTEN = [["vorher", "Eingangsbefund", "vor der Reparatur"], ["nachher", "Ausgangsbefund", "nach der Reparatur"], ["vergleich", "Vergleich", "vorher und nachher"]];
@@ -223,7 +224,9 @@ function renderTools() {
     h("div", { class: "rt-row" }, version, vin),
     h("div", { class: "rt-row" }, werkstatt, auftrag),
     sections,
-    TOOL_ACTIONS());
+    TOOL_ACTIONS(),
+    state.src && state.src.mode === "server" ? h("div", { class: "rt-row" }, ...[["vorher", "Vorher-Befund an Werkhof"], ["nachher", "Nachher-Befund an Werkhof"]].map(([phase, text]) =>
+      h("button", { class: "btn sec", type: "button", onclick: async (ev) => { const b = ev.currentTarget; b.disabled = true; const r = await befundSenden(phase); b.disabled = false; toast(r.ok ? `${text}: abgelegt (${String(r.sha256 || "").slice(0, 8)}).` : r.meldung || "Nicht übergeben."); } }, icon("share"), text))) : null);
   scanKey = null;
   renderScanState();
   renderCaseBox();

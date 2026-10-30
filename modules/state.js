@@ -8,6 +8,8 @@ export const state = {
   fahrzeug: null, finWarnung: false,
   /* Werkstattdaten (werkstatt.js), Sitzung mit Kilometerstand, Ausgangsbefund nach dem Nachher-Scan */
   werkstatt: null, sitzung: { km: null }, postscan: null, postscanLaeuft: false,
+  /* Fehlercode, dessen Bauteil die 3D-Ansicht beim nächsten Öffnen hervorhebt (Diagnosepfad) */
+  fokusCode: null,
 };
 
 /* Neues Fahrzeug, neue Sitzung: alles vom alten Auto aus der Anzeige nehmen. Die Verbindung baut connect() neu auf. */

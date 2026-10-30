@@ -1,0 +1,1721 @@
+{
+ "P0100": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "luftmassenmesser"
+  ],
+  "signale": [
+   {
+    "signal": "LUFTMASSE",
+    "zustand": "motor_laeuft",
+    "min": 2.0,
+    "max": 8.0,
+    "einheit": "g/s",
+    "quelle": "Allgemeiner Richtwert für 1,0 bis 2,0 l Hubraum im warmen Leerlauf, kein Herstellerwert"
+   },
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "DROSSELKLAPPE",
+    "zustand": "motor_laeuft",
+    "min": 10,
+    "max": 20,
+    "einheit": "%",
+    "quelle": "Typischer Bereich aus wissen.json (warmer Leerlauf), kein Herstellerwert; gilt nur ohne Gas"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Luftmasse im warmen Leerlauf",
+    "art": "auto",
+    "signal": "LUFTMASSE",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Signal zu klein: Stromkreis unterbrochen oder gestört, Masse oder Versorgung des Luftmassenmessers prüfen",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Signal zu groß: Stromkreis unterbrochen oder gestört oder Sensor defekt",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Sichtprüfung Stecker, Kontakte und Leitung zum Sensor",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe",
+    "minuten": 5,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Korrosion, lockerer Stecker oder beschädigte Leitung gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Nichts sichtbar: Versorgung und Masse am Stecker mit dem Multimeter messen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0171",
+   "P0101"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0101": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "luftmassenmesser"
+  ],
+  "signale": [
+   {
+    "signal": "LUFTMASSE",
+    "zustand": "motor_laeuft",
+    "min": 2.0,
+    "max": 8.0,
+    "einheit": "g/s",
+    "quelle": "Allgemeiner Richtwert für 1,0 bis 2,0 l Hubraum im warmen Leerlauf, kein Herstellerwert"
+   },
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "KUEHLMITTEL",
+    "zustand": "motor_laeuft",
+    "min": 80,
+    "max": 105,
+    "einheit": "°C",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Luftmasse im warmen Leerlauf",
+    "art": "auto",
+    "signal": "LUFTMASSE",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Zu wenig gemessene Luft: Falschluft hinter dem Sensor oder verschmutztes Messelement",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Zu viel gemessene Luft: Sensor liefert falsches Signal, selten Ansaugtrakt verändert",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Wert jetzt unauffällig: Fehler sporadisch, Kabel und Stecker prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Sichtprüfung Ansaugschlauch, Stecker, Kurbelgehäuseentlüftung",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe",
+    "minuten": 5,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Riss oder loser Schlauch gefunden: Falschluft",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Keine sichtbare Undichtigkeit: weiter mit Rauchtest oder Sensor reinigen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0171",
+   "P0174"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0102": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "luftmassenmesser"
+  ],
+  "signale": [
+   {
+    "signal": "LUFTMASSE",
+    "zustand": "motor_laeuft",
+    "min": 2.0,
+    "max": 8.0,
+    "einheit": "g/s",
+    "quelle": "Allgemeiner Richtwert für 1,0 bis 2,0 l Hubraum im warmen Leerlauf, kein Herstellerwert"
+   },
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "DROSSELKLAPPE",
+    "zustand": "motor_laeuft",
+    "min": 10,
+    "max": 20,
+    "einheit": "%",
+    "quelle": "Typischer Bereich aus wissen.json (warmer Leerlauf), kein Herstellerwert; gilt nur ohne Gas"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Luftmasse im warmen Leerlauf",
+    "art": "auto",
+    "signal": "LUFTMASSE",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Signal zu klein: Unterbrechung oder Kurzschluss nach Masse, Masse oder Versorgung des Luftmassenmessers prüfen",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Signal zu groß: Unterbrechung oder Kurzschluss nach Masse oder Sensor defekt",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Sichtprüfung Stecker, Kontakte und Leitung zum Sensor",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe",
+    "minuten": 5,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Korrosion, lockerer Stecker oder beschädigte Leitung gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Nichts sichtbar: Versorgung und Masse am Stecker mit dem Multimeter messen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0171",
+   "P0101"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0103": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "luftmassenmesser"
+  ],
+  "signale": [
+   {
+    "signal": "LUFTMASSE",
+    "zustand": "motor_laeuft",
+    "min": 2.0,
+    "max": 8.0,
+    "einheit": "g/s",
+    "quelle": "Allgemeiner Richtwert für 1,0 bis 2,0 l Hubraum im warmen Leerlauf, kein Herstellerwert"
+   },
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "DROSSELKLAPPE",
+    "zustand": "motor_laeuft",
+    "min": 10,
+    "max": 20,
+    "einheit": "%",
+    "quelle": "Typischer Bereich aus wissen.json (warmer Leerlauf), kein Herstellerwert; gilt nur ohne Gas"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Luftmasse im warmen Leerlauf",
+    "art": "auto",
+    "signal": "LUFTMASSE",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Signal zu klein: Kurzschluss nach Plus, Masse oder Versorgung des Luftmassenmessers prüfen",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Signal zu groß: Kurzschluss nach Plus oder Sensor defekt",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Sichtprüfung Stecker, Kontakte und Leitung zum Sensor",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe",
+    "minuten": 5,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Korrosion, lockerer Stecker oder beschädigte Leitung gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Nichts sichtbar: Versorgung und Masse am Stecker mit dem Multimeter messen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0171",
+   "P0101"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0110": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "luftmassenmesser"
+  ],
+  "signale": [
+   {
+    "signal": "ANSAUGLUFT",
+    "zustand": "egal",
+    "min": -30,
+    "max": 80,
+    "einheit": "°C",
+    "quelle": "Plausibilitätsbereich aus allgemeinem Werkstattwissen: Umgebung plus 5 bis 30 °C (wissen.json); −40 °C ist der übliche Ersatzwert bei Unterbrechung"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Ansauglufttemperatur mit Umgebung vergleichen",
+    "art": "auto",
+    "signal": "ANSAUGLUFT",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Wert sehr kalt (oft −40 °C): Unterbrechung im Sensorkreis",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Wert unplausibel heiß: Kurzschluss im Sensorkreis",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Wert plausibel: Fehler sporadisch, Stecker am Luftmassenmesser prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Zündung einschalten und Live-Werte lesen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Sichtprüfung Stecker, Kontakte und Leitung zum Sensor (Temperaturfühler sitzt meist im Luftmassenmesser)",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe",
+    "minuten": 5,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Schaden am Stecker oder an der Leitung gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Nichts sichtbar: Widerstand des Fühlers messen und mit der Temperatur vergleichen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0113"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0113": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "luftmassenmesser"
+  ],
+  "signale": [
+   {
+    "signal": "ANSAUGLUFT",
+    "zustand": "egal",
+    "min": -30,
+    "max": 80,
+    "einheit": "°C",
+    "quelle": "Plausibilitätsbereich aus allgemeinem Werkstattwissen: Umgebung plus 5 bis 30 °C (wissen.json); −40 °C ist der übliche Ersatzwert bei Unterbrechung"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Ansauglufttemperatur mit Umgebung vergleichen",
+    "art": "auto",
+    "signal": "ANSAUGLUFT",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Wert sehr kalt (oft −40 °C): Unterbrechung im Sensorkreis",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Wert unplausibel heiß: Kurzschluss im Sensorkreis",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Wert plausibel: Fehler sporadisch, Stecker am Luftmassenmesser prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Zündung einschalten und Live-Werte lesen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Sichtprüfung Stecker, Kontakte und Leitung zum Sensor (Temperaturfühler sitzt meist im Luftmassenmesser)",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe",
+    "minuten": 5,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Schaden am Stecker oder an der Leitung gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Nichts sichtbar: Widerstand des Fühlers messen und mit der Temperatur vergleichen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0110"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0115": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "kuehlmittelsensor"
+  ],
+  "signale": [
+   {
+    "signal": "KUEHLMITTEL",
+    "zustand": "motor_laeuft",
+    "min": 80,
+    "max": 105,
+    "einheit": "°C",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "DREHZAHL",
+    "zustand": "motor_laeuft",
+    "min": 600,
+    "max": 950,
+    "einheit": "1/min",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Kühlmitteltemperatur bei warmem Motor",
+    "art": "auto",
+    "signal": "KUEHLMITTEL",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Zu kalt für warmen Motor: Sensor, Leitung oder Thermostat öffnet zu früh",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Zu heiß oder unplausibel: Sensorkreis gestört oder echte Überhitzung, Kühlsystem prüfen",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Kühlmittelstand und Stecker am Temperatursensor prüfen",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe",
+    "minuten": 5,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Zu wenig Kühlmittel oder Steckerschaden gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "In Ordnung: Sensorwiderstand messen, Thermostat prüfen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0128"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0117": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "kuehlmittelsensor"
+  ],
+  "signale": [
+   {
+    "signal": "KUEHLMITTEL",
+    "zustand": "motor_laeuft",
+    "min": 80,
+    "max": 105,
+    "einheit": "°C",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "DREHZAHL",
+    "zustand": "motor_laeuft",
+    "min": 600,
+    "max": 950,
+    "einheit": "1/min",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Kühlmitteltemperatur bei warmem Motor",
+    "art": "auto",
+    "signal": "KUEHLMITTEL",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Wert passt nicht zu einem Kurzschluss nach Masse: Fehler sporadisch",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Unplausibel hoher Wert: Kurzschluss nach Masse im Sensorkreis",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Kühlmittelstand und Stecker am Temperatursensor prüfen",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe",
+    "minuten": 5,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Zu wenig Kühlmittel oder Steckerschaden gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "In Ordnung: Sensorwiderstand messen, Thermostat prüfen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0128"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0118": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "kuehlmittelsensor"
+  ],
+  "signale": [
+   {
+    "signal": "KUEHLMITTEL",
+    "zustand": "motor_laeuft",
+    "min": 80,
+    "max": 105,
+    "einheit": "°C",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "DREHZAHL",
+    "zustand": "motor_laeuft",
+    "min": 600,
+    "max": 950,
+    "einheit": "1/min",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Kühlmitteltemperatur bei warmem Motor",
+    "art": "auto",
+    "signal": "KUEHLMITTEL",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Unplausibel niedriger Wert (oft −40 °C): Unterbrechung im Sensorkreis",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Hoher Wert: echte Überhitzung ausschließen, dann Sensor prüfen",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Kühlmittelstand und Stecker am Temperatursensor prüfen",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe",
+    "minuten": 5,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Zu wenig Kühlmittel oder Steckerschaden gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "In Ordnung: Sensorwiderstand messen, Thermostat prüfen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0128"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0120": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "drosselklappe"
+  ],
+  "signale": [
+   {
+    "signal": "DROSSELKLAPPE",
+    "zustand": "motor_laeuft",
+    "min": 10,
+    "max": 20,
+    "einheit": "%",
+    "quelle": "Typischer Bereich aus wissen.json (warmer Leerlauf), kein Herstellerwert; gilt nur ohne Gas"
+   },
+   {
+    "signal": "DREHZAHL",
+    "zustand": "motor_laeuft",
+    "min": 600,
+    "max": 950,
+    "einheit": "1/min",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Drosselklappenstellung ohne Gas",
+    "art": "auto",
+    "signal": "DROSSELKLAPPE",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Stellung zu klein: Stromkreis des Stellungsgebers gestört",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Stellung zu groß ohne Gas: Stromkreis des Stellungsgebers gestört oder Klappe verschmutzt",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Drosselklappe auf Verschmutzung und Stecker prüfen",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe, Reiniger",
+    "minuten": 15,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Starke Ablagerungen oder Steckerschaden gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Sauber und fest: Signalspannung am Potentiometer messen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0505"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0121": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "drosselklappe"
+  ],
+  "signale": [
+   {
+    "signal": "DROSSELKLAPPE",
+    "zustand": "motor_laeuft",
+    "min": 10,
+    "max": 20,
+    "einheit": "%",
+    "quelle": "Typischer Bereich aus wissen.json (warmer Leerlauf), kein Herstellerwert; gilt nur ohne Gas"
+   },
+   {
+    "signal": "DREHZAHL",
+    "zustand": "motor_laeuft",
+    "min": 600,
+    "max": 950,
+    "einheit": "1/min",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Drosselklappenstellung ohne Gas",
+    "art": "auto",
+    "signal": "DROSSELKLAPPE",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Stellung zu klein: Signal passt nicht zu Last und Luftmasse",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Stellung zu groß ohne Gas: Signal passt nicht zu Last und Luftmasse oder Klappe verschmutzt",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Drosselklappe auf Verschmutzung und Stecker prüfen",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe, Reiniger",
+    "minuten": 15,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Starke Ablagerungen oder Steckerschaden gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Sauber und fest: Signalspannung am Potentiometer messen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0505"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0122": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "drosselklappe"
+  ],
+  "signale": [
+   {
+    "signal": "DROSSELKLAPPE",
+    "zustand": "motor_laeuft",
+    "min": 10,
+    "max": 20,
+    "einheit": "%",
+    "quelle": "Typischer Bereich aus wissen.json (warmer Leerlauf), kein Herstellerwert; gilt nur ohne Gas"
+   },
+   {
+    "signal": "DREHZAHL",
+    "zustand": "motor_laeuft",
+    "min": 600,
+    "max": 950,
+    "einheit": "1/min",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Drosselklappenstellung ohne Gas",
+    "art": "auto",
+    "signal": "DROSSELKLAPPE",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Stellung zu klein: Kurzschluss nach Masse oder Unterbrechung",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Stellung zu groß ohne Gas: Kurzschluss nach Masse oder Unterbrechung oder Klappe verschmutzt",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Wert jetzt unauffällig: Fehler tritt sporadisch auf, Stecker und Leitung unter Bewegung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Drosselklappe auf Verschmutzung und Stecker prüfen",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe, Reiniger",
+    "minuten": 15,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Starke Ablagerungen oder Steckerschaden gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Sauber und fest: Signalspannung am Potentiometer messen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0505"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0130": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "lambda_vor_kat"
+  ],
+  "signale": [
+   {
+    "signal": "TRIM_KURZ_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "LAMBDA_SOLL",
+    "zustand": "motor_laeuft",
+    "min": 0.98,
+    "max": 1.02,
+    "einheit": "λ",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Kurzzeit-Gemischanpassung im warmen Leerlauf",
+    "art": "auto",
+    "signal": "TRIM_KURZ_B1",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Regelung stark negativ: Sonde meldet fett oder Signal gestört",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Regelung stark positiv: Sonde meldet mager, Falschluft vor der Sonde möglich",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Regelung pendelt normal: Sonde arbeitet jetzt, Heizung und Stecker prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Stecker und Leitung der Lambdasonde vor Kat prüfen, Abgasanlage auf Undichtigkeit",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe",
+    "minuten": 10,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Beschädigte Leitung, Steckerschaden oder Abgasleck vor der Sonde gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Nichts sichtbar: Sondensignal mit Oszilloskop prüfen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0171",
+   "P0172"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0131": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "lambda_vor_kat"
+  ],
+  "signale": [
+   {
+    "signal": "TRIM_KURZ_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "LAMBDA_SOLL",
+    "zustand": "motor_laeuft",
+    "min": 0.98,
+    "max": 1.02,
+    "einheit": "λ",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Kurzzeit-Gemischanpassung im warmen Leerlauf",
+    "art": "auto",
+    "signal": "TRIM_KURZ_B1",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Regelung negativ trotz niedriger Sondenspannung: Signal unplausibel, Leitung prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Regelung stark positiv: Sonde meldet dauerhaft mager (niedrige Spannung)",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Regelung pendelt normal: Sonde arbeitet jetzt, Heizung und Stecker prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Stecker und Leitung der Lambdasonde vor Kat prüfen, Abgasanlage auf Undichtigkeit",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe",
+    "minuten": 10,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Beschädigte Leitung, Steckerschaden oder Abgasleck vor der Sonde gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Nichts sichtbar: Sondensignal mit Oszilloskop prüfen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0171",
+   "P0172"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0133": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "lambda_vor_kat"
+  ],
+  "signale": [
+   {
+    "signal": "TRIM_KURZ_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "LAMBDA_SOLL",
+    "zustand": "motor_laeuft",
+    "min": 0.98,
+    "max": 1.02,
+    "einheit": "λ",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Kurzzeit-Gemischanpassung im warmen Leerlauf",
+    "art": "auto",
+    "signal": "TRIM_KURZ_B1",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Regelung weit außerhalb: träge Sonde regelt nach, Sonde gealtert",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Regelung weit außerhalb: träge Sonde regelt nach, Sonde gealtert",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Regelung pendelt normal: Sonde arbeitet jetzt, Heizung und Stecker prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Stecker und Leitung der Lambdasonde vor Kat prüfen, Abgasanlage auf Undichtigkeit",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe",
+    "minuten": 10,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Beschädigte Leitung, Steckerschaden oder Abgasleck vor der Sonde gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Nichts sichtbar: Sondensignal mit Oszilloskop prüfen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0171",
+   "P0172"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0135": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "lambda_vor_kat"
+  ],
+  "signale": [
+   {
+    "signal": "TRIM_KURZ_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "SPANNUNG",
+    "zustand": "motor_laeuft",
+    "min": 13.2,
+    "max": 14.8,
+    "einheit": "V",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Bordnetzspannung bei laufendem Motor (Sondenheizung braucht Spannung)",
+    "art": "auto",
+    "signal": "SPANNUNG",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Bordnetzspannung zu niedrig: Ladung prüfen, dann Heizkreis",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Bordnetzspannung zu hoch: Regler prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Spannung in Ordnung: Heizkreis der Sonde (Sicherung, Widerstand) prüfen",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Sicherung und Widerstand der Sondenheizung messen",
+    "art": "manuell",
+    "werkzeug": "Multimeter",
+    "minuten": 10,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Sicherung defekt oder Heizwiderstand unterbrochen",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Heizung in Ordnung: Leitung zum Steuergerät prüfen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0130"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0171": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "luftmassenmesser",
+   "lambda_vor_kat"
+  ],
+  "signale": [
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "LUFTMASSE",
+    "zustand": "motor_laeuft",
+    "min": 2.0,
+    "max": 8.0,
+    "einheit": "g/s",
+    "quelle": "Allgemeiner Richtwert für 1,0 bis 2,0 l Hubraum im warmen Leerlauf, kein Herstellerwert"
+   },
+   {
+    "signal": "KUEHLMITTEL",
+    "zustand": "motor_laeuft",
+    "min": 80,
+    "max": 105,
+    "einheit": "°C",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Langzeit-Gemischanpassung Bank 1 im warmen Leerlauf",
+    "art": "auto",
+    "signal": "TRIM_LANG_B1",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Stark negativ: Gemisch wird abgemagert, passt zu zu fett",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Stark positiv: Falschluft, zu wenig Kraftstoff oder Luftmassenmesser misst zu wenig",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Jetzt im Bereich: Fehler unter Last oder sporadisch, Probefahrt mit Aufzeichnung",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Luftmasse im warmen Leerlauf",
+    "art": "auto",
+    "signal": "LUFTMASSE",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Luftmasse zu klein: Luftmassenmesser misst zu wenig oder Falschluft hinter dem Sensor",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Luftmasse zu groß: Sensor misst zu viel",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Luftmasse plausibel: Ursache eher Kraftstoffseite oder Falschluft, mager",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m3",
+    "titel": "Rauchtest oder Sichtprüfung auf Falschluft (Schläuche, Dichtungen, Entlüftung)",
+    "art": "manuell",
+    "werkzeug": "Rauchtester oder Bremsenreiniger",
+    "minuten": 20,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Undichtigkeit gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Dicht: Kraftstoffdruck und Einspritzung prüfen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0101",
+   "P0300"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0172": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "luftmassenmesser",
+   "lambda_vor_kat"
+  ],
+  "signale": [
+   {
+    "signal": "TRIM_LANG_B1",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "LUFTMASSE",
+    "zustand": "motor_laeuft",
+    "min": 2.0,
+    "max": 8.0,
+    "einheit": "g/s",
+    "quelle": "Allgemeiner Richtwert für 1,0 bis 2,0 l Hubraum im warmen Leerlauf, kein Herstellerwert"
+   },
+   {
+    "signal": "KUEHLMITTEL",
+    "zustand": "motor_laeuft",
+    "min": 80,
+    "max": 105,
+    "einheit": "°C",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Langzeit-Gemischanpassung Bank 1 im warmen Leerlauf",
+    "art": "auto",
+    "signal": "TRIM_LANG_B1",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Stark negativ: Gemisch zu fett, Einspritzung oder Kraftstoffdruck zu hoch, Aktivkohlefilter-Ventil",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Stark positiv: passt nicht zu zu fett, Lambdasonde prüfen",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Jetzt im Bereich: Fehler unter Last oder sporadisch, Probefahrt mit Aufzeichnung",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Luftmasse im warmen Leerlauf",
+    "art": "auto",
+    "signal": "LUFTMASSE",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Luftmasse zu klein: Luftmassenmesser misst zu wenig oder Falschluft hinter dem Sensor",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Luftmasse zu groß: Sensor misst zu viel",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Luftmasse plausibel: Ursache eher Kraftstoffseite oder Falschluft, fett",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m3",
+    "titel": "Rauchtest oder Sichtprüfung auf Falschluft (Schläuche, Dichtungen, Entlüftung)",
+    "art": "manuell",
+    "werkzeug": "Rauchtester oder Bremsenreiniger",
+    "minuten": 20,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Undichtigkeit gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Dicht: Kraftstoffdruck und Einspritzung prüfen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0101",
+   "P0300"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0174": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "luftmassenmesser",
+   "lambda_vor_kat"
+  ],
+  "signale": [
+   {
+    "signal": "TRIM_LANG_B2",
+    "zustand": "motor_laeuft",
+    "min": -10,
+    "max": 10,
+    "einheit": "%",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "LUFTMASSE",
+    "zustand": "motor_laeuft",
+    "min": 2.0,
+    "max": 8.0,
+    "einheit": "g/s",
+    "quelle": "Allgemeiner Richtwert für 1,0 bis 2,0 l Hubraum im warmen Leerlauf, kein Herstellerwert"
+   },
+   {
+    "signal": "KUEHLMITTEL",
+    "zustand": "motor_laeuft",
+    "min": 80,
+    "max": 105,
+    "einheit": "°C",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Langzeit-Gemischanpassung Bank 2 im warmen Leerlauf",
+    "art": "auto",
+    "signal": "TRIM_LANG_B2",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Stark negativ: Gemisch wird abgemagert, passt zu zu fett",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Stark positiv: Falschluft, zu wenig Kraftstoff oder Luftmassenmesser misst zu wenig",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Jetzt im Bereich: Fehler unter Last oder sporadisch, Probefahrt mit Aufzeichnung",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Luftmasse im warmen Leerlauf",
+    "art": "auto",
+    "signal": "LUFTMASSE",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Luftmasse zu klein: Luftmassenmesser misst zu wenig oder Falschluft hinter dem Sensor",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Luftmasse zu groß: Sensor misst zu viel",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Luftmasse plausibel: Ursache eher Kraftstoffseite oder Falschluft, mager",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m3",
+    "titel": "Rauchtest oder Sichtprüfung auf Falschluft (Schläuche, Dichtungen, Entlüftung)",
+    "art": "manuell",
+    "werkzeug": "Rauchtester oder Bremsenreiniger",
+    "minuten": 20,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Undichtigkeit gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Dicht: Kraftstoffdruck und Einspritzung prüfen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0101",
+   "P0300"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ }
+}

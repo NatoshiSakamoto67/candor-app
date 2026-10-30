@@ -70,3 +70,12 @@ export function verlauf(speicher) {
     },
   };
 }
+
+/* Diagnose-Agent: jede gelesene Quelle als Zeile an der Antwort. Neue Antwort statt Änderung, höchstens MAX_WERKZEUGZEILEN. */
+export const MAX_WERKZEUGZEILEN = 16;
+export function mitWerkzeug(antwort, ev) {
+  const zeile = { name: String(ev.name || ""), titel: String(ev.titel || ev.name || ""), ok: ev.ok !== false, kurz: String(ev.kurz || "") };
+  return { ...antwort, werkzeuge: [...(antwort.werkzeuge || []), zeile].slice(-MAX_WERKZEUGZEILEN) };
+}
+/* Was an den Server geht: nur Rolle und Text, Werkzeugzeilen und Anhänge bleiben auf dem Gerät. */
+export const zumSenden = (liste, n) => liste.slice(-n).map((m) => ({ rolle: m.rolle, text: m.text || (m.rolle === "nutzer" ? "" : "…") }));

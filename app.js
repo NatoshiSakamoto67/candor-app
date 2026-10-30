@@ -26,6 +26,12 @@ import { initPfade } from "./modules/pfade.js";
 import { initAgent } from "./modules/chat.js";
 import { initReport } from "./modules/report.js";
 import { initSearch } from "./modules/search.js";
+import { initService } from "./modules/service.js";
+import { initNavigation } from "./modules/navigation.js";
+import { initBordnetz } from "./modules/bordnetz.js";
+import { initWerkbank } from "./modules/werkbank.js";
+import { ladeMandant, kundenfassung, wendeMarkeAn } from "./modules/mandant.js";
+import { initSeiten, wert } from "./modules/seiten.js";
 
 /* Jeder Bereich hängt am Ereignis "render" (start, vehicle, faults, check, pfade, live, report). */
 function renderAll() {
@@ -53,13 +59,17 @@ function startLive() {
   if (ticking) return;
   ticking = true;
   pollLive();
-  setInterval(() => { if (!document.hidden && state.status) pollLive(); }, 1000);
+  /* Abfrage-Takt und »Live-Werte abfragen« aus den Unterseiten (Fahrzeugbus, Bluetooth-Adapter). */
+  const naechste = () => setTimeout(() => { if (!document.hidden && state.status && wert("live", true)) pollLive(); naechste(); }, wert("takt", 1000));
+  naechste();
 }
 
 async function start() {
+  await ladeMandant();
   const wanted = initialRoute();
   initShell(); initVorgang(); initWerkstatt(); initHandbuch(); initEinstellungen(); initGarage(); initConnect(); initStart(); initWidgets(); initEinfach(); initHistory(); initInfo(); initApproval();
-  initVehicle(); initFaults(); initLive(); initCheck(); initPfade(); initAgent(); initReport(); initSearch();
+  initVehicle(); initFaults(); initLive(); initCheck(); initPfade(); initAgent(); initReport(); initSearch(); initService(); initNavigation(); initBordnetz(); initWerkbank(); initSeiten();
+  wendeMarkeAn();
   on("open-settings", openDisplaySettings);
   on("reload", reload);
   on("reconnect", () => connect());
@@ -67,9 +77,11 @@ async function start() {
   setWissen(await getJson("wissen.json").catch(() => null));
   renderStatus();
   /* Allererster Start: Werkstattdaten (überspringbar), dann Fahrzeug. */
-  if (!setupDone()) { openRoute({ page: "werkstatt" }); return; }
+  if (!setupDone() && !kundenfassung()) { openRoute({ page: "werkstatt" }); return; }
   /* Erster Start ohne Fahrzeug: zuerst anlegen. Sonst ist das zuletzt gewählte Fahrzeug wieder aktiv und wird verbunden. */
   if (!state.fahrzeug) { openRoute(wanted && ["fahrzeuge", "fahrzeug", "history", "werkstatt", "handbuch", "einstellungen"].includes(wanted.page) ? wanted : { page: vehicles().length ? "start" : "fahrzeug" }); return; }
+  /* »Automatisch verbinden« (Unterseite Bluetooth-/WLAN-Adapter): aus heißt, erst auf Tippen verbinden. */
+  if (!wert("autoverbinden", true)) { openRoute({ page: "start" }); return; }
   await connect();
   /* Kam der Aufruf mit einer Adresse (etwa #faults), nach dem Verbinden dorthin. */
   if (state.status && wanted && wanted.page !== "start") openRoute(wanted);

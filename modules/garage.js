@@ -6,6 +6,8 @@ import { state, on, emit, logEvent, resetDiagnosis } from "./state.js";
 import { go, back, openPane, currentRoute } from "./shell.js";
 import { icon3d } from "./icons3d.js";
 import { connect } from "./connect.js";
+import { fahrzeugAusWerkhof } from "./werkhof.js";
+import { kundenfassung } from "./mandant.js";
 import { historyFor } from "./history.js";
 import { formField } from "./formular.js";
 import { checkVehicle, upsertVehicle, removeVehicle, touchVehicle, findVehicle, sortVehicles, searchVehicles, vehicleName, finMatches, KRAFTSTOFFE, BAUARTEN, SORTIERUNG } from "./fahrzeuge.js";
@@ -150,7 +152,7 @@ function renderForm(errors = {}) {
   const count = Object.keys(errors).length;
   $("garage-form").replaceChildren(...[
     first ? h("div", { class: "card welcome" }, h("span", { class: "hero-ic", "aria-hidden": "true" }, icon3d("carplus")),
-      h("div", {}, h("p", { class: "eyebrow" }, "Willkommen · Schritt 2 von 2"), h("h2", { class: "h2" }, "Zuerst das Fahrzeug anlegen"),
+      h("div", {}, h("p", { class: "eyebrow" }, kundenfassung() ? "Willkommen" : "Willkommen · Schritt 2 von 2"), h("h2", { class: "h2" }, "Zuerst das Fahrzeug anlegen"),
         h("p", { class: "p" }, "So wie in der Werkstatt: Jede Diagnose gehört zu einem Fahrzeug. Trag das Nötigste ein, den Rest kannst du später ergänzen. Die Daten bleiben auf diesem Gerät."),
         h("div", { class: "row-actions" }, h("button", { class: "btn sec", type: "button", onclick: tryDemo }, icon("play"), "Mit Beispielfahrzeug ausprobieren"),
           h("span", { class: "sm" }, "legt ein Beispiel an und verbindet mit dem Simulator")))) : null,
@@ -158,7 +160,12 @@ function renderForm(errors = {}) {
       h("div", {}, h("p", { class: "eyebrow" }, "Schneller"), h("h3", { class: "h3" }, "Mit dem Adapter erkennen"),
         h("p", { class: "sm" }, found ? `Erkannt: ${[found.marke, found.modell].filter(Boolean).join(" ")}${found.wmi ? `, Herstellercode ${found.wmi}` : ""}${found.simuliert ? " (Simulator)" : ""}.` : "Adapter einstecken, Zündung an. Das Programm liest Marke und Modell aus und trägt sie ein.")),
       found ? h("button", { class: "btn sec", type: "button", onclick: () => { draft = { ...readForm(), marke: found.marke || readForm().marke, modell: found.modell || readForm().modell }; renderForm(); } }, icon("tick"), "Übernehmen")
-        : h("button", { class: "btn sec", type: "button", onclick: () => { draft = readForm(); connect({ ziel: "fahrzeug", ble: Boolean(state.src && state.src.mode === "direkt") }); } }, icon("gateway"), "Erkennen")),
+        : h("button", { class: "btn sec", type: "button", onclick: () => { draft = readForm(); connect({ ziel: "fahrzeug", ble: Boolean(state.src && state.src.mode === "direkt") }); } }, icon("gateway"), "Erkennen"),
+      !kundenfassung() && !(state.src && state.src.mode !== "server") ? h("button", { class: "btn qt", type: "button", onclick: async () => {
+        const r = await fahrzeugAusWerkhof(readForm().kennzeichen);
+        if (!r.ok) { toast(r.meldung); return; }
+        draft = { ...readForm(), ...Object.fromEntries(Object.entries(r.werte).filter(([, v]) => v)) }; renderForm(); toast("Aus Werkhof übernommen. Bitte prüfen und speichern.");
+      } }, icon("download"), "Aus Werkhof holen") : null),
     count ? h("div", { class: "form-sum t-crit", role: "alert" }, mark("crit"), `${count} Angabe${count === 1 ? "" : "n"} fehlen oder passen nicht. Bitte unten prüfen.`) : null,
     h("form", { class: "card vform", id: "fz-form", novalidate: true, onsubmit: (ev) => { ev.preventDefault(); submit(editing, ev.submitter && ev.submitter.dataset.connect === "1"); } },
       h("datalist", { id: "marken" }, ...MARKEN.map((m) => h("option", { value: m }))),

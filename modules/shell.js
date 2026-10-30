@@ -1,10 +1,12 @@
 /* Gerüst: Seiten wie am Werkstatt-Tester (Startseite mit Kacheln, jede Aufgabe eine eigene Seite, oben Zurück und Start),
    Statusleiste, Anzeige-Einstellungen. Infos öffnen als eigene Seite; Zurück führt an die alte Stelle zurück. */
 import { $, h, icon, mark, glyphId, num, reducedMotion, storageGet, storageSet, cssVar } from "./dom.js";
-import { AKZENTE, DEFAULT_AKZENT, normalizeHex, readableAccent, onAccent, nearCrit } from "./farbe.js";
+import { AKZENTE, DEFAULT_AKZENT, normalizeHex, readableAccent, onAccent, nearCrit, accentFill } from "./farbe.js";
 import { icon3d } from "./icons3d.js";
 import { vehicleLabel } from "./fahrzeuge.js";
 import { KAPITEL } from "./handbuch-inhalt.js";
+import { kundenfassung, MANDANT } from "./mandant.js";
+import { SEITEN_TITEL } from "../kern/einstellungs-baum.js";
 import { state, on, emit, obdList, firstReadiness, totalFaults, pendingFaults } from "./state.js";
 
 export const PAGES = [
@@ -18,8 +20,12 @@ export const PAGES = [
   { id: "car", label: "Steuergeräte", icon: "ecu" },
   { id: "faults", label: "Fehlerspeicher", icon: "faults" },
   { id: "live", label: "Live-Werte", icon: "live" },
-  { id: "check", label: "Prüfen und Service", icon: "check" },
-  { id: "agent", label: "Assistent", icon: "chat" },
+  { id: "check", label: "Prüfungen", icon: "check" },
+  { id: "service", label: "Service und Anlernen", icon: "wrench" },
+  { id: "bordnetz", label: "Bordnetz & Batterie", icon: "battery" },
+  { id: "werkbank", label: "CAN-Werkbank", icon: "ecu" },
+  { id: "seite", label: "Einstellungen", icon: "display" },
+  { id: "agent", label: "KI-Assistent", icon: "chat" },
   { id: "report", label: "Bericht", icon: "report" },
   { id: "history", label: "Verlauf", icon: "clock" },
   { id: "detail", label: "Details", icon: "info" },
@@ -31,7 +37,6 @@ export const CHECK_SUBS = [
   { id: "soll", label: "Ist gegen Soll", icon: "gauge", text: "Messwerte mit Richtwerten vergleichen" },
   { id: "bereitschaft", label: "AU-Bereitschaft", icon: "exhaust", text: "Readiness-Tests vor der Abgasuntersuchung" },
   { id: "freeze", label: "Freeze-Frame", icon: "freeze", text: "Momentaufnahme beim Auftreten eines Fehlers" },
-  { id: "service", label: "Service-Funktionen", icon: "gear", text: "Stellglieder, Grundeinstellungen, Resets" },
   { id: "did", label: "Kennung lesen", icon: "tag", text: "Eigene Werte (DID) an einem Steuergerät lesen" },
   { id: "rmi", label: "Herstellerdokumente", icon: "book", text: "Suche in den lokalen RMI-PDFs" },
 ];
@@ -47,7 +52,7 @@ function parseHash() {
   const tail = decodeURIComponent(rest.join("/"));
   if (page === "info" && tail) return { page: "detail", sub: null, spec: tail };
   if (!PAGES.some((p) => p.id === page) || page === "detail") return null;
-  const sub = page === "check" ? (CHECK_SUBS.some((c) => c.id === tail) ? tail : null) : ["fahrzeug", "handbuch"].includes(page) ? tail || null : null;
+  const sub = page === "check" ? (CHECK_SUBS.some((c) => c.id === tail) ? tail : null) : ["fahrzeug", "handbuch", "service", "seite"].includes(page) ? tail || null : null;
   return { page, sub, spec: null };
 }
 const depth = () => (history.state && history.state.depth) || 0;
@@ -55,6 +60,7 @@ const depth = () => (history.state && history.state.depth) || 0;
 function titleFor(r) {
   if (r.page === "detail") return ($("pane-body").querySelector("h2") || {}).textContent || "Details";
   if (r.page === "check" && r.sub) return CHECK_SUBS.find((c) => c.id === r.sub).label;
+  if (r.page === "seite" && r.sub) return SEITEN_TITEL[r.sub] || "Einstellungen";
   if (r.page === "fahrzeug") return r.sub ? "Fahrzeug bearbeiten" : "Fahrzeug anlegen";
   if (r.page === "handbuch" && r.sub) return `Handbuch · ${(KAPITEL.find((k) => k.id === r.sub) || { titel: "Kapitel" }).titel}`;
   return PAGES.find((p) => p.id === r.page).label;
@@ -75,6 +81,8 @@ function render(r, scrollY = 0) {
     if (changed) { view.classList.remove("view-enter"); void view.offsetWidth; view.classList.add("view-enter"); }
     emit("tab", r.page);
     if (r.page === "check") emit("check-sub", r.sub);
+    if (r.page === "service") emit("service-sub", r.sub);
+    if (r.page === "seite") emit("seite", r.sub);
     if (r.page === "detail" && r.spec && $("pane-body").dataset.spec !== r.spec) emit("open-info", r.spec);
   };
   if (changed && document.startViewTransition && !reducedMotion()) {
@@ -101,7 +109,7 @@ export const showTab = (id, options = {}) => go(id, options);
 /* Zurück: im Verlauf, sonst eine Ebene höher (Unterseite zur Prüfen-Übersicht, alles andere zum Start). */
 export function back() {
   if (depth() > 0) { history.back(); return; }
-  go(route.page === "check" && route.sub ? "check" : "start", { replace: true });
+  go(route.sub && ["check", "service"].includes(route.page) ? route.page : "start", { replace: true });
 }
 
 /* ---------- Detailseite statt Seitenpanel: Infos, Erklärungen, Einstellungen ---------- */
@@ -141,11 +149,11 @@ export function renderStatus() {
     { k: conn, v: state.connLost ? "neu verbinden" : st.protokoll ? st.protokoll.replace(/ \(simuliert\)/, "").split(",")[0] : "", tone: connTone, go: state.connLost || !state.status ? "connect" : null, info: "begriff:simulator", prio: 1 },
     state.scanning ? { k: "Vollscan", v: `${state.scanPct || 0} %`, tone: "running", go: "car", prio: 1 } : null,
     { k: pending ? "Fehler + vorl." : "Fehler", v: pending ? `${stored}+${pending}` : String(stored), tone: stored ? "crit" : pending ? "warn" : "ok", info: "begriff:gespeichert", prio: 1 },
-    { k: "Readiness", v: r ? `${r.tests.length - open}/${r.tests.length}` : "–", tone: r ? (open ? "warn" : "ok") : null, info: "begriff:readiness", prio: 1 },
-    { k: "Bordnetz", v: volt == null ? "–" : `${num(volt, 1)} V`, tone: volt == null ? null : volt < 12.2 || volt > 15 ? "crit" : volt < 13.2 && rpm > 100 ? "warn" : "ok", info: "signal:SPANNUNG", prio: 2 },
-    { k: rpm == null ? "Motor" : rpm > 100 ? "Motor läuft" : "Zündung an", v: rpm == null ? "–" : rpm > 100 ? `${num(rpm, 0)} 1/min` : "Motor aus", tone: null, info: "signal:DREHZAHL", prio: 3 },
+    { id: "readiness", k: "Readiness", v: r ? `${r.tests.length - open}/${r.tests.length}` : "–", tone: r ? (open ? "warn" : "ok") : null, info: "begriff:readiness", prio: 1 },
+    { id: "bordnetz", k: "Bordnetz", v: volt == null ? "–" : `${num(volt, 1)} V`, tone: volt == null ? null : volt < 12.2 || volt > 15 ? "crit" : volt < 13.2 && rpm > 100 ? "warn" : "ok", info: "signal:SPANNUNG", prio: 2 },
+    { id: "motor", k: rpm == null ? "Motor" : rpm > 100 ? "Motor läuft" : "Zündung an", v: rpm == null ? "–" : rpm > 100 ? `${num(rpm, 0)} 1/min` : "Motor aus", tone: null, info: "signal:DREHZAHL", prio: 3 },
     state.recording ? { k: "Aufnahme", v: "läuft", tone: "running", info: "begriff:aufnahme", rec: true, prio: 1 } : null,
-  ].filter(Boolean);
+  ].filter(Boolean).filter((c) => !c.id || (storageGet("kfzdiag-seiten", {}).chips || {})[c.id] !== false);
   /* Nur geänderte Chips tauschen: die Reihe behält ihre Scrollstellung und flackert nicht im Sekundentakt. */
   const box = $("status-chips"), keys = chips.map((c) => JSON.stringify(c));
   if (box.childElementCount !== chips.length) box.replaceChildren(...chips.map((c, i) => Object.assign(statusSegment(c), { _key: keys[i] })));
@@ -192,6 +200,9 @@ function setAccent(root, hex, contrastMode) {
   const accent = readableAccent(hex, cssVar("--surface-1"), contrastMode === "hoch" ? 7 : 4.5) || hex;
   root.style.setProperty("--accent", accent);
   root.style.setProperty("--on-accent", onAccent(accent));
+  const f = accentFill(contrastMode === "hoch" ? accent : hex) || { fill: accent, ink: onAccent(accent) };
+  root.style.setProperty("--accent-fill", f.fill);
+  root.style.setProperty("--on-accent-fill", f.ink);
 }
 export function applyPrefs() {
   const root = document.documentElement, d = resolvedDisplay();
@@ -200,9 +211,12 @@ export function applyPrefs() {
   if (d.contrast === "hoch") root.dataset.contrast = "hoch"; else delete root.dataset.contrast;
   root.dataset.touch = d.touch;
   root.dataset.icons = prefs.icons;
-  setAccent(root, prefs.akzent, d.contrast);
+  setAccent(root, kundenfassung() && MANDANT() ? MANDANT().akzent : prefs.akzent, d.contrast);
   emit("theme");
 }
+/* Für die Unterseiten (seiten.js): Anzeige lesen und einzeln setzen. */
+export const anzeige = () => ({ ...prefs });
+export const setzeAnzeige = (key, value) => setPref(key, value, { rerender: false });
 function setPref(key, value, { rerender = true } = {}) {
   prefs = { ...prefs, [key]: value };
   storageSet("kfzdiag-anzeige", prefs);

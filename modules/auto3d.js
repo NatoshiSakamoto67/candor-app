@@ -2,6 +2,9 @@
    Ansichten: Außen, Technik (Karosserie gläsern), Unten, Oben. Bauteile heißen »bt:<id>« und tragen gruppe und name;
    Fehler einer Gruppe färben die passenden Bauteile. Gezeichnet wird nur, wenn sich etwas ändert (Akku auf dem Handy). */
 
+import { explosionsVersatz } from "../kern/explosion.js";
+import { kabelwege } from "../kern/kabel.js";
+
 export const webglMoeglich = () => {
   try { const c = document.createElement("canvas"); return Boolean(c.getContext("webgl2") || c.getContext("webgl")); } catch (_) { return false; }
 };
@@ -57,12 +60,14 @@ function flakeTextur() {
 function veredeln(m) {
   const name = m.name || "";
   if (name === "lack") {
-    const p = new THREE.MeshPhysicalMaterial({ name, color: m.color, metalness: .55, roughness: .38, clearcoat: 1, clearcoatRoughness: .025,
+    /* Werte nach dem three.js-Autobeispiel (webgl_materials_car): Metallic-Lack unter Klarlack, Flakes als feine Normalen */
+    const p = new THREE.MeshPhysicalMaterial({ name, color: m.color, metalness: .9, roughness: .5, clearcoat: 1, clearcoatRoughness: .03,
       normalMap: flakeTextur(), normalScale: new THREE.Vector2(.18, .18), envMapIntensity: 1.15 });
     m.dispose(); return p;
   }
   if (name === "glas") {
-    const p = new THREE.MeshPhysicalMaterial({ name, color: 0x0a0f14, metalness: 0, roughness: .02, clearcoat: 1, clearcoatRoughness: 0, transparent: true, opacity: .62, envMapIntensity: 1.6 });
+    /* Dünnes, spiegelndes Glas mit wenig Deckkraft statt transmission: kein Zusatzdurchgang auf dem Handy (Recherche P3) */
+    const p = new THREE.MeshPhysicalMaterial({ name, color: 0x111820, metalness: 0, roughness: 0, ior: 1.5, transparent: true, opacity: .3, envMapIntensity: 1.6, depthWrite: false });
     m.dispose(); return p;
   }
   if (name === "chrom" || name === "linse") Object.assign(m, { envMapIntensity: 1.6 });
@@ -75,9 +80,9 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  /* Neutrales Tonemapping (Khronos PBR Neutral): Lackfarben bleiben farbecht wie im Konfigurator */
-  renderer.toneMapping = THREE.NeutralToneMapping;
-  renderer.toneMappingExposure = 1.0;
+  /* ACES-Tonemapping mit Belichtung 0,85 wie im three.js-Autobeispiel: Klarlack-Glanz bleibt, Lichter laufen nicht aus */
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = .85;
   const scene = new THREE.Scene();
   const pmrem = new THREE.PMREMGenerator(renderer);
   const room = new addons.RoomEnvironment();
@@ -117,12 +122,17 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
     o.material = veredeln(o.material.clone());
     if (owner) {
       const id = owner.userData.id;
-      if (!bauteile.has(id)) bauteile.set(id, { id, name: owner.userData.name || id, gruppe: owner.userData.gruppe || "", meshes: [], knoten: owner });
+      if (!bauteile.has(id)) bauteile.set(id, { id, name: owner.userData.name || id, gruppe: owner.userData.gruppe || "", system: owner.userData.system || "", meshes: [], knoten: owner });
       bauteile.get(id).meshes.push(o);
       o.userData.bt = id;
     } else huelle.push(o);  // alles ohne Bauteil-Namen ist Hülle (Karosserie, Kabine, Aufbau, Verkleidung)
   });
   for (const o of huelle) o.userData.orig = { opacity: o.material.opacity, transparent: o.material.transparent, depthWrite: o.material.depthWrite };
+  /* Für die Explosionsansicht: Ausgangslage und Mitte jedes Bauteils (in Fahrzeugkoordinaten) */
+  for (const b of bauteile.values()) {
+    b.pos0 = b.knoten.position.clone();
+    b.mitte = new THREE.Box3().setFromObject(b.knoten).getCenter(new THREE.Vector3());
+  }
   const alleMeshes = [];
   auto.traverse((o) => { if (o.isMesh) { o.userData.mat0 = o.material; alleMeshes.push(o); } });
   /* Fehlerfokus: alles Übrige wird gläsern mit feinem Umriss, das Umfeld (etwa der Motor) halb sichtbar, das Bauteil glüht rot. */
@@ -176,11 +186,14 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
   };
   function ansicht(name) {
     if (modus === "fehler") {
-      for (const o of alleMeshes) { o.material = o.userData.mat0; if (o.userData.kante) o.userData.kante.visible = false; }
+      for (const o of alleMeshes) { o.material = o.userData.mat0; o.material.depthTest = true; o.renderOrder = 0; if (o.userData.kante) o.userData.kante.visible = false; }
       fokusIds = null;
       zustand(letzteToene);
     }
     modus = name;
+    if (name !== "technik" && name !== "unten" && explosionAnteil) explosion(0);
+    if (name !== "technik" && name !== "unten" && kabelAn) { kabelAn = false; kabelBauen(); }
+    systemAnwenden();
     zustand(letzteToene);
     const technik = name === "technik" || name === "unten";
     for (const o of huelle) {
@@ -198,6 +211,68 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
     anstossen();
   }
 
+  /* Explosionsansicht: Bauteile gleiten vom Mittelpunkt weg (0 bis 1). Nur in Technik und Unten; Außen und Fehlerfokus
+     setzen sie zurück, weil die Teile sonst in der Hülle stecken. */
+  let explosionAnteil = 0;
+  function explosion(anteil) {
+    explosionAnteil = Math.max(0, Math.min(1, Number(anteil) || 0));
+    for (const b of bauteile.values()) {
+      const v = explosionsVersatz(b.mitte, mitte, groesse.x, explosionAnteil);
+      b.knoten.position.set(b.pos0.x + v.x, b.pos0.y + v.y, b.pos0.z + v.z);
+    }
+    if (kabelAn) { for (const b of bauteile.values()) b.knoten.updateMatrixWorld(true); kabelBauen(); }
+    anstossen();
+    return explosionAnteil;
+  }
+
+  /* Kabelwege: schematische Leitungen Steuergerät → Sensor über einen Kabelbaum in der Mitte, Steckerkugeln an den Enden.
+     Werden aus den aktuellen Bauteilmitten gebaut, also auch nach einer Explosion neu. */
+  let kabelGruppe = null, kabelAn = false;
+  const kabelBauen = () => {
+    if (kabelGruppe) { scene.remove(kabelGruppe); kabelGruppe.traverse((o) => { o.geometry?.dispose?.(); o.material?.dispose?.(); }); kabelGruppe = null; }
+    if (!kabelAn) return;
+    kabelGruppe = new THREE.Group();
+    const lage = new Map();
+    for (const b of bauteile.values()) lage.set(b.id, { mitte: new THREE.Box3().setFromObject(b.knoten).getCenter(new THREE.Vector3()) });
+    const hoehe = huellbox.min.y + groesse.y * .24;
+    const stecker = new THREE.SphereGeometry(.018 * k, 10, 8);
+    for (const w of kabelwege(lage, hoehe, mitte.z)) {
+      const mat = new THREE.LineBasicMaterial({ color: w.farbe, transparent: true, opacity: .9, depthTest: false });
+      const geo = new THREE.BufferGeometry().setFromPoints(w.punkte.map((p) => new THREE.Vector3(p.x, p.y, p.z)));
+      const linie = new THREE.Line(geo, mat); linie.renderOrder = 3; linie.raycast = () => {}; kabelGruppe.add(linie);
+      for (const p of [w.punkte[0], w.punkte.at(-1)]) {
+        const s = new THREE.Mesh(stecker, new THREE.MeshBasicMaterial({ color: w.farbe, depthTest: false })); s.position.set(p.x, p.y, p.z); s.renderOrder = 3; s.raycast = () => {}; kabelGruppe.add(s);
+      }
+    }
+    scene.add(kabelGruppe);
+  };
+  function kabel(anzeigen) {
+    kabelAn = anzeigen === undefined ? !kabelAn : Boolean(anzeigen);
+    if (kabelAn && modus !== "technik" && modus !== "unten") ansicht("technik");
+    kabelBauen();
+    anstossen();
+    return kabelAn;
+  }
+
+  /* Systemebene: nur Teile eines Systems bleiben sichtbar, alle anderen werden gläsern. Gilt in Technik und Unten;
+     null hebt die Wahl auf. Fehlerfokus geht vor. */
+  let systemWahl = null;
+  const systemAnwenden = () => {
+    if (modus === "fehler") return;
+    for (const b of bauteile.values()) {
+      const drin = !systemWahl || b.system === systemWahl;
+      for (const m of b.meshes) { m.material = drin ? m.userData.mat0 : geist; m.renderOrder = drin ? 1 : 0; }
+    }
+  };
+  function system(name) {
+    systemWahl = name || null;
+    if (modus === "fehler") return systemWahl;
+    if (systemWahl && modus !== "technik" && modus !== "unten") { ansicht("technik"); return systemWahl; }  // ansicht() wendet die Wahl an
+    systemAnwenden();
+    zustand(letzteToene);
+    return systemWahl;
+  }
+
   /* Zustand: je Bauteil ein Ton; Fehler pulsieren leicht (bei reduzierter Bewegung nur Farbe) */
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
   let letzteToene = {}, fokusIds = null;
@@ -209,6 +284,7 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
     for (const [id, b] of bauteile) {
       const ton = aussen ? null : toene[id];
       for (const m of b.meshes) {
+        if (m.material === geist) continue;  // ausgeblendete Systemebene bekommt keine Zustandsfarbe
         m.material.emissive = new THREE.Color(ton ? TON[ton] : 0x000000);
         m.material.emissiveIntensity = ton ? .55 : 0;
       }
@@ -240,13 +316,16 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
     kantenBauen();
     const ziel = new Set(ids.filter((id) => bauteile.has(id))), ctx = new Set(kontext.filter((id) => bauteile.has(id) && !ziel.has(id)));
     if (!ziel.size) return false;
+    if (explosionAnteil) explosion(0);
     modus = "fehler"; fokusIds = [...ziel];
     puls = new Map();
     for (const o of alleMeshes) {
       const bt = o.userData.bt, k = o.userData.kante;
       if (bt && ziel.has(bt)) {
         const m = o.userData.mat0; o.material = m;
-        Object.assign(m, { transparent: false, opacity: 1, depthWrite: true }); m.emissive = new THREE.Color(0xff2a2a); m.emissiveIntensity = .9; m.needsUpdate = true;
+        /* Fehlerteil obenauf: ohne Tiefentest und mit hoher Zeichenreihenfolge bleibt es durch Motor und Hülle sichtbar */
+        Object.assign(m, { transparent: false, opacity: 1, depthWrite: true, depthTest: false }); m.emissive = new THREE.Color(0xff2a2a); m.emissiveIntensity = .9; m.needsUpdate = true;
+        o.renderOrder = 10;
         if (k) k.visible = false;
       } else if (bt && ctx.has(bt)) { o.material = umfeld; if (k) k.visible = true; }
       else { o.material = geist; if (k) k.visible = true; }
@@ -299,12 +378,13 @@ export async function erstelle3d(box, { bauart = "limousine", onPick } = {}) {
   groesseAnpassen();
   ansicht("aussen");
   return {
-    bauteile, ansicht, zustand, lage, fokus, fokusFehler, get fokusIds() { return fokusIds; }, get modus() { return modus; },
+    bauteile, ansicht, zustand, lage, fokus, fokusFehler, system, explosion, kabel, get kabelAn() { return kabelAn; }, get explosionAnteil() { return explosionAnteil; }, get systemWahl() { return systemWahl; }, get fokusIds() { return fokusIds; }, get modus() { return modus; },
     zeichne: anstossen,
     lackfarbe(hex) { for (const o of huelle) if (o.material.name === "lack") { o.material.color.set(hex); } anstossen(); },
     entsorgen() {
       weg = true; ro.disconnect(); sicht.disconnect(); cancelAnimationFrame(laeuft); steuerung.dispose();
       scene.traverse((o) => { o.geometry?.dispose?.(); for (const m of [].concat(o.material || [])) { for (const v of Object.values(m)) if (v && v.isTexture) v.dispose(); m.dispose?.(); } });
+      kabelAn = false; kabelBauen();
       scene.environment?.dispose?.(); room.dispose?.(); pmrem.dispose(); renderer.dispose(); renderer.forceContextLoss(); box.replaceChildren();
     },
   };

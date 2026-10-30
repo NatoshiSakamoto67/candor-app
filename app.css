@@ -299,3 +299,23 @@ dialog::backdrop { background: rgba(0, 0, 0, .45); }
 }
 /* Zustandschips auf dem Handy wischbar: weicher Rand rechts zeigt, dass es weitergeht, statt hart abgeschnitten */
 @media (max-width: 599px) { .status-chips { -webkit-mask-image: linear-gradient(to right, #000 82%, transparent); mask-image: linear-gradient(to right, #000 82%, transparent); padding-right: 24px; } }
+
+/* Diagnosepfad: Kette als senkrechte Linie mit Punkten, Deutung mit Sicherheitsstufe (.lvl) */
+.diagnosepfad { gap: 10px; }
+.dp-kette { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.dp-schritt { position: relative; padding-left: 18px; min-width: 0; }
+.dp-schritt::before { content: ""; position: absolute; left: 4px; top: 6px; bottom: -14px; width: 2px; background: var(--line); }
+.dp-schritt:last-child::before { bottom: 0; }
+.dp-schritt::after { content: ""; position: absolute; left: 0; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface-1); box-shadow: inset 0 0 0 2px var(--line-strong); }
+.dp-deutung::after { box-shadow: inset 0 0 0 2px var(--accent); }
+.dp-text { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; overflow-wrap: anywhere; }
+.dp-werte { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.dp-werte li { display: flex; align-items: flex-start; gap: 6px; overflow-wrap: anywhere; }
+.dp-hinweis, .dp-quellen { color: var(--text-muted); }
+
+/* CAN-Werkbank: Eingabezeile für den Abgleich, Gruppenkopf je Steuergerät */
+.wb-form { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-end; }
+.wb-feld { display: grid; gap: 2px; }
+.wb-feld .inp { width: auto; min-width: 0; }
+.wb-gruppe .li-t { font-weight: 600; color: var(--text-muted); }
+.wb-laeuft { display: flex; align-items: center; gap: 6px; margin: 0 4px; }

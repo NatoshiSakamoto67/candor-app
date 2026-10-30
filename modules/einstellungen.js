@@ -4,6 +4,7 @@ import { $, h, icon, mark, toast, storageGet } from "./dom.js";
 import { state, on, emit, logEvent } from "./state.js";
 import { go, openDisplaySettings } from "./shell.js";
 import { icon3d } from "./icons3d.js";
+import { werkhofSektion } from "./werkhof.js";
 
 const ANBIETER = [["aus", "Aus"], ["anthropic", "Claude (Anthropic)"], ["ollama", "Ollama, lokal"]];
 let data = null, choice = null, errors = {}, busy = false, testResult = null;
@@ -41,6 +42,7 @@ function kiSection() {
         h("div", { class: `fld${errors.schluessel ? " bad" : ""}` }, h("label", { for: "set-key" }, "API-Schlüssel"),
           h("input", { class: "inp mono", id: "set-key", type: "password", autocomplete: "off", spellcheck: "false", placeholder: key.gesetzt ? "leer = gespeicherten behalten" : "sk-ant-…", "aria-invalid": errors.schluessel ? "true" : null, "aria-describedby": "set-key-state" }),
           errors.schluessel ? fieldErr("schluessel") : h("span", { class: "fld-hint", id: "set-key-state" }, key.gesetzt ? `Gespeichert: ${key.maske}${key.quelle === "umgebung" ? " (aus der Umgebungsvariable)" : ""}` : "Noch kein Schlüssel gespeichert."))),
+      budgetFeld(),
       h("p", { class: "sm" }, "Den Schlüssel erstellst du in der Console von Anthropic unter »API Keys«. Er wird nur auf diesem Rechner in der Datei ki.key gespeichert (nur für dich lesbar) und nie an den Browser zurückgegeben. Die KI bekommt Messwerte und Fehlercodes, nie die FIN. Mit Kundendaten nur mit Auftragsverarbeitungsvertrag."),
       key.quelle === "datei" ? h("button", { class: "btn qt small", type: "button", onclick: () => save({ schluessel_loeschen: true }) }, icon("delete"), "Gespeicherten Schlüssel entfernen") : null);
   } else if (sel === "ollama") {
@@ -59,9 +61,21 @@ function kiSection() {
   return section("KI und API-Schlüssel", "robot", `Aktiv: ${ki.anbieter === "aus" || !ki.anbieter ? "keine KI" : ki.anbieter === "anthropic" ? modelName : `Ollama, ${ki.modell}`}`, ...parts);
 }
 
+/* Tagesbudget des Diagnose-Agenten: Grenze und Verbrauch heute (im Server gezählt, Neustart setzt den Zähler zurück) */
+const tausender = (n) => Number(n || 0).toLocaleString("de-DE");
+function budgetFeld() {
+  const b = data.budget || {};
+  return h("div", { class: `fld${errors.budget_tokens ? " bad" : ""}` }, h("label", { for: "set-budget" }, "Tagesbudget des Agenten (Token)"),
+    h("input", { class: "inp mono", id: "set-budget", type: "number", inputmode: "numeric", min: 100000, max: 20000000, step: 100000, value: b.grenze || 1000000, "aria-describedby": "set-budget-hint" }),
+    errors.budget_tokens ? fieldErr("budget_tokens") : h("span", { class: "fld-hint", id: "set-budget-hint" }, `Heute verbraucht: ${tausender(b.verbraucht)} von ${tausender(b.grenze)} Token. Ist es aufgebraucht, liest der Agent erst morgen wieder.`));
+}
+
 function body(extra = {}) {
   const sel = choice || data.ki.anbieter || "aus";
-  if (sel === "anthropic") return { anbieter: sel, modell: $("set-modell").value, schluessel: $("set-key").value.trim() || undefined, ...extra };
+  if (sel === "anthropic") {
+    const budget = Number.parseInt($("set-budget").value, 10);
+    return { anbieter: sel, modell: $("set-modell").value, schluessel: $("set-key").value.trim() || undefined, budget_tokens: Number.isFinite(budget) ? budget : undefined, ...extra };
+  }
   if (sel === "ollama") return { anbieter: sel, modell: $("set-omodell").value.trim(), ollama_url: $("set-ourl").value.trim(), ...extra };
   return { anbieter: "aus" };
 }
@@ -95,6 +109,8 @@ function render() {
   if (!box || $("view-einstellungen").hidden) return;
   const st = state.status || {}, w = state.werkstatt;
   const vehicles = (storageGet("kfzdiag-fahrzeuge", []) || []).length, hist = (storageGet("kfzdiag-verlauf", []) || []).length;
+  /* Werkhof-Abschnitt kommt nach, sobald der Stand vom Server da ist. */
+  werkhofSektion(render).then((el) => { const alt = $("werkhof-einrichten"); if (alt) alt.replaceWith(el); else box.children[0] ? box.children[0].after(el) : box.append(el); });
   box.replaceChildren(
     kiSection(),
     h("section", { class: "card set-sec" }, h("div", { class: "list set-list" },

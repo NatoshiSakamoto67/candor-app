@@ -1,0 +1,246 @@
+{
+ "P0500": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "raddrehzahl_vl",
+   "raddrehzahl_vr",
+   "raddrehzahl_hl",
+   "raddrehzahl_hr"
+  ],
+  "signale": [
+   {
+    "signal": "SPANNUNG",
+    "zustand": "motor_laeuft",
+    "min": 13.2,
+    "max": 14.8,
+    "einheit": "V",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Bordnetzspannung bei laufendem Motor",
+    "art": "auto",
+    "signal": "SPANNUNG",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Spannung zu niedrig: Unterspannung kann Sensoren und ABS stören",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Spannung zu hoch: Regler prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Spannung in Ordnung: ABS-Fehlerspeicher und Raddrehzahlsensoren prüfen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "ABS-Steuergerät auslesen, Raddrehzahlsensoren und Stecker sichtprüfen",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe",
+    "minuten": 20,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "ABS meldet einen Raddrehzahlsensor oder Steckerschaden gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Keine Auffälligkeit: Signalweg zum Motorsteuergerät (CAN) prüfen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "C0035",
+   "U0121"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0505": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "drosselklappe"
+  ],
+  "signale": [
+   {
+    "signal": "DREHZAHL",
+    "zustand": "motor_laeuft",
+    "min": 600,
+    "max": 950,
+    "einheit": "1/min",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "DROSSELKLAPPE",
+    "zustand": "motor_laeuft",
+    "min": 10,
+    "max": 20,
+    "einheit": "%",
+    "quelle": "Typischer Bereich aus wissen.json (warmer Leerlauf), kein Herstellerwert; gilt nur ohne Gas"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Leerlaufdrehzahl warm",
+    "art": "auto",
+    "signal": "DREHZAHL",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Drehzahl zu niedrig: Drosselklappe verschmutzt oder Leerlaufregelung erreicht Grenze",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Drehzahl zu hoch: Falschluft oder Klappe schließt nicht",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Drehzahl normal: Fehler sporadisch, Klappe reinigen und anlernen",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Drosselklappe auf Verschmutzung prüfen, Ansaugtrakt auf Falschluft",
+    "art": "manuell",
+    "werkzeug": "Taschenlampe, Reiniger",
+    "minuten": 20,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Ablagerungen oder Undichtigkeit gefunden",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "Sauber und dicht: Stellmotor und Ansteuerung prüfen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0171",
+   "P0121"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ },
+ "P0562": {
+  "steuergeraet": "Motor",
+  "bauteile": [
+   "batterie",
+   "lichtmaschine"
+  ],
+  "signale": [
+   {
+    "signal": "SPANNUNG",
+    "zustand": "motor_laeuft",
+    "min": 13.2,
+    "max": 14.8,
+    "einheit": "V",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   },
+   {
+    "signal": "DREHZAHL",
+    "zustand": "motor_laeuft",
+    "min": 600,
+    "max": 950,
+    "einheit": "1/min",
+    "quelle": "Allgemeiner Richtwert aus sollwerte-allgemein.json (warmer Leerlauf), kein Herstellerwert"
+   }
+  ],
+  "messungen": [
+   {
+    "id": "m1",
+    "titel": "Ladespannung bei laufendem Motor",
+    "art": "auto",
+    "signal": "SPANNUNG",
+    "deutung": [
+     {
+      "wenn": "unter",
+      "ursache": "Ladespannung zu niedrig: Lichtmaschine, Regler, Riemen oder Leitung prüfen",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "ueber",
+      "ursache": "Ladespannung zu hoch: Regler defekt",
+      "sicherheit": "plausibel"
+     },
+     {
+      "wenn": "im_bereich",
+      "ursache": "Ladespannung in Ordnung: Batterie und Massepunkte prüfen, Fehler sporadisch",
+      "sicherheit": "vermutung"
+     },
+     {
+      "wenn": "fehlt",
+      "ursache": "Noch kein Messwert: Motor starten und warmlaufen lassen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   },
+   {
+    "id": "m2",
+    "titel": "Batterietest, Massebänder und Riemen der Lichtmaschine prüfen",
+    "art": "manuell",
+    "werkzeug": "Batterietester, Taschenlampe",
+    "minuten": 15,
+    "deutung": [
+     {
+      "wenn": "ja",
+      "ursache": "Batterie schwach, Masseband korrodiert oder Riemen rutscht",
+      "sicherheit": "belegt"
+     },
+     {
+      "wenn": "nein",
+      "ursache": "In Ordnung: Ruhestrom messen",
+      "sicherheit": "vermutung"
+     }
+    ]
+   }
+  ],
+  "folgecodes": [
+   "P0620"
+  ],
+  "quellen": [
+   "SAE J2012 (Codebedeutung)",
+   "OBDex CC0 (Ursachen, Symptome)",
+   "frontend/daten/sollwerte-allgemein.json",
+   "frontend/wissen.json"
+  ]
+ }
+}

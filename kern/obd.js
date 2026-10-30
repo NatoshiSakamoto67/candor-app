@@ -143,7 +143,4 @@ export class ObdClient {
   }
 
   /** Modus 04: Fehler aller OBD-Steuergeräte löschen. Nur nach Freigabe aufrufen. */
-  async loesche() {
-    return (await this.frage(Uint8Array.of(0x04))).map((f) => senderName(f.sender));
-  }
 }

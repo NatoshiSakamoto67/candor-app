@@ -99,3 +99,42 @@ export function bauteilFuerSteuergeraet(name) {
   for (const [re, ids] of T) if (/** @type {RegExp} */ (re).test(n)) return /** @type {string[]} */ (ids);
   return ["gateway"];
 }
+
+/** Umkehr: alle genormten Codes, die auf ein Bauteil zeigen. Einmal über die Code-Bereiche berechnet, danach aus dem Speicher.
+ * @type {Map<string, string[]> | null} */
+let UMKEHR = null;
+function umkehrBauen() {
+  const map = new Map();
+  const hex = "0123456789ABCDEF";
+  /** @type {[string, number, number][]} */
+  const bereiche = [["P0", 0x000, 0xfff], ["P2", 0x000, 0xfff], ["P3", 0x400, 0x4ff], ["C0", 0x000, 0x0ff], ["C1", 0x000, 0x0ff], ["B0", 0x000, 0x0ff], ["U0", 0x100, 0x1ff]];
+  for (const [kopf, von, bis] of bereiche) {
+    for (let n = von; n <= bis; n++) {
+      const code = `${kopf}${hex[(Number(n) >> 8) & 15]}${hex[(Number(n) >> 4) & 15]}${hex[Number(n) & 15]}`;
+      const t = bauteileFuer(code);
+      if (!t.genau) continue;
+      for (const id of t.ids) { if (!map.has(id)) map.set(id, []); map.get(id).push(code); }
+    }
+  }
+  return map;
+}
+/** @param {string} id @returns {string[]} */
+export function codesFuerBauteil(id) {
+  if (!UMKEHR) UMKEHR = umkehrBauen();
+  return UMKEHR.get(id) || [];
+}
+/** Codes als kurze Bereiche: P0100 bis P0104, P0171 … @param {string[]} codes */
+export function codeBereiche(codes) {
+  const sorted = [...new Set(codes)].sort();
+  const out = [];
+  let start = /** @type {string | null} */ (null), prev = /** @type {string | null} */ (null);
+  /** @param {string} c */
+  const wert = (c) => parseInt(c.slice(1), 16) + (c.charCodeAt(0) << 20);
+  for (const c of sorted) {
+    if (start === null || prev === null) { start = prev = c; continue; }
+    if (wert(c) === wert(prev) + 1 && c[0] === prev[0]) { prev = c; continue; }
+    out.push(start === prev ? start : `${start} bis ${prev}`); start = prev = c;
+  }
+  if (start !== null) out.push(start === prev ? start : `${start} bis ${prev}`);
+  return out;
+}

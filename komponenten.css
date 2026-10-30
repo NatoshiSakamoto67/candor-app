@@ -17,7 +17,7 @@ a{color:inherit}
 .p{font:400 var(--t-4)/var(--t-4-lh) var(--font-text);margin:0}
 .ui{font:500 var(--t-3)/var(--t-3-lh) var(--font-text)}
 .sm{font:500 var(--t-2)/var(--t-2-lh) var(--font-text);color:var(--text-muted)}
-.mono{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+.mono{font-family:var(--font-code);font-variant-numeric:tabular-nums}
 .num{font-family:var(--font-num);font-variant-numeric:tabular-nums;font-weight:500}
 .unit{color:var(--text-muted);font-size:.6em;margin-left:.2em}
 .state-lbl{font:600 var(--t-1)/var(--t-1-lh) var(--font-display);letter-spacing:var(--tracking-caps);text-transform:uppercase;color:var(--text-muted)}

@@ -21,18 +21,6 @@ export function renderCheck() {
   $("freeze-title").textContent = f ? `Freeze-Frame zu ${f.ausloeser}` : "Freeze-Frame";
   $("freeze").replaceChildren(...(f ? f.werte.map((v) => h("button", { class: "tap row", type: "button", "data-info": `signal:${v.signal}` },
     mark("muted"), h("span", {}, h("div", { class: "t" }, signalTitle(v.signal))), h("span", { class: "r" }, `${num(v.wert)} ${v.einheit}`), chev())) : [h("p", { class: "hint" }, "Kein Freeze-Frame gespeichert.")]));
-  renderFunctions();
-}
-
-export function renderFunctions() {
-  const fx = state.functions;
-  if (!fx) return;
-  const planned = [["Ölservice zurücksetzen", "reset"], ["Elektrische Parkbremse: Wartungsmodus", "routine"], ["DPF-Regeneration erzwingen", "routine"], ["Batterie anlernen", "reset"], ["Lenkwinkelsensor kalibrieren", "grundeinstellung"]];
-  const rows = fx.funktionen.map((fn) => h("button", { class: "tap row" + (fx.verfuegbar ? "" : " locked"), type: "button", "data-info": `fn:${fn.id}` },
-    mark(fx.verfuegbar ? "ok" : "locked"), h("span", {}, h("div", { class: "t" }, fn.name), h("div", { class: "d" }, `${fn.modul} · ${fn.art} · ${fn.anfrage}`)), h("span", { class: "r muted" }, fx.verfuegbar ? "bereit" : "gesperrt"), chev()));
-  const later = planned.map(([name, art]) => h("button", { class: "tap row", type: "button", "data-info": `geplant:${name}|${art}` },
-    mark("muted"), h("span", {}, h("div", { class: "t" }, name), h("div", { class: "d" }, "markenspezifisch, kommt je Profil")), h("span", { class: "r muted" }, "geplant"), chev()));
-  $("functions").replaceChildren(...rows, ...later);
 }
 
 export function initCheck() {

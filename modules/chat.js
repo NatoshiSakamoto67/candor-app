@@ -2,13 +2,13 @@
    Diktat, Senden und Stopp, Antwort Wort für Wort, Quellen, Vorschlag mit Freigabe. Die KI führt nichts aus.
    Anhänge gehen nur mit der aktuellen Nachricht an den Server; im Verlauf bleiben nur ihre Namen. */
 import { $, h, icon, mark, toast, storageGet, storageSet, clockTime, reducedMotion } from "./dom.js";
-import { state, on, emit, faultSet } from "./state.js";
+import { state, on, emit, faultSet, logEvent } from "./state.js";
 import { startAction } from "./approval.js";
 import { go } from "./shell.js";
 import { render as markdown } from "./md.js";
 import { icon3d } from "./icons3d.js";
 import { similar, forAi as caseForAi } from "./faelle.js";
-import { verlauf, suche as chatSuche, gruppe as zeitGruppe, GRUPPEN } from "./chatverlauf.js";
+import { verlauf, suche as chatSuche, gruppe as zeitGruppe, GRUPPEN, mitWerkzeug, zumSenden } from "./chatverlauf.js";
 import { vehicleName } from "./fahrzeuge.js";
 
 const MAX_FILES = 5, MAX_BYTES = 10 * 1024 * 1024, MAX_EDGE = 2000, MAX_HISTORY = 60, SEND_HISTORY = 20;
@@ -17,6 +17,8 @@ const IMAGE = /^image\/(png|jpeg|webp|gif)$/, TEXT = /\.(txt|csv|log|json|md|xml
 const QUICK = [["Fehler erklären", "Was bedeuten meine Fehlercodes?"], ["Wo fange ich an?", "Wo fange ich bei der Fehlersuche an?"], ["Schafft es die AU?", "Besteht das Auto die AU?"]];
 const QUICK_LEER = [["Was kannst du?", "Was kannst du für mich am Auto tun?"], ["Typische Probleme", "Such im Internet nach bekannten Problemen zu diesem Modell"], ["Wo fange ich an?", "Wo fange ich bei der Fehlersuche an?"]];
 let files = [], web = storageGet("kfzdiag-websuche", true), running = null;
+/* Diagnose-Agent: Claude liest selbst am Auto (nur lesend). Nur mit Server und Claude, Anhänge gehen weiter an den Chat. */
+let agentLive = storageGet("kfzdiag-agent-live", false);
 
 /* Verlauf: mehrere Chats (chatverlauf.js); jeder Chat gehört zum Fahrzeug, mit dem er begonnen wurde. */
 const chats = verlauf({ get: storageGet, set: storageSet });
@@ -30,16 +32,26 @@ function saveHistory(list, id = aktivId()) {
   return ziel;
 }
 const isServer = () => state.src && state.src.mode === "server";
+const agentMoeglich = () => isServer() && state.status && state.status.ki === "anthropic";
+const agentAn = () => agentLive && agentMoeglich();
+function agentUmschalten() {
+  agentLive = !agentLive; storageSet("kfzdiag-agent-live", agentLive);
+  if (agentLive && !storageGet("kfzdiag-agent-hinweis", false)) { toast("Der Agent liest selbst am Auto. Er kann nichts löschen oder schreiben."); storageSet("kfzdiag-agent-hinweis", true); }
+  renderToggles();
+}
+const werkzeugListe = (zeilen) => h("ul", { class: "cx-tools", "aria-label": "Was der Agent gelesen hat" },
+  ...zeilen.map((w) => h("li", { class: w.ok ? "" : "nicht" }, mark(w.ok ? "ok" : "crit"), h("span", {}, h("b", {}, w.titel), w.kurz ? ` ${w.kurz}` : ""))));
 
 /* ---------- Anhänge ---------- */
 const toBase64 = (blob) => new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(String(r.result).split(",")[1]); r.onerror = () => reject(new Error("Datei nicht lesbar")); r.readAsDataURL(blob); });
+/* Jedes Bild wird neu gezeichnet: das verkleinert große Fotos und entfernt immer die Metadaten (EXIF mit GPS-Ort,
+   Kamera, Zeit), bevor etwas an die KI geht. Kennzeichen im Bild erkennt das nicht, dafür steht der Hinweis am Chat. */
 async function shrink(file) {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
-  if (scale === 1 && file.size < 1.5 * 1024 * 1024) return file;
   const canvas = Object.assign(document.createElement("canvas"), { width: Math.round(bitmap.width * scale), height: Math.round(bitmap.height * scale) });
   canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  return new Promise((resolve) => canvas.toBlob((b) => resolve(b || file), "image/jpeg", .86));
+  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Bild konnte nicht vorbereitet werden"))), "image/jpeg", .86));
 }
 async function addFiles(list) {
   for (const file of [...list]) {
@@ -111,7 +123,8 @@ function messageView(m) {
     m.text ? h("div", { class: "cx-text" }, m.text) : null);
   return h("div", { class: `cx-msg ai${m.fehler ? " err" : ""}` },
     h("span", { class: "cx-avatar", "aria-hidden": "true" }, icon3d("robot")),
-    h("div", { class: "cx-body" }, m.fehler ? h("p", { class: "cx-err" }, mark("crit"), m.text) : bubbleBody(m.text),
+    h("div", { class: "cx-body" }, m.werkzeuge && m.werkzeuge.length ? werkzeugListe(m.werkzeuge) : null,
+      m.fehler ? h("p", { class: "cx-err" }, mark("crit"), m.text) : bubbleBody(m.text),
       m.quellen && m.quellen.length ? sourcesView(m.quellen) : null,
       m.vorschlag ? suggestionView(m.vorschlag) : null,
       h("div", { class: "cx-meta" }, m.beispiel ? h("span", { class: "tag" }, "Beispielantwort der Vorschau") : null, m.modell ? h("span", {}, m.modell) : null, m.zeit ? h("span", {}, clockTime(new Date(m.zeit))) : null,
@@ -220,6 +233,7 @@ export async function send(textArg) {
   const text = (textArg != null ? textArg : input.value).trim();
   if (!text && !files.length) return;
   const sent = files;
+  if (agentAn() && sent.length) toast("Mit Anhängen antwortet der normale Chat, der Agent liest ohne Anhänge.");
   files = []; input.value = ""; grow(); renderChips();
   const list = [...history(), { rolle: "nutzer", text, anhaenge: sent.map((f) => ({ name: f.name, art: f.art })), zeit: Date.now() }];
   const chatId = saveHistory(list); chats.setzeAktiv(chatId); renderHistory();
@@ -232,18 +246,35 @@ export async function send(textArg) {
   $("cx-log").append(node); scrollEnd();
   running = new AbortController(); updateSend();
   let raf = 0;
-  const paint = () => { raf = 0; const md = bubbleBody(answer.text); const old = body.querySelector(".cx-md"); if (old) old.replaceWith(md); else body.prepend(md); };
+  const paint = () => { raf = 0; const md = bubbleBody(answer.text); const old = body.querySelector(".cx-md"); if (old) old.replaceWith(md); else body.append(md); };
+  const zeigeWerkzeuge = () => { const neu = werkzeugListe(answer.werkzeuge); const alt = body.querySelector(".cx-tools"); if (alt) alt.replaceWith(neu); else status.after(neu); };
   try {
     if (!state.src) {
       Object.assign(answer, { text: "Noch kein Fahrzeug verbunden. Verbinde den Adapter oder probier das Beispielfahrzeug, dann lese ich die Daten mit.", fehler: true, frage: text });
     } else if (!isServer()) {
       const r = await state.src.ask(text || "Bitte sieh dir die Anhänge an.");
       Object.assign(answer, r.ok ? { text: r.antwort, vorschlag: r.vorschlag && r.vorschlag.art !== "keiner" ? r.vorschlag : null, beispiel: r.beispiel } : { text: r.meldung || "Keine Antwort.", fehler: true, frage: text });
+    } else if (agentAn() && !sent.length) {
+      const response = await state.src.agent({ verlauf: zumSenden(list, SEND_HISTORY) }, running.signal);
+      if (!response.ok) throw new Error(`Server antwortet mit ${response.status}.`);
+      status.lastChild.textContent = "Liest am Auto …";
+      await readStream(response, (ev) => {
+        if (ev.typ === "text") { answer.text += ev.text; if (!raf) raf = requestAnimationFrame(paint); }
+        else if (ev.typ === "werkzeug") {
+          if (answer.text && !answer.text.endsWith("\n")) answer.text += "\n\n";   // nächste Runde als eigener Absatz
+          Object.assign(answer, mitWerkzeug(answer, ev)); zeigeWerkzeuge(); scrollEnd();
+          logEvent(`Agent: ${ev.titel}${ev.ok ? "" : " (abgewiesen)"}`, ev.ok ? "info" : "warn");
+        }
+        else if (ev.typ === "vorschlag") answer.vorschlag = ev;
+        else if (ev.typ === "fertig") { status.remove(); answer.modell = ev.modell; }
+        /* Bisherige Analyse bleibt stehen, die Meldung kommt darunter */
+        else if (ev.typ === "fehler") Object.assign(answer, answer.text.trim() ? { text: `${answer.text.trim()}\n\n*${ev.meldung}*` } : { text: ev.meldung, fehler: true, frage: text });
+      });
     } else {
       const codes = [...faultSet().values()].map((f) => f.code);
       const fz = state.fahrzeug || {};
       const faelle = similar(storageGet("kfzdiag-faelle", []), { codes, marke: fz.marke, modell: fz.modell }).map(caseForAi);
-      const payload = { verlauf: list.slice(-SEND_HISTORY).map((m) => ({ rolle: m.rolle, text: m.text || (m.rolle === "nutzer" ? "" : "…") })), anhaenge: sent.map((f) => ({ name: f.name, daten: f.daten })), websuche: web, faelle };
+      const payload = { verlauf: zumSenden(list, SEND_HISTORY), anhaenge: sent.map((f) => ({ name: f.name, daten: f.daten })), websuche: web, faelle };
       const response = await state.src.chat(payload, running.signal);
       if (!response.ok) throw new Error(response.status === 413 ? "Die Anhänge sind zusammen zu groß." : `Server antwortet mit ${response.status}.`);
       await readStream(response, (ev) => {
@@ -283,16 +314,23 @@ function plusMenu() {
     row(icon("car"), "Bild", "Foto vom Motorraum, Fehlerbild, Typenschild", () => $("cx-image").click()),
     row(icon("rec"), "Foto aufnehmen", "Kamera am Handy oder Tablet", () => $("cx-camera").click()),
     h("div", { class: "cx-sep" }),
-    row(icon("search"), "Websuche", "Codes, Rückrufe, bekannte Probleme, mit Quellen", () => { web = !web; storageSet("kfzdiag-websuche", web); renderToggles(); }, web));
+    row(icon("search"), "Websuche", "Codes, Rückrufe, bekannte Probleme, mit Quellen", () => { web = !web; storageSet("kfzdiag-websuche", web); renderToggles(); }, web),
+    agentMoeglich() ? row(icon("pulse"), "Selbst am Auto lesen", "Claude liest Fehler und Messwerte selbst, nur lesend", agentUmschalten, agentLive) : null);
   $("cx-composer").append(menu);
   setTimeout(() => document.addEventListener("pointerdown", outside, true));
   menu.addEventListener("keydown", (ev) => { if (ev.key === "Escape") { close(); $("cx-plus").focus(); } });
   menu.querySelector("button").focus();
 }
-function renderToggles() { $("cx-plus").classList.toggle("web-an", web); $("cx-plus").title = web ? "Anhängen, Websuche ist an" : "Anhängen, Websuche ist aus"; }
+function renderToggles() {
+  $("cx-plus").classList.toggle("web-an", web); $("cx-plus").title = web ? "Anhängen, Websuche ist an" : "Anhängen, Websuche ist aus";
+  const an = agentAn();
+  $("view-agent").classList.toggle("agent-an", an);
+  $("cx-input").placeholder = an ? "Frag den Agenten, er liest selbst am Auto" : $("cx-input").dataset.platzhalter || $("cx-input").placeholder;
+}
 
 export function initAgent() {
   const input = $("cx-input");
+  input.dataset.platzhalter = input.placeholder;
   input.addEventListener("input", () => { grow(); updateSend(); });
   input.addEventListener("keydown", (ev) => { if (ev.key === "Enter" && !ev.shiftKey && !ev.isComposing) { ev.preventDefault(); send(); } });
   input.addEventListener("paste", (ev) => { const list = [...(ev.clipboardData.files || [])]; if (list.length) { ev.preventDefault(); addFiles(list); } });
@@ -315,6 +353,7 @@ export function initAgent() {
   on("tab", (id) => { if (id === "agent") { renderHistory(); renderToggles(); updateSend(); requestAnimationFrame(scrollEnd); } });
   /* Anderes Fahrzeug: neuer leerer Chat, der Verlauf bleibt in der Seitenleiste */
   on("fahrzeug-aktiv", () => { const c = aktivId() && chats.holen(aktivId()); if (c && state.fahrzeug && c.fz && c.fz !== state.fahrzeug.id) chats.setzeAktiv(null); if (!$("view-agent").hidden) renderHistory(); });
+  on("status", renderToggles);
   on("chat-prefill", (text) => { const el = $("cx-input"); el.value = text; grow(); updateSend(); requestAnimationFrame(() => el.focus()); });
   renderToggles(); updateSend();
 }
